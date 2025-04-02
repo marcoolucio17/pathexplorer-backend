@@ -10,6 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "express": "^5.1.0"
+    "@supabase/supabase-js": "^2.49.4",
+    "express": "^5.1.0",
+    "react-router": "^7.4.1",
+    "react-router-dom": "^7.4.1"
   }
 }
