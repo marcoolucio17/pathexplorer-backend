@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  title: Project API
+  version: 1.0.0
+  description: API for managing authentication, projects, clients, users, and skills.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        role:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  #############################
+  # Authentication Endpoints #
+  #############################
+
+  /authenticate/:
+    post:
+      summary: Authenticate user and return JWT
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: JWT Token and role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  ######################
+  # Project Endpoints  #
+  ######################
+
+  /projects/{id}:
+    get:
+      summary: Get a specific project by ID
+      tags: [Projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Project data with current users
+        '401':
+          description: Unauthorized
+
+  /projects/:
+    post:
+      summary: Create a new project
+      tags: [Projects]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Project created
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  ####################
+  # Client Endpoints #
+  ####################
+
+  /clients/:
+    get:
+      summary: Get all clients
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of clients
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create a new client
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Client created
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  ###################
+  # Skill Endpoints #
+  ###################
+
+  /skills/:
+    get:
+      summary: Get all skills
+      tags: [Skills]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of skills
+        '401':
+          description: Unauthorized
+
+  ##################
+  # User Endpoints #
+  ##################
+
+  /users/{id}:
+    get:
+      summary: Get a user by ID
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User data
+        '401':
+          description: Unauthorized
