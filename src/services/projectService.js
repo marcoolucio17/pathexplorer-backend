@@ -22,16 +22,22 @@ const fechtProjectById = async (id) => {
 const fecthaddProject = async(project) => {
     const { data, error } = await supabase
         .from("proyecto")
-        .insert([
-            {
-                pnombre: project.pnombre,
-                descripcion: project.descripcion,
-                fechainicio: project.fechainicio,
-                fechafin: project.fechafin,
-                idcliente: project.idcliente
-            }
-        ]);
+        .insert([project]);
+    
     if (error) throw error;
     return data;
 }
-module.exports = { fetchProjects, fechtProjectById, fecthaddProject };
+
+//Consulta para actualizar un proyecto en la base de datos
+const fetchUpdateProject = async (id, project) => {
+    const { data, error } = await supabase
+        .from("proyecto")
+        .update([project])
+        .eq('idproyecto', id);
+    if (error) throw error;
+    return data;
+
+}
+
+
+module.exports = { fetchProjects, fechtProjectById, fecthaddProject, fetchUpdateProject };

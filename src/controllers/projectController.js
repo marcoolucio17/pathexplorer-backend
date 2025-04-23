@@ -1,4 +1,4 @@
-const {fetchProjects,fechtProjectById,fecthaddProject} = require('../services/projectService');
+const { fetchProjects, fechtProjectById, fecthaddProject, fetchUpdateProject} = require('../services/projectService');
 
 
 const getProjects = async (req, res) => {
@@ -40,6 +40,17 @@ const addProject = async (req, res) => {
 }
 
 //Actualizar la información de un proyecto
+const updateProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const project = req.body.project;
+        const data = await fetchUpdateProject(id, project);
+        res.status(200).json({ message: 'Project updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating project' });
+    }
+}
+    
+    
 
-
-module.exports = { getProjects , getProjectById,addProject};
+module.exports = { getProjects , getProjectById,addProject, updateProject};
