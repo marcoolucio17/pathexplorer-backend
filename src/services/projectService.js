@@ -18,4 +18,20 @@ const fechtProjectById = async (id) => {
     return data;
 }
 
-module.exports = { fetchProjects, fechtProjectById };
+//Consulta para agregar un nuevo proyecto a la base de datos
+const fecthaddProject = async(project) => {
+    const { data, error } = await supabase
+        .from("proyecto")
+        .insert([
+            {
+                pnombre: project.pnombre,
+                descripcion: project.descripcion,
+                fechainicio: project.fechainicio,
+                fechafin: project.fechafin,
+                idcliente: project.idcliente
+            }
+        ]);
+    if (error) throw error;
+    return data;
+}
+module.exports = { fetchProjects, fechtProjectById, fecthaddProject };
