@@ -1,8 +1,8 @@
 const supabase = require('../config/supabaseClient');
 
-//Consulta para llamar toda la tabla de proyectos
-const fetchProjects = async () => { 
-    const { data,error} = await supabase.from("proyecto").select("*");
+//Consulta para llamar toda la tabla de proyectos en la pantalla de Dashboard
+const fetchProjects= async () => { 
+    const { data,error} = await supabase.from("proyecto").select("idproyecto,pnombre,descripcion,cliente(clnombre),proyecto_roles(idrol,roles(nombrerol,descripcionrol),estado)");
     if (error) throw error;
     return data;
 };
@@ -12,9 +12,8 @@ const fechtProjectById = async (id) => {
     
     const { data, error } = await supabase
         .from("proyecto")
-        .select("*")
-        .eq('idproyecto', parseInt(id))
-        .single();
+        .select("idproyecto,pnombre,descripcion,cliente(clnombre),proyecto_roles(idrol,roles(nombrerol,descripcionrol),estado)")
+        .eq('idproyecto', id);
     if (error) throw error;
     return data;
 }

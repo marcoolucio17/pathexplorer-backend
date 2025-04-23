@@ -1,5 +1,5 @@
 const {fetchProjects} = require('../services/projectService');
-const {fetchProjectById} = require('../services/projectService');
+const {fechtProjectById} = require('../services/projectService');
 
 
 const getProjects = async (req, res) => {
@@ -14,7 +14,7 @@ const getProjects = async (req, res) => {
 const getProjectById = async (req, res) => {
     try {
         const { id } = req.params;
-        const project = await fetchProjectById(id);
+        const project = await fechtProjectById(id);
         if (project) {
             res.status(200).json(project);
         } else {
