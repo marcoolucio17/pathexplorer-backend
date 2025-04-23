@@ -1,16 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes'); 
-
+const projectRoutes = require('./routes/projectsRoutes');
 const app = express();
 
 app.use(cors());
 app.use(express.json()); 
 
 app.use('/api', userRoutes); 
+app.use('/api', projectRoutes);
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('API is running...2');
 });
 
 module.exports = app;
