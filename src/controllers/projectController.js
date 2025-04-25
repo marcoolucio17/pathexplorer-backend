@@ -1,19 +1,32 @@
-const { fetchProjects, fechtProjectById, fecthaddProject, fetchUpdateProject} = require('../services/projectService');
+const { fetchProjects, fetchProjectById, fetchaddProject, fetchUpdateProject, fetchProjectsByNameCaseInsensitive} = require('../services/projectService');
 
-
+//Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
     try {
-        const projects = await fetchProjects();
-        res.status(200).json(projects);
+        const { projectName } = req.query;
+        if (projectName) {
+            if (!projectName) {
+                return res.status(400).json({ error: 'Project name is required' });
+            }
+            const projects = await fetchProjectsByNameCaseInsensitive(projectName);
+            res.status(200).json(projects);
+            
+        } else {
+            const projects = await fetchProjects();
+            res.status(200).json(projects);
+        }
     } catch (error) {
         res.status(500).json({ error: 'Error fetching projects' });
     }
 }
 
+
+
+//Función para utilizar la consulta de llamar un proyecto por id
 const getProjectById = async (req, res) => {
     try {
         const { id } = req.params;
-        const project = await fechtProjectById(id);
+        const project = await fetchProjectById(id);
         if (project) {
             res.status(200).json(project);
         } else {
@@ -29,9 +42,11 @@ const getProjectById = async (req, res) => {
 
 const addProject = async (req, res) => {
     try{
-        const project = req.body.project;
-        console.log(project);
-        const data = await fecthaddProject(project);
+        const project = req.body;
+        if (!project) {
+            return res.status(400).json({ error: 'Project data is required' });
+        }
+        const data = await fetchaddProject(project);
         res.status(201).json({ message: 'Project added successfully' });
 
     } catch (error) {
