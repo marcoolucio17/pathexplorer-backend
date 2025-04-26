@@ -8,8 +8,8 @@ const fetchUsers = async () => {
 
 const fetchUserById = async (req, res) => {
     const { id } = req.params;
-
-    
 }
+
+
 
 module.exports = { fetchUsers };
