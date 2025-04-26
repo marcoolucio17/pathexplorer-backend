@@ -1,26 +1,36 @@
-const { fetchProjects, fetchProjectById, fetchaddProject, fetchUpdateProject, fetchProjectsByNameCaseInsensitive} = require('../services/projectService');
+const { 
+    fetchProjects, 
+    fetchProjectById, 
+    fetchaddProject, 
+    fetchUpdateProject, 
+    fetchProjectsByNameCaseInsensitive,
+    fetchProjectsBySkill,
+} = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
     try {
-        const { projectName } = req.query;
+        const { projectName,skill } = req.query;
+       
+        
         if (projectName) {
-            if (!projectName) {
-                return res.status(400).json({ error: 'Project name is required' });
-            }
-            const projects = await fetchProjectsByNameCaseInsensitive(projectName);
-            res.status(200).json(projects);
             
-        } else {
-            const projects = await fetchProjects();
-            res.status(200).json(projects);
-        }
+            const projects = await fetchProjectsByNameCaseInsensitive(projectName);
+            return res.status(200).json(projects); 
+        } 
+
+        if (skill) {
+            const projects = await fetchProjectsBySkill(skill);
+            return res.status(200).json(projects);
+        } 
+        
+        const projects = await fetchProjects();
+        return res.status(200).json(projects);
+        
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching projects' });
+        return res.status(500).json({ error: 'Error fetching projects' });
     }
 }
-
-
 
 //Función para utilizar la consulta de llamar un proyecto por id
 const getProjectById = async (req, res) => {
@@ -28,13 +38,13 @@ const getProjectById = async (req, res) => {
         const { id } = req.params;
         const project = await fetchProjectById(id);
         if (project) {
-            res.status(200).json(project);
+            return  res.status(200).json(project);
         } else {
-            res.status(404).json({ error: 'Project not found' });
+            return res.status(404).json({ error: 'Project not found' });
         }
         
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching project' });
+        return res.status(500).json({ error: 'Error fetching project' });
     }
 }
 
@@ -50,7 +60,7 @@ const addProject = async (req, res) => {
         res.status(201).json({ message: 'Project added successfully' });
 
     } catch (error) {
-        res.status(500).json({ error: 'Error adding project' });
+        return res.status(500).json({ error: 'Error adding project' });
     }
 }
 
@@ -60,9 +70,9 @@ const updateProject = async (req, res) => {
         const { id } = req.params;
         const project = req.body.project;
         const data = await fetchUpdateProject(id, project);
-        res.status(200).json({ message: 'Project updated successfully' });
+        return  res.status(200).json({ message: 'Project updated successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Error updating project' });
+        return res.status(500).json({ error: 'Error updating project' });
     }
 }
     

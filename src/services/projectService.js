@@ -21,6 +21,15 @@ const fetchProjectsByNameCaseInsensitive = async (name) => {
     return data;
 }
 
+//Lo mismo que fetchProjects, pero con un filtro por nombre de proyecto
+const fetchProjectsBySkill = async (skill) => { 
+    const { data, error } = await supabase
+        .from("proyecto")
+        .select("idproyecto,pnombre,descripcion,cliente(clnombre),proyecto_roles(idrol,roles(nombrerol,descripcionrol,requerimientos_roles(requerimientos(habilidades(idhabilidad,nombre,estecnica)))))")
+        .contains('proyecto_roles.roles.requerimientos_roles.requerimientos.habilidades', [{ nombre: skill }]);
+    if (error) throw error;
+    return data;
+}
 
 //Consulta para llamar un proyecto por id
 const fetchProjectById = async (id) => { 
@@ -54,5 +63,12 @@ const fetchUpdateProject = async (id, project) => {
 
 };
 
-
-module.exports = { fetchProjects, fetchProjectById, fetchaddProject, fetchUpdateProject , fetchProjectsByNameCaseInsensitive};
+module.exports = { 
+    fetchProjects, 
+    fetchProjectById, 
+    fetchaddProject, 
+    fetchUpdateProject, 
+    fetchProjectsByNameCaseInsensitive,
+    fetchProjectsBySkill
+    
+};
