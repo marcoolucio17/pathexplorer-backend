@@ -37,12 +37,8 @@ const signUpWithEmailAndPassword = async (req, res) => {
     password: password,
   });
 
-  if (error || data.status > 399) {
-    if (data.status > 399) {
-      throw Error(data.status + ":" + data.code)
-    }
-    console.log(error.message);
-    return error;
+  if (error) {
+    throw new ApiError(error.status || 400, error.message);
   }
 
   const { userdata, usererror } = await supabase.from("usuario").insert({
@@ -57,13 +53,10 @@ const signUpWithEmailAndPassword = async (req, res) => {
     cv: "holi",
   });
 
-  if (usererror || userdata.status > 399) {
-    if (userdata.status > 399) {
-      throw Error(userdata.status + ":" + userdata.code)
-    }
-    console.log(error.message);
-    return error;
+  if (usererror) {
+    throw new ApiError(error.status || error.message);
   }
+
   return userdata;
 };
 
