@@ -9,7 +9,7 @@ const certificatesRoutes = require('./routes/certificatesRoutes');
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // esto es para que permita a la página web demo (en prod no debe de salir)
+  origin: 'http://localhost:5173', // esto es para que permita a la página web demo (en prod final no debe de salir)
   credentials: true, 
   methods: ['GET', 'POST', 'PUT', 'DELETE'], 
 };
