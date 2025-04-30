@@ -1,32 +1,21 @@
-const { 
-    fetchProjects, 
-    fetchProjectById, 
-    fetchaddProject, 
-    fetchUpdateProject, 
-    fetchProjectsByNameCaseInsensitive,
-    fetchProjectsBySkill,
-} = require('../services/projectService');
+const { fetchProjects, fetchProjectById, fetchaddProject, fetchUpdateProject, fetchProjectsByNameCaseInsensitive,
+    fetchProjectsBySkill } = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
     try {
-        const { projectName,skill } = req.query;
-       
-        
+        const { projectName,skill } = req.query;    
         if (projectName) {
             
             const projects = await fetchProjectsByNameCaseInsensitive(projectName);
             return res.status(200).json(projects); 
         } 
-
         if (skill) {
             const projects = await fetchProjectsBySkill(skill);
             return res.status(200).json(projects);
         } 
-        
         const projects = await fetchProjects();
         return res.status(200).json(projects);
-        
     } catch (error) {
         return res.status(500).json({ error: 'Error fetching projects' });
     }
@@ -49,7 +38,6 @@ const getProjectById = async (req, res) => {
 }
 
 //Se agrega un nuevo proyecto a la base de datos 
-
 const addProject = async (req, res) => {
     try{
         const project = req.body;
@@ -70,12 +58,14 @@ const updateProject = async (req, res) => {
         const { id } = req.params;
         const project = req.body.project;
         const data = await fetchUpdateProject(id, project);
-        return  res.status(200).json({ message: 'Project updated successfully' });
+        if (data) {
+            return res.status(204).json({ message: 'Goal updated successfully' });
+        } else {
+            return res.status(404).json({ error: 'Goal not found' });
+        }
     } catch (error) {
         return res.status(500).json({ error: 'Error updating project' });
     }
 }
-    
-    
 
 module.exports = { getProjects , getProjectById,addProject, updateProject};
