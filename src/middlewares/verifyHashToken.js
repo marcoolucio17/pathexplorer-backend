@@ -1,5 +1,14 @@
-const decryptToken = require('../utils/decryptToken'); 
+const { decryptToken } = require('../utils/token'); 
 
+/**
+ * Authentication middleware that validates the user token and their role.
+ * If there's no token sent, then it returns an error.
+ * If decryption doesn't work, then it's not a valid token.
+ * @param {http request} req 
+ * @param {http response} res 
+ * @param {next function} next 
+ * @returns void
+ */
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
 

@@ -11,15 +11,16 @@ const { encryptPayload, decryptToken } = require("../utils/token");
  * @returns User access token
  */
 const authenticateWithEmailAndPassword = async (providerid, password) => {
-    const email = providerid + "@accenture.com"; 
+  const email = providerid + "@accenture.com";
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email, 
-      password,
-    });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
   if (error) {
-    throw new ApiError(error.status || 400, error.message);
+    console.log("error", error);
+    throw new ApiError(error.status || 400, error.message || "Invalid login credentials.");
   }
 
   // una vez que sepamos que está verificado, lo buscamos en la tabla usuarios
