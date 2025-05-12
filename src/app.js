@@ -5,6 +5,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const projectRoutes = require('./routes/projectsRoutes');
 const skillsRoutes = require('./routes/skillsRoutes');
 const certificatesRoutes = require('./routes/certificatesRoutes');
+const authenticationRoutes = require('./routes/authRoutes');
 import notificationRoutes from "./routes/notificationRoutes";
 
 const appsRoutes = require('./routes/appsRoutes'); //Apps route Axel
@@ -23,15 +24,14 @@ app.use(express.json());
 app.use('/api', userRoutes); 
 app.use(errorHandler);
 app.use('/api', projectRoutes);
-app.use('/api',skillsRoutes);
-app.use('/api',certificatesRoutes);
+app.use('/api', skillsRoutes);
+app.use('/api', certificatesRoutes);
+app.use('/api', authenticationRoutes);
 app.use("/api/notifications", notificationRoutes);
-
 app.use('/api', appsRoutes); 
 
-
 app.get('/', (req, res) => {
-  res.send('API is running...2');
+  res.send('Welcome to the PathExplorer API!! Read our documentation to learn about how to use our different endpoints.');
 });
 
 module.exports = app;
