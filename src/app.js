@@ -5,6 +5,8 @@ const errorHandler = require('./middlewares/errorHandler');
 const projectRoutes = require('./routes/projectsRoutes');
 const skillsRoutes = require('./routes/skillsRoutes');
 const certificatesRoutes = require('./routes/certificatesRoutes');
+import notificationRoutes from "./routes/notificationRoutes";
+
 const appsRoutes = require('./routes/appsRoutes'); //Apps route Axel
 
 const app = express();
@@ -23,7 +25,10 @@ app.use(errorHandler);
 app.use('/api', projectRoutes);
 app.use('/api',skillsRoutes);
 app.use('/api',certificatesRoutes);
-app.use('/api', appsRoutes); //Apps route Axel
+app.use("/api/notifications", notificationRoutes);
+
+app.use('/api', appsRoutes); 
+
 
 app.get('/', (req, res) => {
   res.send('API is running...2');
