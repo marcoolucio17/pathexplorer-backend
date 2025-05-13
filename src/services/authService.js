@@ -86,7 +86,7 @@ const signUpWithEmailAndPassword = async ({
 
   // una vez que se haya completado exitosamente el registro, hacemos sign-in
   const encryptedUserData = authenticateWithEmailAndPassword(
-    providerid + "@accenture.com",
+    providerid,
     password
   );
 
