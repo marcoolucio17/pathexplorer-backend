@@ -1,4 +1,4 @@
-const { param } = require('../app');
+
 const supabase = require('../config/supabaseClient');
 const ApiError = require('../utils/errorHelper');
 //Consulta para llamar la información de la tabla de roles
@@ -10,7 +10,11 @@ const ApiError = require('../utils/errorHelper');
  *           Nombre de rol, 
  *           Nivel de rol, 
  *           Descripción de rol,
- *           Disponible (booleano)
+ *           Disponible (booleano),
+ *           Por cada rol, un array de requerimientos (habilidades)- Incluye: 
+ *           ID de habilidad,
+ *           Nombre de habilidad,
+ *          Es técnica (booleano)
  */
 const fetchRoles = async () => {
     const { data, error } = await supabase
@@ -20,7 +24,16 @@ const fetchRoles = async () => {
                 nombrerol,
                 nivelrol,
                 descripcionrol,
-                disponible`
+                disponible,
+                requerimientos_roles(
+                    requerimientos(
+                        habilidades(
+                            idhabilidad,
+                            nombre,
+                            estecnica
+                        )
+                    )
+                )`
             );
     if (error) {
         console.log("error", error);
@@ -36,7 +49,11 @@ const fetchRoles = async () => {
  *           Nombre de rol,
  *           Nivel de rol,
  *           Descripción de rol,
- *           Disponible (booleano)"
+ *           Disponible (booleano) 
+ *           Por cada rol, un array de requerimientos (habilidades)- Incluye: 
+ *             ID de habilidad,
+ *             Nombre de habilidad,
+ *             Es técnica (booleano)"
  */
 const fetchRoleById = async (id_rol) => { 
     const { data, error } = await supabase
@@ -46,7 +63,16 @@ const fetchRoleById = async (id_rol) => {
                 nombrerol,
                 nivelrol,
                 descripcionrol,
-                disponible`
+                disponible,
+                requerimientos_roles(
+                    requerimientos(
+                        habilidades(
+                            idhabilidad,
+                            nombre,
+                            estecnica
+                        )
+                    )
+                )`
             )
         .eq('idrol', id_rol);
     if (error) {
@@ -63,6 +89,10 @@ const fetchRoleById = async (id_rol) => {
  *          nivelrol,
  *          descripcionrol,
  *          disponible
+ *          Por cada rol, un array de requerimientos (habilidades)- Incluye: 
+ *             ID de habilidad,
+ *             Nombre de habilidad,
+ *             Es técnica (booleano)
  * @returns "true" si se agregó correctamente el rol
  */
 const addRole = async (rol) => {
