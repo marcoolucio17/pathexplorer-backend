@@ -13,9 +13,17 @@ const appsRoutes = require('./routes/appsRoutes'); //Apps route Axel
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // esto es para que permita a la página web demo (en prod final no debe de salir)
-  credentials: true, 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  origin: function (origin, callback) {
+    const isLocalhost = origin === 'http://localhost:5173';
+    const isVercel = /^https:\/\/.*\.vercel\.app$/.test(origin);
+
+    if (!origin || isLocalhost || isVercel) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
