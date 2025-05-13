@@ -4,7 +4,7 @@ const {
     fetchAplicacionByUserAndId, 
     fetchUpdateAplicacionStatus, 
     fetchAddAplicacion 
-  } = require('../services/appsServices');
+  } = require('../services/appsService');
   
   // Función para obtener todas las aplicaciones de un proyecto
   const getAplicacionesByProject = async (req, res) => {

@@ -6,7 +6,7 @@ const projectRoutes = require('./routes/projectsRoutes');
 const skillsRoutes = require('./routes/skillsRoutes');
 const certificatesRoutes = require('./routes/certificatesRoutes');
 const authenticationRoutes = require('./routes/authRoutes');
-import notificationRoutes from "./routes/notificationRoutes";
+const notificationRoutes =  require('./routes/notificationRoutes');
 
 const appsRoutes = require('./routes/appsRoutes'); //Apps route Axel
 
