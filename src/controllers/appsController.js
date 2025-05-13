@@ -1,78 +1,70 @@
-const { 
-    fetchAplicacionesByProject, 
-    fetchAplicacionesByUser, 
-    fetchAplicacionByUserAndId, 
-    fetchUpdateAplicacionStatus, 
-    fetchAddAplicacion 
-  } = require('../services/appsService');
-  
-  // Función para obtener todas las aplicaciones de un proyecto
-  const getAplicacionesByProject = async (req, res) => {
+const appService = require('../services/appsService');
+
+// GET: Todas las apps de un proyecto
+const getAppsByProjectId = async (req, res) => {
+    const { projectId } = req.params;
     try {
-      const { projectid } = req.params;
-      const aplicaciones = await fetchAplicacionesByProject(projectid);
-      return res.status(200).json({ aplicaciones });
+        const apps = await appService.fetchAppsByProjectId(projectId);
+        res.status(200).json(apps);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Error al obtener las aplicaciones del proyecto.' });
+        res.status(500).json({ message: "Error al obtener las aplicaciones del proyecto.", error: error.message });
     }
-  };
-  
-  // Función para obtener todas las aplicaciones de un usuario
-  const getAplicacionesByUser = async (req, res) => {
+};
+
+// GET: Todas las apps de un usuario
+const getAppsByUserId = async (req, res) => {
+    const { userId } = req.params;
     try {
-      const { userid } = req.params;
-      const aplicaciones = await fetchAplicacionesByUser(userid);
-      return res.status(200).json({ aplicaciones });
+        const apps = await appService.fetchAppsByUserId(userId);
+        res.status(200).json(apps);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Error al obtener las aplicaciones del usuario.' });
+        res.status(500).json({ message: "Error al obtener las aplicaciones del usuario.", error: error.message });
     }
-  };
-  
-  // Función para obtener una aplicación específica de un usuario en un proyecto
-  const getAplicacionByUserAndId = async (req, res) => {
+};
+
+
+// GET: Aplicación específica
+const getUserAppInProject = async (req, res) => {
+    const { userId, appId } = req.params;
     try {
-      const { userid, aplicacionid } = req.params;
-      const aplicacion = await fetchAplicacionByUserAndId(userid, aplicacionid);
-      return res.status(200).json({ aplicacion });
+        const app = await appService.fetchUserAppInProject(userId, appId);
+        res.status(200).json(app);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Error al obtener la aplicación.' });
+        res.status(500).json({ message: "Error al obtener la aplicación.", error: error.message });
     }
-  };
-  
-  // Función para actualizar el estado de una aplicación
-  const updateAplicacionStatus = async (req, res) => {
+};
+
+// PATCH: Cambiar estatus
+const patchAppStatus = async (req, res) => {
+    const { userId, appId } = req.params;
+    const { estatus } = req.body;
+
     try {
-      const { userid, projectid } = req.params;
-      const { status } = req.body;
-      const aplicacion = await fetchUpdateAplicacionStatus(userid, projectid, status);
-      return res.status(200).json({ aplicacion });
+        const updatedApp = await appService.updateAppStatus(userId, appId, estatus);
+        res.status(200).json(updatedApp);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Error al actualizar el estado de la aplicación.' });
+        res.status(500).json({ message: "Error al actualizar el estatus de la aplicación.", error: error.message });
     }
-  };
-  
-  // Función para crear una nueva aplicación en un proyecto
-  const createAplicacion = async (req, res) => {
+};
+
+
+// POST: Crear rol asignado a un proyecto
+const createRoleForProject = async (req, res) => {
+    const { projectId } = req.params;
+    const { nombreRol, nivelRol, descripcionRol, estado } = req.body;
+
     try {
-      const { projectid } = req.params;
-      const aplicacionData = req.body;
-      const aplicacion = await fetchAddAplicacion(projectid, aplicacionData);
-      return res.status(201).json({ aplicacion });
+        const newRole = await appService.createRole(projectId, nombreRol, nivelRol, descripcionRol, estado);
+        res.status(201).json(newRole);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Error al crear la aplicación.' });
+        res.status(500).json({ message: "Error al crear el rol.", error: error.message });
     }
-  };
-  
-  module.exports = { 
-    getAplicacionesByProject, 
-    getAplicacionesByUser, 
-    getAplicacionByUserAndId, 
-    updateAplicacionStatus, 
-    createAplicacion
-  };
-  
+};
+
+module.exports = {
+    getAppsByProjectId,
+    getAppsByUserId,
+    getUserAppInProject,
+    patchAppStatus,
+    createRoleForProject
+};

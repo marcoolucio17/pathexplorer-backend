@@ -5,7 +5,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const projectRoutes = require('./routes/projectsRoutes');
 const skillsRoutes = require('./routes/skillsRoutes');
 const certificatesRoutes = require('./routes/certificatesRoutes');
-const appsRoutes = require('./routes/appsRoutes'); //Apps route Axel
+const appsRoutes = require('./routes/appsRoutes');
 
 const app = express();
 

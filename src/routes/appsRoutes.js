@@ -1,19 +1,18 @@
 const express = require('express');
-const { 
-    getAplicacionesByProject, 
-    getAplicacionesByUser, 
-    getAplicacionByUserAndId, 
-    updateAplicacionStatus, 
-    createAplicacion 
+const {
+    getAppsByProjectId,
+    getAppsByUserId,
+    getUserAppInProject,
+    patchAppStatus,
+    createRoleForProject
 } = require('../controllers/appsController');
 
 const router = express.Router();
 
-// Rutas para las aplicaciones
-router.get('/aplicaciones/:projectid', getAplicacionesByProject);
-router.get('/aplicaciones/:userid', getAplicacionesByUser);
-router.get('/aplicaciones/:userid&:aplicacionid', getAplicacionByUserAndId);
-router.patch('/aplicaciones/:userid&:projectid', updateAplicacionStatus);
-router.post('/aplicacion/:projectid', createAplicacion);
+router.get('/aplicaciones/proyecto/:projectId', getAppsByProjectId); // GET: Todas las aplicaciones de un proyecto
+router.get('/aplicaciones/usuario/:userId', getAppsByUserId); // GET: Todas las aplicaciones de un usuario
+router.get('/aplicaciones/:userId/:appId', getUserAppInProject);  // GET: Aplicación de un usuario en un proyecto
+router.patch('/aplicaciones/:userId/:appId', patchAppStatus);
+router.post('/roles/:projectId', createRoleForProject);
 
 module.exports = router;
