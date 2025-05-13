@@ -41,7 +41,10 @@ const authenticateWithEmailAndPassword = async (providerid, password) => {
     authz: supadata[0]?.tipo, // esta llave es el rol, para más fácil acceso
   };
 
-  return encryptPayload(payload);
+  // token will be the payload but encrypted
+  payload["token"] = encryptPayload(payload);
+
+  return payload;
 };
 
 /**
