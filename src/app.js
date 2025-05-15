@@ -6,6 +6,7 @@ const projectRoutes = require('./routes/projectsRoutes');
 const skillsRoutes = require('./routes/skillsRoutes');
 const appsRoutes = require('./routes/appsRoutes');
 const certificationsRoutes = require('./routes/certificationsRoutes');
+const clientesRoutes = require('./routes/clientesRoutes');
 
 const app = express();
 
@@ -22,8 +23,9 @@ app.use('/api', userRoutes);
 app.use(errorHandler);
 app.use('/api', projectRoutes);
 app.use('/api', certificationsRoutes);
-app.use('/api', appsRoutes); //Apps route Axel
+app.use('/api', appsRoutes); 
 app.use('/api/habilidades', skillsRoutes);
+app.use('/api/clientes', clientesRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...2');
