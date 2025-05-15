@@ -6,13 +6,24 @@ const projectRoutes = require('./routes/projectsRoutes');
 const skillsRoutes = require('./routes/skillsRoutes');
 const appsRoutes = require('./routes/appsRoutes');
 const certificationsRoutes = require('./routes/certificationsRoutes');
+//const certificatesRoutes = require('./routes/certificatesRoutes');
+const authenticationRoutes = require('./routes/authRoutes');
+const notificationRoutes =  require('./routes/notificationRoutes');
 
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // esto es para que permita a la página web demo (en prod final no debe de salir)
-  credentials: true, 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  origin: function (origin, callback) {
+    const isLocalhost = origin === 'http://localhost:5173';
+    const isVercel = /^https:\/\/.*\.vercel\.app$/.test(origin);
+
+    if (!origin || isLocalhost || isVercel) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -24,9 +35,14 @@ app.use('/api', projectRoutes);
 app.use('/api', certificationsRoutes);
 app.use('/api', appsRoutes); //Apps route Axel
 app.use('/api/habilidades', skillsRoutes);
+app.use('/api', skillsRoutes);
+//app.use('/api', certificatesRoutes);
+app.use('/api', authenticationRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use('/api', appsRoutes); 
 
 app.get('/', (req, res) => {
-  res.send('API is running...2');
+  res.send('Welcome to the PathExplorer API!! Read our documentation to learn about how to use our different endpoints.');
 });
 
 module.exports = app;
