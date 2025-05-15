@@ -1,5 +1,5 @@
 const supabase = require("../config/supabaseClient");
-
+const { use } = require("../routes/userRoutes");
 const ApiError = require("../utils/errorHelper");
 const { encryptPayload, decryptToken } = require("../utils/token");
 
@@ -41,7 +41,10 @@ const authenticateWithEmailAndPassword = async (providerid, password) => {
     authz: supadata[0]?.tipo, // esta llave es el rol, para más fácil acceso
   };
 
-  return encryptPayload(payload);
+  // token will be the payload but encrypted
+  payload["token"] = encryptPayload(payload);
+
+  return payload;
 };
 
 /**
@@ -86,7 +89,7 @@ const signUpWithEmailAndPassword = async ({
 
   // una vez que se haya completado exitosamente el registro, hacemos sign-in
   const encryptedUserData = authenticateWithEmailAndPassword(
-    providerid + "@accenture.com",
+    providerid,
     password
   );
 

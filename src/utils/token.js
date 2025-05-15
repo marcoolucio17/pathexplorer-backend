@@ -47,5 +47,4 @@ function decryptToken(token) {
     throw new ApiError(401, "Non-valid token was sent. Please sign-in with correct credentials.");
   }
 }
-
 module.exports = { encryptPayload, decryptToken };
