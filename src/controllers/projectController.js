@@ -1,7 +1,8 @@
 const { 
     fetchProjects, 
     fetchProjectById, 
-    fetchProjectsByName } = require('../services/projectService');
+    fetchProjectsByName,
+    fetchCreateProject } = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -36,6 +37,15 @@ const getProjectById = async (req, res) => {
     }
 }
 
+const createProject = async (req, res) => {
+    try {
+        const { informacion } = req.body;
+        const result = await fetchCreateProject(informacion);
+        return res.status(201).json(result);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error creating project' });
+    }
+}
 
-module.exports = { getProjects , getProjectById
+module.exports = { getProjects , getProjectById, createProject
 };

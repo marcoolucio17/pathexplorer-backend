@@ -16,7 +16,7 @@ app.use('/api', projectRoutes);
 app.use('/api',goalsRoutes);
 app.use('/api', rolesRoutes); 
 app.get('/', (req, res) => {
-  res.send('API is running...2');
+  res.send('API is running...');
 });
 
 module.exports = app;
