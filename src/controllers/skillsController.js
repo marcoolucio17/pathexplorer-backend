@@ -1,14 +1,17 @@
-const { fetchSkills } = require('../services/skillsService');
+const { getSkillsByType } = require('../services/skillsService');
 
-//Función para utilizar la consulta de llamar todas las habilidades
-const getSkills = async (req, res) => {
+const getHabilidadesPorTipo = async (req, res) => {
     try {
-        const skills = await fetchSkills();
-        res.status(200).json(skills);
+        const { estecnica } = req.query;
+
+        const isTechnical = estecnica === 'true';
+
+        const habilidades = await getSkillsByType(isTechnical);
+        res.json(habilidades);
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching skills' });
+        console.error("Error al obtener habilidades por tipo:", error);
+        res.status(500).json({ error: "Error al obtener habilidades por tipo" });
     }
-}
+};
 
-
-module.exports = { getSkills };
+module.exports = { getHabilidadesPorTipo };

@@ -4,8 +4,8 @@ const userRoutes = require('./routes/userRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const projectRoutes = require('./routes/projectsRoutes');
 const skillsRoutes = require('./routes/skillsRoutes');
-const certificatesRoutes = require('./routes/certificatesRoutes');
 const appsRoutes = require('./routes/appsRoutes');
+const certificationsRoutes = require('./routes/certificationsRoutes');
 
 const app = express();
 
@@ -21,9 +21,9 @@ app.use(express.json());
 app.use('/api', userRoutes); 
 app.use(errorHandler);
 app.use('/api', projectRoutes);
-app.use('/api',skillsRoutes);
-app.use('/api',certificatesRoutes);
+app.use('/api', certificationsRoutes);
 app.use('/api', appsRoutes); //Apps route Axel
+app.use('/api/habilidades', skillsRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...2');

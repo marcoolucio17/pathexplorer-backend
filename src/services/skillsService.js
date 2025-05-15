@@ -1,10 +1,21 @@
 const supabase = require('../config/supabaseClient');
 
-//Consulta para llamar toda la tabla de habilidades
-const fetchSkills = async () => {
-    const { data, error } = await supabase.from("habilidades").select("*");
+const getSkillsByType = async (isTechnical) => {
+    if (typeof isTechnical !== 'boolean') {
+        throw new Error("El parámetro debe ser booleano");
+    }
+
+    const { data, error } = await supabase
+        .from('habilidades')
+        .select('*')
+        .eq('estecnica', isTechnical);
+
     if (error) throw error;
+
     return data;
 };
 
-module.exports = { fetchSkills };
+
+module.exports = {
+  getSkillsByType,
+};

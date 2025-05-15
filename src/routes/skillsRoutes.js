@@ -1,12 +1,8 @@
 const express = require('express');
-
-const { getSkills } = require('../controllers/skillsController');
-
+const { getHabilidadesPorTipo } = require('../controllers/skillsController');
 
 const router = express.Router();
 
-
-router.get('/skills', getSkills);
-
+router.get('/por-tipo', getHabilidadesPorTipo);
 
 module.exports = router;

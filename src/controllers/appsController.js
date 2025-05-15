@@ -39,32 +39,39 @@ const patchAppStatus = async (req, res) => {
     const { userId, appId } = req.params;
     const { estatus } = req.body;
 
+    if (!estatus || !['vacante', 'asignado'].includes(estatus)) {
+        return res.status(400).json({ message: "Estatus inválido. Debe ser 'vacante' o 'asignado'." });
+    }
+
     try {
-        const updatedApp = await appService.updateAppStatus(userId, appId, estatus);
-        res.status(200).json(updatedApp);
+        const result = await appService.updateAppStatus(userId, appId, estatus);
+        res.status(200).json({ message: 'Estatus actualizado correctamente.', result });
     } catch (error) {
-        res.status(500).json({ message: "Error al actualizar el estatus de la aplicación.", error: error.message });
+        res.status(500).json({ message: "Error al actualizar el estatus.", error: error.message });
     }
 };
 
+// POST: Crear una nueva aplicación
+const createApp = async (req, res) => {
+    const { idrol, idusuario } = req.body;
 
-// POST: Crear rol asignado a un proyecto
-const createRoleForProject = async (req, res) => {
-    const { projectId } = req.params;
-    const { nombreRol, nivelRol, descripcionRol, estado } = req.body;
+    if (!idrol || !idusuario) {
+        return res.status(400).json({ message: "Faltan idrol o idusuario." });
+    }
 
     try {
-        const newRole = await appService.createRole(projectId, nombreRol, nivelRol, descripcionRol, estado);
-        res.status(201).json(newRole);
+        const result = await appService.createApp(idrol, idusuario);
+        res.status(201).json({ message: "Aplicación creada exitosamente", data: result });
     } catch (error) {
-        res.status(500).json({ message: "Error al crear el rol.", error: error.message });
+        res.status(500).json({ message: "Error al crear la aplicación", error: error.message });
     }
 };
+
 
 module.exports = {
     getAppsByProjectId,
     getAppsByUserId,
     getUserAppInProject,
     patchAppStatus,
-    createRoleForProject
+    createApp
 };
