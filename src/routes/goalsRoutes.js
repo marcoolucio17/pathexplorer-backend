@@ -7,8 +7,8 @@ router.get('/goals', getGoals);
 
 router.post('/goals',createGoal);
 
-router.patch('/goals/:id', updateGoal);
+router.patch('/goals', updateGoal);
 
-router.delete('/goals/:id', deleteGoal);
+router.delete('/goals', deleteGoal);
 
 module.exports = router;
