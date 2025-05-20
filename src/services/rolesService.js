@@ -202,26 +202,23 @@ const deleteRoleProject = async (id_rol, id_proyecto, requerimientos) => {
         .delete()
         .eq('idrol', id_rol)
         .eq('idproyecto', id_proyecto);
-        console.log("data", data);
 
         for (let i = 0; i < requerimientos.length; i++) {
-            console.log("requerimiento", requerimientos[i].idrequerimiento);
             const { data: dataRequerimiento, error: errorRequerimiento } = await supabase
                 .from("requerimientos_roles")
                 .delete()
                 .eq('idrol', id_rol)
                 .eq('idrequerimiento', requerimientos[i].idrequerimiento);
             if (errorRequerimiento) {
-            console.log("error", errorRequerimiento);
-            throw new ApiError(errorRequerimiento.status || 400, errorRequerimiento.message || "There is an error deleting the requeriment of the role.");
-        }
+                throw new ApiError(errorRequerimiento.status || 400, errorRequerimiento.message || "There is an error deleting the requeriment of the role.");
+            }
         }
         if (error) {
-            console.log("error", error);
+            
             throw new ApiError(error.status || 400, error.message || "There is an error deleting the role project.");
         }
     } catch (error) {
-        console.log("error", error);
+        throw new ApiError(error.status || 400, error.message || "There is an error deleting the role project.");
     }
     return true;
 }
