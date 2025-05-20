@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { getProjects, getProjectById, createProject } = require('../controllers/projectController');
+const { getProjects, getProjectById, createProject, updateProject } = require('../controllers/projectController');
 
 const router = express.Router();
 
@@ -10,4 +10,5 @@ router.get('/projects/:id', getProjectById);
 
 router.post('/projects',createProject);
 
+router.patch('/projects/:id', updateProject);
 module.exports = router;
