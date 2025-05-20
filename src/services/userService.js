@@ -1,18 +1,19 @@
-const supabase = require("../config/supabaseClient");
-const { use } = require("../routes/userRoutes");
-const ApiError = require('../utils/errorHelper');
+const supabase = require('../config/supabaseClient');
 
-const fetchUsers = async () => {
-  const { data, error } = await supabase.from("usuario").select("*");
-  if (error) throw error;
+const getUserById = async (id) => {
+  const { data, error } = await supabase
+    .from('usuario')
+    .select('*')
+    .eq('idusuario', id)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
   return data;
 };
 
-const fetchUserById = async (req, res) => {
-  const { id } = req.params;
-};
-
-
 module.exports = {
-  fetchUsers
+  getUserById
 };

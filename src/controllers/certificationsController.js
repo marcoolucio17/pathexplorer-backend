@@ -1,40 +1,78 @@
 const certificationsService = require('../services/certificationsService');
 
-// Crear un nuevo certificado
 const createCertificate = async (req, res) => {
-    const { CNombre, Skill, CTecnica, FechaObtenido, FechaExpiracion, EmitidoPor, ImagenCertificado } = req.body;
-    try {
-        const newCertificate = await certificationsService.createCertificate(CNombre, Skill, CTecnica, FechaObtenido, FechaExpiracion, EmitidoPor, ImagenCertificado);
-        res.status(201).json(newCertificate);
-    } catch (error) {
-        res.status(500).json({ message: "Error al crear la certificación", error: error.message });
+  try {
+    const {
+      cnombre,
+      idhabilidad,
+      fechaobtenido,
+      fechaexpiracion,
+      emitidopor,
+      imagencertificado
+    } = req.body;
+
+    let imagenUrl = null;
+
+    if (req.file) {
+      const fileExt = req.file.originalname.split('.').pop();
+      const filePath = `certificados/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('certificados')
+        .upload(filePath, req.file.buffer, {
+          contentType: req.file.mimetype
+        });
+
+      if (uploadError) {
+        return res.status(500).json({ error: 'Error al subir imagen' });
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('certificados')
+        .getPublicUrl(filePath);
+
+      imagenUrl = publicUrlData.publicUrl;
+    } else if (imagencertificado) {
+      imagenUrl = imagencertificado;
     }
+
+    const cert = await certificationsService.createCertificate(
+      cnombre,
+      idhabilidad ? parseInt(idhabilidad) : null,
+      fechaobtenido,
+      fechaexpiracion,
+      emitidopor,
+      imagenUrl
+    );
+
+    res.status(201).json({ message: 'Certificación registrada correctamente', cert });
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 };
 
-// Asignar un certificado a un empleado
 const assignCertificateToEmployee = async (req, res) => {
-    const { IDUsuario, IdCertificaciones } = req.body;
-    try {
-        const assignment = await certificationsService.assignCertificateToEmployee(IDUsuario, IdCertificaciones);
-        res.status(201).json(assignment);
-    } catch (error) {
-        res.status(500).json({ message: "Error al asignar el certificado al empleado", error: error.message });
-    }
+  const { idusuario, idcertificaciones } = req.body;
+  try {
+    const assignment = await certificationsService.assignCertificateToEmployee(idusuario, idcertificaciones);
+    res.status(201).json(assignment);
+  } catch (error) {
+    res.status(500).json({ message: "Error al asignar el certificado al empleado", error: error.message });
+  }
 };
 
-// Obtener las certificaciones de un empleado
 const getCertificatesByEmployeeId = async (req, res) => {
-    const { IDEmpleado } = req.params;
-    try {
-        const certificates = await certificationsService.getCertificatesByEmployeeId(IDEmpleado);
-        res.status(200).json(certificates);
-    } catch (error) {
-        res.status(500).json({ message: "Error al obtener las certificaciones", error: error.message });
-    }
+  const { idempleado } = req.params;
+  try {
+    const certificates = await certificationsService.getCertificatesByEmployeeId(idempleado);
+    res.status(200).json(certificates);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener las certificaciones", error: error.message });
+  }
 };
 
 module.exports = {
-    createCertificate,
-    assignCertificateToEmployee,
-    getCertificatesByEmployeeId
+  createCertificate,
+  assignCertificateToEmployee,
+  getCertificatesByEmployeeId
 };
