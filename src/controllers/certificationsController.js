@@ -14,8 +14,6 @@ const createCertificate = async (req, res) => {
     let imagenUrl = null;
 
     if (req.file) {
-      console.log('📂 Archivo recibido:', req.file);
-
       const fileExt = req.file.originalname.split('.').pop();
       const filePath = `certificados/${Date.now()}.${fileExt}`;
 
@@ -26,7 +24,6 @@ const createCertificate = async (req, res) => {
         });
 
       if (uploadError) {
-        console.error('❌ Error al subir imagen:', uploadError.message);
         return res.status(500).json({ error: 'Error al subir imagen' });
       }
 
@@ -50,7 +47,6 @@ const createCertificate = async (req, res) => {
 
     res.status(201).json({ message: 'Certificación registrada correctamente', cert });
   } catch (error) {
-    console.error('❌ Error al crear certificación:', error.message);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
