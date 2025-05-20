@@ -13,7 +13,7 @@ const getRolesFunctions = async (req, res) => {
         const { id_rol = null } = req.body || {};
         if (id_rol) {
             getRoleById(req, res);
-        } else if (id_rol === null) {
+        } else if (!id_rol) {
             getRoles(req, res);
         }
     } catch (error) {
@@ -58,9 +58,9 @@ const addInfoRoles = async (req, res) => {
     try {
         const { role = null, id_rol = null, requerimiento = null } = req.body || {};
 
-        if (role, id_rol === null && requerimiento === null) {
+        if (role, !id_rol && !requerimiento) {
             addNewRole(req, res);
-        } else if (role === null, id_rol && requerimiento) {
+        } else if (!role, id_rol && requerimiento) {
             addNewRequirement(req, res);
         }
     } catch (error) {
