@@ -53,7 +53,7 @@ const getGoalById = async (req, res) => {
 //Función para crear una meta
 const createGoal = async (req, res) => {
     try {
-        const { goal = null } = req.body || {};
+        const { goal = null } = req.body.informacion || {};
         if (goal) {
             createNewGoal(req, res);
         } else {
@@ -67,7 +67,7 @@ const createGoal = async (req, res) => {
 
 const createNewGoal = async (req, res) => {
     try { 
-        const { goal = null } = req.body || {};
+        const { goal = null } = req.body.informacion || {};
         
         const result = await fetchCreateGoal(goal);
         if (!result) {
@@ -83,9 +83,10 @@ const createNewGoal = async (req, res) => {
 //Función para actualizar una meta por id
 const updateGoal = async (req, res) => {   
     try {
-        const { id_usuario = null, goal = null} = req.body || {};
+        const { idmeta = null } = req.body || {};
+        const { goal = null} = req.body.informacion || {};
         
-        if (id_usuario && goal) {
+        if (idmeta && goal) {
             updatingAGoalUser(req, res);
         } else {
             res.status(400).json({ error: 'User ID and goal are required' });
@@ -99,8 +100,10 @@ const updateGoal = async (req, res) => {
 
 const updatingAGoalUser = async(req, res) => {
     try {
-        const { id_usuario = null, goal = null} = req.body || {};
-        const result = await fetchUpdateGoal(id, goal);
+        const { idmeta = null } = req.body || {};
+        const { goal = null } = req.body.informacion || {};
+        console.log(idmeta, goal);
+        const result = await fetchUpdateGoal(idmeta, goal);
         if (result) {
             res.status(200).json({ message: 'Goal updated successfully' });
         } else {

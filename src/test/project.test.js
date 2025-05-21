@@ -23,6 +23,7 @@ describe('api/projects/get', () => {
 });
 
 describe('api/projects/post', () => { 
+  //Paso
   test('Should create a new project with status 201', async () => {
     const newProject ={
     "informacion": {
@@ -75,6 +76,7 @@ describe('api/projects/post', () => {
 });
 
 describe('api/projects/patch', () => {
+  //Paso
   test('Should update a project with status 200', async () => {
     const updatedProject = {
     "idproyecto": 46,
