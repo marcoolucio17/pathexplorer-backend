@@ -5,6 +5,7 @@ const {
     fetchProjectsByName,
     fetchCreateProject,
     fetchUpdateProject } = require('../services/projectService');
+const { json } = require('express');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -100,18 +101,20 @@ const updateProject = async (req, res) => {
     try {
         const { idproyecto = null } = req.body || {};
         const { proyect = null } = req.body.informacion || {};
+        console.log(idproyecto, proyect);
         if (idproyecto && proyect) {
             updatingProject(req, res);
         } else {
             res.status(400).json({ error: 'No project information provided' });
         }
     } catch (error) {
-        return res.status(500).json({ error: 'Error updating project' });
+         res.status(500).json({ error: 'Error updating project' });
     }
 }
 
 const updatingProject = async (req, res) => {
     try {
+        console.log('Updating project');
         const { idproyecto } = req.body;
         const { proyecto } = req.body.informacion;
         const result = await fetchUpdateProject(idproyecto, proyecto);

@@ -300,13 +300,14 @@ const fetchCreateProject = async (informacion) => {
                     idrol: idrol
                 }]);
         }
+         return true;
 
     } catch (error) {
         console.log("error", error);
         throw new ApiError(error.status || 400, error.message || "There is an error creating the project.");
     }
     
-    return true;
+   
 };
 
 const fetchUpdateProject = async (id_proyecto, informacion) => {
@@ -315,10 +316,7 @@ const fetchUpdateProject = async (id_proyecto, informacion) => {
             .from("proyecto")
             .update(informacion)
             .eq('idproyecto', id_proyecto);
-        if (error) {
-            console.log("error", error);
-            throw new ApiError(error.status || 400, error.message || "There is an error updating the project.");
-        }
+        
         return true;
     } catch (error) {
         console.log("error", error);
