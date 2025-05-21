@@ -1,9 +1,9 @@
-const { createNotification, getUserNotifications, markAsRead} = require('../services/notificationService');
+const { createNotification, getUserNotifications, deleteNotification } = require('../services/notificationService');
 
 const sendNotification = async (req, res) => {
-    const { userId, title, message } = req.body;
+    const { idusuario, titulo, mensaje } = req.body;
     try {
-        const data = await createNotification(userId, title, message);
+        const data = await createNotification(idusuario, titulo, mensaje);
         res.status(201).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -11,28 +11,28 @@ const sendNotification = async (req, res) => {
 };
 
 const getNotifications = async (req, res) => {
-    const userId = req.params.userId;
+    const idusuario = req.params.idusuario;
     try {
-        const data = await getUserNotifications(userId);
+        const data = await getUserNotifications(idusuario);
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const setNotificationRead = async (req, res) => {
-    const { notificationId } = req.params;
+const removeNotification = async (req, res) => {
+    const { idnotificacion } = req.params;
     try {
-        const data = await markAsRead(notificationId);
-        res.status(200).json(data);
+        const data = await deleteNotification(idnotificacion);
+        res.status(200).json({ message: 'Notificación eliminada', data });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-module.exports = { 
-    sendNotification, 
-    getNotifications, 
-    setNotificationRead
+module.exports = {
+    sendNotification,
+    getNotifications,
+    removeNotification
 };
 
