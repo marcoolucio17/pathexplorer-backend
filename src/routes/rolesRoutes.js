@@ -1,17 +1,18 @@
 const express = require('express');
 const { 
-    getRoles, 
-    getRoleById,     
-    addNewRole,
-    updateRoleById } = require('../controllers/rolesController');
+    getRolesFunctions,
+    addInfoRoles,
+    updatesRole,
+    deleteFunctionsReq } = require('../controllers/rolesController');
 
 const router = express.Router();
 
-router.get('/roles', getRoles);
+router.get('/roles', getRolesFunctions);
 
-router.get('/roles/:id', getRoleById);
+router.post('/roles', addInfoRoles);
 
-router.post('/roles', addNewRole);
+router.patch('/roles', updatesRole);
 
-router.patch('/roles/:id', updateRoleById);
+router.delete('/roles', deleteFunctionsReq);
+
 module.exports = router;
