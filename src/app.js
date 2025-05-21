@@ -9,14 +9,15 @@ const skillsRoutes = require('./routes/skillsRoutes');
 const appsRoutes = require('./routes/appsRoutes');
 const certificationsRoutes = require('./routes/certificationsRoutes');
 const clientesRoutes = require('./routes/clientesRoutes');
-//const certificatesRoutes = require('./routes/certificatesRoutes');
 const authenticationRoutes = require('./routes/authRoutes');
 const notificationRoutes =  require('./routes/notificationRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
+
 const app = express();
 
 const corsOptions = {
   origin: function (origin, callback) {
-    const isLocalhost = origin === 'http://localhost:8080';
+    const isLocalhost = origin === 'http://localhost:5173';
     const isVercel = /^https:\/\/.*\.vercel\.app$/.test(origin);
 
     if (!origin || isLocalhost || isVercel) {
@@ -42,9 +43,10 @@ app.use('/api', skillsRoutes);
 app.use('/api', authenticationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use('/api', appsRoutes); 
-
 app.use('/api',goalsRoutes);
 app.use('/api', rolesRoutes); 
+app.use('/api/feedback', feedbackRoutes);
+  
 app.get('/', (req, res) => {
   res.send('Welcome to the PathExplorer API!! Read our documentation to learn about how to use our different endpoints.');
 });

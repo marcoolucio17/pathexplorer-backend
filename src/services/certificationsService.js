@@ -1,41 +1,70 @@
-// services/certificationsService.js
+const supabase = require('../config/supabaseClient');
 
-const supabase = require('../config/supabaseClient');  // O la forma en que estés conectando a tu base de datos
+// Crear una certificación
+const createCertificate = async (cnombre, idhabilidad, fechaobtenido, fechaexpiracion, emitidopor, imagenUrl) => {
+  const { data, error } = await supabase
+    .from('certificaciones')
+    .insert([{
+      cnombre,
+      idhabilidad: idhabilidad || null,
+      fechaobtenido,
+      fechaexpiracion,
+      emitidopor,
+      imagencertificado: imagenUrl
+    }])
+    .select()
+    .single();
 
-// Crear un nuevo certificado
-const createCertificate = async (CNombre, Skill, CTecnica, FechaObtenido, FechaExpiracion, EmitidoPor, ImagenCertificado) => {
-    const { data, error } = await supabase
-        .from('Certificaciones')
-        .insert([{ CNombre, Skill, CTecnica, FechaObtenido, FechaExpiracion, EmitidoPor, ImagenCertificado }]);
+  if (error) {
+    console.error('❌ Error al insertar certificación:', error.message);
+    throw error;
+  }
 
-    if (error) throw error;
-    return data[0];
+  return data;
 };
 
-// Asignar un certificado a un empleado
-const assignCertificateToEmployee = async (IDUsuario, IdCertificaciones) => {
-    const { data, error } = await supabase
-        .from('Usuario_Certificado')
-        .insert([{ IDUsuario, IdCertificaciones }]);
+// Asignar certificado a un usuario
+const assignCertificateToEmployee = async (idusuario, idcertificaciones) => {
+  const { data, error } = await supabase
+    .from('usuario_certificado')
+    .insert([{ idusuario, idcertificaciones }])
+    .select()
+    .single();
 
-    if (error) throw error;
-    return data[0];
+  if (error) {
+    console.error('❌ Error al asignar certificado al usuario:', error.message);
+    throw error;
+  }
+
+  return data;
 };
 
-// Obtener las certificaciones de un empleado
-const getCertificatesByEmployeeId = async (IDEmpleado) => {
-    const { data, error } = await supabase
-        .from('Usuario_Certificado')
-        .select('CNombre, Skill, CTecnica, FechaObtenido, FechaExpiracion, EmitidoPor, ImagenCertificado')
-        .join('Certificaciones', 'Certificaciones.IdCertificaciones', 'Usuario_Certificado.IdCertificaciones')
-        .eq('IDUsuario', IDEmpleado);
+// Obtener certificados por ID de empleado
+const getCertificatesByEmployeeId = async (idempleado) => {
+  const { data, error } = await supabase
+    .from('usuario_certificado')
+    .select(`
+      *,
+      certificaciones (
+        *,
+        habilidades (
+          nombre,
+          estecnica
+        )
+      )
+    `)
+    .eq('idusuario', idempleado);
 
-    if (error) throw error;
-    return data;
+  if (error) {
+    console.error('❌ Error al obtener certificaciones del empleado:', error.message);
+    throw error;
+  }
+
+  return data;
 };
 
 module.exports = {
-    createCertificate,
-    assignCertificateToEmployee,
-    getCertificatesByEmployeeId
+  createCertificate,
+  assignCertificateToEmployee,
+  getCertificatesByEmployeeId
 };

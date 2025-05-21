@@ -1,14 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const certificationsController = require('../controllers/certificationsController');
+const upload = require('../middlewares/uploadMiddleware');
 
-// Crear un certificado
-router.post('/certificados', certificationsController.createCertificate);
+router.post(
+  '/certificados',
+  upload.single('imagen'),
+  certificationsController.createCertificate
+);
 
-// Asignar un certificado a un empleado
-router.post('/asignar-certificado', certificationsController.assignCertificateToEmployee);
+router.post(
+  '/certificados/asignar',
+  certificationsController.assignCertificateToEmployee
+);
 
-// Obtener las certificaciones de un empleado
-router.get('/certificados/empleado/:IDEmpleado', certificationsController.getCertificatesByEmployeeId);
+router.get(
+  '/certificados/empleado/:idempleado',
+  certificationsController.getCertificatesByEmployeeId
+);
 
 module.exports = router;

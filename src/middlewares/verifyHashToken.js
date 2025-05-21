@@ -25,7 +25,6 @@ function authMiddleware(req, res, next) {
     if (Date.now() > data.expiresAt) {
       return res.status(401).json({ error: 'Token expired' });
     }
-
     req.user = data; 
     next();
   } catch (err) {
