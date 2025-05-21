@@ -6,13 +6,14 @@ const {
     deleteFunctionsReq } = require('../controllers/rolesController');
 
 const router = express.Router();
+const authMiddleware = require('../middlewares/verifyHashToken');
 
-router.get('/roles', getRolesFunctions);
+router.get('/roles', authMiddleware, getRolesFunctions);
 
-router.post('/roles', addInfoRoles);
+router.post('/roles', authMiddleware, addInfoRoles);
 
-router.patch('/roles', updatesRole);
+router.patch('/roles', authMiddleware, updatesRole);
 
-router.delete('/roles', deleteFunctionsReq);
+router.delete('/roles', authMiddleware, deleteFunctionsReq);
 
 module.exports = router;
