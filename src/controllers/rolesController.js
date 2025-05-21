@@ -58,7 +58,7 @@ const addInfoRoles = async (req, res) => {
     try {
         const { role = null, id_rol = null, requerimiento = null } = req.body || {};
 
-        if (role, !id_rol && !requerimiento) {
+        if (role && !id_rol && !requerimiento) {
             addNewRole(req, res);
         } else if (!role, id_rol && requerimiento) {
             addNewRequirement(req, res);
@@ -89,7 +89,8 @@ const addNewRole = async (req, res) => {
 //Revisado
 const addNewRequirement = async (req, res) => { 
     try {
-        const { id_rol = null, requerimiento  = null } = req.body || {};
+        const { id_rol = null, requerimiento = null } = req.body || {};
+        console.log(id_rol, requerimiento);
         const result = await addRequirement(id_rol, requerimiento);
         if (!result) {
             res.status(400).json({ error: 'Requirement already exists' });

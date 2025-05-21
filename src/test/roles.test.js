@@ -34,13 +34,14 @@ describe('api/roles/post', () => {
 
     test('Should create a new requirement with status 201', async () => {
         const newRequirement = {
-                "id_rol":2,
+                "id_rol": 107,
                 "requerimiento": {
-                    "idhabilidad": 1,
-                    "tiempoexperiencia": "0.5 meses con"
+                    "idhabilidad": 5,
+                    "tiempoexperiencia": "5 meses con"
                 }
             
         };
+
         const response = await request(app).post('/api/roles').send(newRequirement);
         expect(response.statusCode).toBe(201);
     });
