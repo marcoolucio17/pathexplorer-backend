@@ -1,11 +1,9 @@
-const { get } = require('superagent');
 const { 
     fetchProjects, 
     fetchProjectById, 
     fetchProjectsByName,
     fetchCreateProject,
     fetchUpdateProject } = require('../services/projectService');
-const { json } = require('express');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
