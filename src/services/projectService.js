@@ -27,14 +27,20 @@ const fetchProjects= async () => {
         `idproyecto,
         pnombre,
         descripcion,
-        cliente(clnombre),
+        cliente(
+            idcliente,
+            clnombre),
         proyecto_roles(
-            idrol,
             roles(
+                idrol,
                 nombrerol,
+                nivelrol,
                 descripcionrol,
+                disponible,
                 requerimientos_roles(
                     requerimientos(
+                        idrequerimiento,
+                        tiempoexperiencia,
                         habilidades(
                             idhabilidad,
                             nombre,
@@ -80,25 +86,31 @@ const fetchProjectsByName = async (nombre_proyecto) => {
     const { data, error } = await supabase
         .from("proyecto")
         .select(`idproyecto,
-                 pnombre,
-                 descripcion,
-                 cliente(clnombre),
-                 proyecto_roles(
-                 idrol,
-                 roles(
-                     nombrerol,
-                     descripcionrol,
-                     requerimientos_roles(
-                         requerimientos(
-                             habilidades(
-                                 idhabilidad,
-                                 nombre,
-                                 estecnica
-                             )
-                         )
-                     )
-                 )
-            )`)
+        pnombre,
+        descripcion,
+        cliente(
+            idcliente,
+            clnombre),
+        proyecto_roles(
+            roles(
+                idrol,
+                nombrerol,
+                nivelrol,
+                descripcionrol,
+                disponible,
+                requerimientos_roles(
+                    requerimientos(
+                        idrequerimiento,
+                        tiempoexperiencia,
+                        habilidades(
+                            idhabilidad,
+                            nombre,
+                            estecnica
+                        )
+                    )
+                )
+            )
+        )`)
         .ilike('pnombre', `%${nombre_proyecto}%`);
     if (error) {
         console.log("error", error);
@@ -126,25 +138,31 @@ const fetchProjectById = async (id_proyecto) => {
     const { data, error } = await supabase
         .from("proyecto")
         .select(`idproyecto,
-                 pnombre,
-                 descripcion,
-                 cliente(clnombre),
-                 proyecto_roles(
-                 idrol,
-                 roles(
-                     nombrerol,
-                     descripcionrol,
-                     requerimientos_roles(
-                         requerimientos(
-                             habilidades(
-                                 idhabilidad,
-                                 nombre,
-                                 estecnica
-                             )
-                         )
-                     )
-                 )
-         )`)
+        pnombre,
+        descripcion,
+        cliente(
+            idcliente,
+            clnombre),
+        proyecto_roles(
+            roles(
+                idrol,
+                nombrerol,
+                nivelrol,
+                descripcionrol,
+                disponible,
+                requerimientos_roles(
+                    requerimientos(
+                        idrequerimiento,
+                        tiempoexperiencia,
+                        habilidades(
+                            idhabilidad,
+                            nombre,
+                            estecnica
+                        )
+                    )
+                )
+            )
+        )`)
         .eq('idproyecto', id_proyecto);
     if (error) {
         console.log("error", error);
@@ -190,27 +208,37 @@ const fetchProjectById = async (id_proyecto) => {
  */
 
 const fetchCreateProject = async (informacion) => {
+    
     try {
-        const {proyect, roles} = informacion;
-      
+        const {proyect, roles} = informacion; 
         if (!proyect) {
             throw new ApiError(400, "No se ha recibido la información del proyecto.");
         }
         if(!roles){
             throw new ApiError(400, "No se ha recibido la información de los roles.");
         }
+        let idproyecto;
         const {data: proyectData, error: proyectError} = await supabase
             .from("proyecto")
             .insert([proyect])
             .select(`idproyecto`);
         if (!proyectData || proyectData.length === 0) {
-            throw new ApiError(400, "No se ha podido crear el proyecto.");
-        }
-        const idproyecto = proyectData[0].idproyecto;
-  
-        
+            const {data: proyectData, error: proyectError} = await supabase
+                .from("proyecto")
+                .select(`idproyecto`)
+                .eq('pnombre', proyect.pnombre)
+                .eq('descripcion', proyect.descripcion)
+                .eq('fecha_inicio', proyect.fecha_inicio)
+                .eq('fecha_fin', proyect.fecha_fin)
+                .eq('idcliente', proyect.idcliente);
 
+            idproyecto = proyectData[0].idproyecto;
+        } else {
+            idproyecto = proyectData[0].idproyecto;
+        }
+       
         for (let i = 0; i < roles.length; i++) {
+            let idrol;
             const {data: rolData, error: rolError} = await supabase
                 .from("roles")
                 .insert([ {
@@ -221,52 +249,49 @@ const fetchCreateProject = async (informacion) => {
                 }])
                 .select(`idrol`);
             if (!rolData || rolData.length === 0) {
-                throw new ApiError(400, "No se ha podido crear el rol.")
-            };
 
-            const idrol = rolData[0].idrol;
+                const {data: rolData, error: rolError} = await supabase
+                    .from("roles")
+                    .select(`idrol`)
+                    .eq('nombrerol', roles[i].nombrerol)
+                    .eq('nivelrol', roles[i].nivelrol)
+                    .eq('descripcionrol', roles[i].descripcionrol)
+                    .eq('disponible', roles[i].disponible);
+                idrol = rolData[0].idrol;
+            };
+            idrol = rolData[0].idrol;
             
             const {requerimientos} = roles[i];
         
-            for (let j = 0; j < requerimientos.length; j++) {
-               
+            for (let j = 0; j <requerimientos.length; j++) {
+                let idrequerimiento;
                 const {tiempoexperiencia, idhabilidad} = requerimientos[j];
-                
                 const {data: existeReq, error: existeError} = await supabase
                     .from("requerimientos")
                     .select(`idrequerimiento`)
                     .eq('tiempoexperiencia', tiempoexperiencia)
                     .eq('idhabilidad', idhabilidad);
-                console.log("existeReq", existeReq);
                 if(!existeReq || existeReq.length === 0){
                     const {data: reqData, error: reqError} = await supabase
                         .from("requerimientos")
                         .insert([{
                             tiempoexperiencia: tiempoexperiencia,
                             idhabilidad: idhabilidad
-                        }])
-                        .select(`idrequerimiento`);
-                    if (!reqData || reqData.length === 0) {
-                        throw new ApiError(400, "No se ha podido crear el requerimiento.")
-                    };
-                    const idrequerimiento = reqData[0].idrequerimiento;
-                    console.log("data requerimiento", idrequerimiento);
-                    const {data: reqRolData, error: reqRolError} = await supabase 
+                        }]);
+                    const {data: existeReq, error: existeError} = await supabase
+                        .from("requerimientos")
+                        .select(`idrequerimiento`)
+                        .eq('tiempoexperiencia', tiempoexperiencia)
+                        .eq('idhabilidad', idhabilidad);
+                        console.log("existeReq", existeReq);
+                    idrequerimiento = existeReq[0].idrequerimiento;
+                } 
+                const {data: reqRolData, error: reqRolError} = await supabase 
                     .from("requerimientos_roles")
                     .insert([{
                         idrol: idrol,
                         idrequerimiento: idrequerimiento
-                }]);
-                } else {
-                    const idrequerimiento = existeReq[0].idrequerimiento;
-                    console.log("data requerimiento", idrequerimiento);
-                    const {data: reqRolData, error: reqRolError} = await supabase 
-                        .from("requerimientos_roles")
-                        .insert([{
-                            idrol: idrol,
-                            idrequerimiento: idrequerimiento
-                    }]);
-                }    
+                }]);          
             }
             const {data: proyectRolData, error: proyectRolError} = await supabase 
                 .from("proyecto_roles")
@@ -275,18 +300,36 @@ const fetchCreateProject = async (informacion) => {
                     idrol: idrol
                 }]);
         }
+         return true;
 
     } catch (error) {
         console.log("error", error);
         throw new ApiError(error.status || 400, error.message || "There is an error creating the project.");
     }
     
-    return true;
+   
 };
+
+const fetchUpdateProject = async (id_proyecto, informacion) => {
+    try {
+        const {data, error} = await supabase
+            .from("proyecto")
+            .update(informacion)
+            .eq('idproyecto', id_proyecto);
+        
+        return true;
+    } catch (error) {
+        console.log("error", error);
+        throw new ApiError(error.status || 400, error.message || "There is an error updating the project.");
+    };
+        
+}
+
 
 module.exports = { 
     fetchProjects, 
     fetchProjectById, 
     fetchProjectsByName,
-    fetchCreateProject
+    fetchCreateProject,
+    fetchUpdateProject
 };

@@ -17,7 +17,7 @@ const app = express();
 
 const corsOptions = {
   origin: function (origin, callback) {
-    const isLocalhost = origin === 'http://localhost:5173';
+    const isLocalhost = origin === 'http://localhost:8080';
     const isVercel = /^https:\/\/.*\.vercel\.app$/.test(origin);
 
     if (!origin || isLocalhost || isVercel) {
