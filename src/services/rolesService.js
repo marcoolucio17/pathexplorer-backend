@@ -27,17 +27,21 @@ const fetchRoles = async () => {
                 disponible,
                 requerimientos_roles(
                     requerimientos(
+                        idrequerimiento,
+                        tiempoexperiencia,
                         habilidades(
                             idhabilidad,
                             nombre,
                             estecnica
                         )
+                        
                     )
                 )`
-            );
+        );
     if (error) {
         console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error fetching the roles.");};
+        throw new ApiError(error.status || 400, error.message || "There is an error fetching the roles.");
+    };
     return data;
 }
 
@@ -55,7 +59,7 @@ const fetchRoles = async () => {
  *             Nombre de habilidad,
  *             Es técnica (booleano)"
  */
-const fetchRoleById = async (id_rol) => { 
+const fetchRoleById = async (id_rol) => {
     const { data, error } = await supabase
         .from("roles")
         .select(`
@@ -66,6 +70,8 @@ const fetchRoleById = async (id_rol) => {
                 disponible,
                 requerimientos_roles(
                     requerimientos(
+                        idrequerimiento,
+                        tiempoexperiencia,
                         habilidades(
                             idhabilidad,
                             nombre,
@@ -73,11 +79,12 @@ const fetchRoleById = async (id_rol) => {
                         )
                     )
                 )`
-            )
+        )
         .eq('idrol', id_rol);
     if (error) {
         console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error fetching the roles.");};
+        throw new ApiError(error.status || 400, error.message || "There is an error fetching the roles.");
+    };
     return data;
 
 }
@@ -101,7 +108,8 @@ const addRole = async (rol) => {
         .insert(rol);
     if (error) {
         console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error adding the role.");};
+        throw new ApiError(error.status || 400, error.message || "There is an error adding the role.");
+    };
     return true;
 }
 
@@ -118,14 +126,110 @@ const updateRole = async (id_rol, rol) => {
         .eq('idrol', id_rol);
     if (error) {
         console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error updating the role.");};
+        throw new ApiError(error.status || 400, error.message || "There is an error updating the role.");
+    };
     return true;
-} 
+}
+
+
+//Consulta para agregar un nuevo requerimiento a un rol
+/**
+ * @param {int} id_rol - ID del rol al que se le va a agregar el requerimiento
+ * @param {json} requerimiento 
+ *               //informacion: {
+ *               //    rol: id_rol,
+ *               //    requerimientos: [{
+ *               //         idhabilidad,
+ *               //         tiempoexperiencia,
+ *              //    }, etc...]
+ 
+ *               }
+* 
+ * @returns "true" si se agregó correctamente el requerimiento
+ */
+
+const addRequirement = async (idrol, requerimiento) => {
+    const { data: dataRequerimiento, error: errorRequerimiento } = await supabase
+        .from("requerimientos")
+        .insert({
+            idhabilidad: requerimiento.idhabilidad,
+            tiempoexperiencia: requerimiento.tiempoexperiencia,
+        });
+
+    const { data: resultReq, error: resultError } = await supabase
+        .from("requerimientos")
+        .select('idrequerimiento')
+        .eq('idhabilidad', requerimiento.idhabilidad)
+        .eq('tiempoexperiencia', requerimiento.tiempoexperiencia);
+
+    const id_requerimiento = resultReq[0].idrequerimiento;
+
+    const { data: resultReqRole, error: errorReqRole } = await supabase
+        .from("requerimientos_roles")
+        .insert({
+            idrol: idrol,
+            idrequerimiento: id_requerimiento
+        });
+
+    if (errorReqRole || errorRequerimiento || resultError) {
+        console.log("error", error);
+        throw new ApiError(error.status || 400, error.message || "There is an error adding the requirement.");
+    };
+    return true;
+}
+
+//Funciona
+const deleteRequirement = async (id_rol, id_requerimiento) => {
+    const { data, error } = await supabase
+        .from("requerimientos_roles")
+        .delete()
+        .eq('idrol', id_rol)
+        .eq('idrequerimiento', id_requerimiento);
+
+    if (error) {
+        console.log("error", error);
+        throw new ApiError(error.status || 400, error.message || "There is an error deleting the requirement.");
+    };
+    return true;
+
+}
+
+//Funciona
+const deleteRoleProject = async (id_rol, id_proyecto, requerimientos) => {
+    try {
+        const { data, error } = await supabase
+        .from("proyecto_roles")
+        .delete()
+        .eq('idrol', id_rol)
+        .eq('idproyecto', id_proyecto);
+
+        for (let i = 0; i < requerimientos.length; i++) {
+            const { data: dataRequerimiento, error: errorRequerimiento } = await supabase
+                .from("requerimientos_roles")
+                .delete()
+                .eq('idrol', id_rol)
+                .eq('idrequerimiento', requerimientos[i].idrequerimiento);
+            if (errorRequerimiento) {
+                throw new ApiError(errorRequerimiento.status || 400, errorRequerimiento.message || "There is an error deleting the requeriment of the role.");
+            }
+        }
+        if (error) {
+            
+            throw new ApiError(error.status || 400, error.message || "There is an error deleting the role project.");
+        }
+    } catch (error) {
+        throw new ApiError(error.status || 400, error.message || "There is an error deleting the role project.");
+    }
+    return true;
+}
+
 
 module.exports = {
     fetchRoles,
     fetchRoleById,
     addRole,
-    updateRole
-
+    updateRole,
+    addRequirement,
+    deleteRequirement,
+    deleteRoleProject
 }
