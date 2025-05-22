@@ -14,7 +14,7 @@ describe("End to end test", () => {
   // autenticación
   test("should successfully verify a users", async () => {
     const userCredentials = {
-      providerid: "antonio.sosa",
+      providerid: "leo.tiny",
       password: "hola123",
     };
     const res = await request(app)
@@ -87,6 +87,24 @@ describe("End to end test", () => {
   });
 
   // ## etapa 3. skills, perfil
+
+  // fetch de usuario
+  test("should return the user information", async () => {
+    const response = await request(app)
+      .get("/api/usuario/1")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  // fetch del feedback usuario 
+  test("should return the user feedback", async () => {
+    const response = await request(app)
+      .get("/api/feedback/1")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+  });
 
   // fetch de las skills técnicas
   test("should return the technical skills with status 200", async () => {
