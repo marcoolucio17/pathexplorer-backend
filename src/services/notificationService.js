@@ -1,30 +1,31 @@
 const supabase = require('../config/supabaseClient');
 
-const createNotification = async (userId, title, message) => {
+const createNotification = async (idusuario, titulo, mensaje) => {
+    const fecha = new Date().toISOString().split('T')[0]; // formato YYYY-MM-DD
     const { data, error } = await supabase
-        .from('notifications')
-        .insert([{ user_id: userId, title, message }]);
+        .from('notificaciones')
+        .insert([{ idusuario, titulo, mensaje, fecha }]);
 
     if (error) throw error;
     return data;
 };
 
-const getUserNotifications = async (userId) => {
+const getUserNotifications = async (idusuario) => {
     const { data, error } = await supabase
-        .from('notifications')
+        .from('notificaciones')
         .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .eq('idusuario', idusuario)
+        .order('fecha', { ascending: false });
 
     if (error) throw error;
     return data;
 };
 
-const markAsRead = async (notificationId) => {
+const deleteNotification = async (idnotificacion) => {
     const { data, error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId);
+        .from('notificaciones')
+        .delete()
+        .eq('idnotificacion', idnotificacion);
 
     if (error) throw error;
     return data;
@@ -33,5 +34,5 @@ const markAsRead = async (notificationId) => {
 module.exports = {
     createNotification,
     getUserNotifications,
-    markAsRead
+    deleteNotification
 };
