@@ -39,6 +39,10 @@ const uploadUserCV = async (req, res) => {
 
 const uploadUserProfilePicture = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se recibió ningún archivo. Asegúrate de que el campo se llame "file" y que el contenido sea un archivo.' });
+    }
+
     const file = req.file;
     const userId = req.params.id;
     const result = await uploadProfileToStorage(userId, file);
@@ -48,6 +52,7 @@ const uploadUserProfilePicture = async (req, res) => {
     res.status(500).json({ error: 'Error al subir la foto de perfil' });
   }
 };
+
 
 const getUserCVSignedUrl = async (req, res) => {
   try {
