@@ -102,52 +102,89 @@ const getUserById = async (id) => {
   return ret;
 };
 
-const uploadFotoPerfil = async (id, fotoFile) => {
-  if (!fotoFile) throw new Error('Archivo de imagen no proporcionado');
-
-  const { data, error } = await supabase.storage
-    .from('fotos-perfil')
-    .upload(`foto-${id}-${Date.now()}.jpg`, Buffer.from(fotoFile, 'base64'), {
-      contentType: 'image/jpeg',
-      upsert: true
-    });
-
-  if (error) throw new Error('Error al subir imagen: ' + error.message);
-
-  const { error: updateError } = await supabase
-    .from('usuario')
-    .update({ fotodeperfil: data.path })
-    .eq('idusuario', id);
-
-  if (updateError) throw new Error(updateError.message);
-
-  return { fotodeperfil: data.path };
-};
-
-const uploadCV = async (id, cvFile) => {
-  if (!cvFile) throw new Error('Archivo de CV no proporcionado');
-
+const uploadCVToStorage = async (userId, file) => {
+  const filePath = `cv-${Date.now()}-${file.originalname}`;
   const { data, error } = await supabase.storage
     .from('cvs')
-    .upload(`cv-${id}-${Date.now()}.pdf`, Buffer.from(cvFile, 'base64'), {
-      contentType: 'application/pdf',
-      upsert: true
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true,
     });
 
-  if (error) throw new Error('Error al subir CV: ' + error.message);
+  if (error) throw error;
 
   const { error: updateError } = await supabase
     .from('usuario')
-    .update({ cv: data.path })
-    .eq('idusuario', id);
+    .update({ cv: filePath })
+    .eq('idusuario', userId);
 
-  if (updateError) throw new Error(updateError.message);
+  if (updateError) throw updateError;
 
-  return { cv: data.path };
+  return { message: 'CV subido correctamente', path: filePath };
 };
+
+const uploadProfileToStorage = async (userId, file) => {
+  const filePath = `foto-${Date.now()}-${file.originalname}`;
+  const { data, error } = await supabase.storage
+    .from('fotos-perfil')
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true,
+    });
+
+  if (error) throw error;
+
+  const { error: updateError } = await supabase
+    .from('usuario')
+    .update({ fotodeperfil: filePath })
+    .eq('idusuario', userId);
+
+  if (updateError) throw updateError;
+
+  return { message: 'Foto de perfil subida correctamente', path: filePath };
+};
+
+const generateCVSignedUrl = async (userId) => {
+  const { data: user, error } = await supabase
+    .from('usuario')
+    .select('cv')
+    .eq('idusuario', userId)
+    .single();
+
+  if (error || !user?.cv) return null;
+
+  const { data: urlData, error: urlError } = await supabase.storage
+    .from('cvs')
+    .createSignedUrl(user.cv, 60 * 60); // 1 hora
+
+  if (urlError) throw urlError;
+
+  return { url: urlData.signedUrl };
+};
+
+const generateProfileSignedUrl = async (userId) => {
+  const { data: user, error } = await supabase
+    .from('usuario')
+    .select('fotodeperfil')
+    .eq('idusuario', userId)
+    .single();
+
+  if (error || !user?.fotodeperfil) return null;
+
+  const { data: urlData, error: urlError } = await supabase.storage
+    .from('fotos-perfil')
+    .createSignedUrl(user.fotodeperfil, 60 * 60); // 1 hora
+
+  if (urlError) throw urlError;
+
+  return { url: urlData.signedUrl };
+};
+
 
 module.exports = {
   getUserById,
-  uploadFotoPerfil,
-  uploadCV
+  uploadCVToStorage,
+  uploadProfileToStorage,
+  generateCVSignedUrl,
+  generateProfileSignedUrl
 };
