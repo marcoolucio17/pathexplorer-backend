@@ -326,10 +326,64 @@ const fetchUpdateProject = async (id_proyecto, informacion) => {
 }
 
 
+const uploadRFPToStorage = async (file) => {
+  const fileName = `rfp-${Date.now()}-${file.originalname}`;
+
+  const { data, error } = await supabase.storage
+    .from('rfpproyecto')
+    .upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+    });
+
+  if (error) throw error;
+
+  return data.path;
+};
+
+
+const saveRFPPathToProject = async (projectId, filePath) => {
+  const { data, error } = await supabase
+    .from('proyecto')
+    .update({ rfpfile: filePath })
+    .eq('idproyecto', projectId)
+    .select();
+
+  console.log('Actualización de Proyecto:', { projectId, filePath, data, error });
+
+  if (error || !data || data.length === 0) {
+    throw new Error('No se pudo actualizar el proyecto o el ID es inválido');
+  }
+};
+
+const getRFPSignedUrl = async (projectId) => {
+  const { data: proyecto, error } = await supabase
+    .from('proyecto')
+    .select('rfpfile')
+    .eq('idproyecto', projectId)
+    .single();
+
+  if (error || !proyecto || !proyecto.rfpfile) {
+    throw new Error('Archivo RFP no encontrado');
+  }
+
+  const { data: signedUrlData, error: urlError } = await supabase.storage
+    .from('rfpproyecto')
+    .createSignedUrl(proyecto.rfpfile, 300); // URL válida 5 min
+
+  if (urlError) {
+    throw new Error('Error al generar URL firmada');
+  }
+
+  return signedUrlData.signedUrl;
+};
+
 module.exports = { 
     fetchProjects, 
     fetchProjectById, 
     fetchProjectsByName,
     fetchCreateProject,
-    fetchUpdateProject
+    fetchUpdateProject,
+    uploadRFPToStorage,
+    saveRFPPathToProject,
+    getRFPSignedUrl
 };

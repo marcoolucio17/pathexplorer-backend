@@ -3,7 +3,10 @@ const {
     fetchProjectById, 
     fetchProjectsByName,
     fetchCreateProject,
-    fetchUpdateProject } = require('../services/projectService');
+    fetchUpdateProject,
+    uploadRFPToStorage, 
+    saveRFPPathToProject,
+    getRFPSignedUrl  } = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -127,8 +130,47 @@ const updatingProject = async (req, res) => {
     }
 }
 
+const uploadRFP = async (req, res) => {
+    console.log('Archivo recibido:', req.file);
+    console.log('Proyecto ID recibido:', req.body.projectId);
+
+  try {
+    const file = req.file;
+    const { projectId } = req.body;
+
+    if (!file || !projectId) {
+      return res.status(400).json({ error: 'Archivo y projectId son requeridos' });
+    }
+
+    const storagePath = await uploadRFPToStorage(file);
+
+    // Guarda la ruta en la tabla Proyecto
+    await saveRFPPathToProject(projectId, storagePath);
+
+    res.status(200).json({ message: 'Archivo RFP subido correctamente', path: storagePath });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al subir el archivo RFP' });
+  }
+};
+
+
+const getRFPUrl = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const signedUrl = await getRFPSignedUrl(projectId);
+    res.status(200).json({ url: signedUrl });
+  } catch (error) {
+    console.error(error.message);
+    res.status(404).json({ error: error.message });
+  }
+};
+
+
 module.exports = {
     getProjects,
     createProject,
-    updateProject
+    updateProject,
+    uploadRFP,
+    getRFPUrl
 };
