@@ -27,6 +27,11 @@ const fetchProjects= async () => {
             `idproyecto,
         pnombre,
         descripcion,
+        fechainicio,
+        fechafin,
+        proyectoterminado,
+        idusuario,
+        rfpfile,
         cliente(
             idcliente,
             clnombre),
@@ -49,7 +54,8 @@ const fetchProjects= async () => {
                     )
                 )
             )
-        )`);
+        )`)
+        .eq("proyectoterminado", false);
     if (error) {
         console.log("error", error);
         throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");
@@ -90,6 +96,11 @@ const fetchProjectsByName = async (nombre_proyecto) => {
         .select(`idproyecto,
         pnombre,
         descripcion,
+        fechainicio,
+        fechafin,
+        proyectoterminado,
+        idusuario,
+        rfpfile,
         cliente(
             idcliente,
             clnombre),
@@ -113,7 +124,8 @@ const fetchProjectsByName = async (nombre_proyecto) => {
                 )
             )
         )`)
-        .ilike('pnombre', `%${nombre_proyecto}%`);
+        .ilike('pnombre', `%${nombre_proyecto}%`)
+        .eq("proyectoterminado", false);
     
     if (error) {
         console.log("error", error);
@@ -145,6 +157,11 @@ const fetchProjectById = async (id_proyecto) => {
         .select(`idproyecto,
         pnombre,
         descripcion,
+        fechainicio,
+        fechafin,
+        proyectoterminado,
+        idusuario,
+        rfpfile,
         cliente(
             idcliente,
             clnombre),
