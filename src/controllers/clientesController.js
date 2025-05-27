@@ -2,8 +2,12 @@ const {
   fetchClientes,
   fetchClientePorId,
   insertarCliente,
-  modificarCliente
+  modificarCliente,
+  uploadClienteFoto, 
+  getClienteConFotoUrl
 } = require('../services/clientesService');
+
+const clientesService = require('../services/clientesService');
 
 const obtenerClientes = async (req, res) => {
   try {
@@ -52,38 +56,38 @@ const actualizarCliente = async (req, res) => {
   }
 };
 
-const uploadClientImage = async (req, res) => {
-  const { idcliente } = req.params;
-  const file = req.file;
-
-  if (!file) return res.status(400).json({ error: 'No se subió ningún archivo.' });
-
+const uploadClienteImage = async (req, res) => {
   try {
-    const ruta = await clientesService.uploadClientImageToStorage(idcliente, file);
-    res.status(200).json({ mensaje: 'Imagen subida correctamente.', ruta });
+    const { idcliente } = req.params;
+    const file = req.file;
+
+    if (!file) return res.status(400).json({ error: 'No se envió ninguna imagen.' });
+
+    const filename = await clientesService.uploadClienteFoto(idcliente, file);
+    res.status(200).json({ message: 'Imagen subida correctamente.', filename });
   } catch (error) {
     console.error('Error al subir la imagen del cliente:', error);
     res.status(500).json({ error: 'Error al subir la imagen del cliente.' });
   }
 };
 
-const getClienteById = async (req, res) => {
-  const { idcliente } = req.params;
-
+// Obtener URL pública de la imagen
+const getClienteWithFotoUrl = async (req, res) => {
   try {
-    const cliente = await clientesService.getClienteById(idcliente);
+    const { idcliente } = req.params;
+    const cliente = await clientesService.getClienteFotoUrl(idcliente);
     res.status(200).json(cliente);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener cliente.' });
+    console.error('Error al obtener el cliente:', error);
+    res.status(500).json({ error: 'Error al obtener el cliente con URL de la imagen.' });
   }
 };
-
 
 module.exports = {
   obtenerClientes,
   obtenerClientePorId,
   crearCliente,
   actualizarCliente,
-  uploadClientImage,
-  getClienteById,
+  uploadClienteImage,
+  getClienteWithFotoUrl
 };
