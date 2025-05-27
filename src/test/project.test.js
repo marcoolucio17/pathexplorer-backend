@@ -29,7 +29,7 @@ describe('api/projects/post', () => {
     "informacion": {
         "proyect" : {
             "pnombre": "Aplicación web",
-            "descripcion": "Realizar una aplicación web que permita gestionar la tienda Marcos Maximos",
+            "descripcion": "El pepe",
             "fechainicio": "2025-05-12",
             "fechafin": "2027-01-04",
             "idcliente": 1

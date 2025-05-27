@@ -149,6 +149,17 @@ const updateRole = async (id_rol, rol) => {
  */
 
 const addRequirement = async (idrol, requerimiento) => {
+    console.log("idrol", idrol);
+    console.log("requerimiento", requerimiento.idhabilidad);
+    console.log("tiempoexperiencia", requerimiento.tiempoexperiencia);
+    const { data: resultReq0, error: resultError0 } = await supabase
+        .from("requerimientos")
+        .select('idrequerimiento')
+        .eq('idhabilidad', requerimiento.idhabilidad)
+        .eq('tiempoexperiencia', requerimiento.tiempoexperiencia);
+    
+    var id_requerimiento = resultReq0[0].idrequerimiento;
+    
     const { data: dataRequerimiento, error: errorRequerimiento } = await supabase
         .from("requerimientos")
         .insert({
@@ -162,7 +173,7 @@ const addRequirement = async (idrol, requerimiento) => {
         .eq('idhabilidad', requerimiento.idhabilidad)
         .eq('tiempoexperiencia', requerimiento.tiempoexperiencia);
 
-    const id_requerimiento = resultReq[0].idrequerimiento;
+    id_requerimiento = resultReq[0].idrequerimiento;
 
     const { data: resultReqRole, error: errorReqRole } = await supabase
         .from("requerimientos_roles")
@@ -170,12 +181,13 @@ const addRequirement = async (idrol, requerimiento) => {
             idrol: idrol,
             idrequerimiento: id_requerimiento
         });
-
-    if (errorReqRole || errorRequerimiento || resultError) {
-        console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error adding the requirement.");
-    };
+    
+    if (errorReqRole) {
+        console.log("error", errorReqRole);
+        throw new ApiError(errorReqRole.status || 400, errorReqRole.message || "There is an error adding the requirement to the role.");
+    }
     return true;
+    
 }
 
 //Funciona

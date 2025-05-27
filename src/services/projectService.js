@@ -21,12 +21,17 @@ const ApiError = require('../utils/errorHelper');
  */
 
 const fetchProjects= async () => { 
-    const {data,error} = await supabase
-    .from("proyecto")
-    .select(
-        `idproyecto,
+    const { data, error } = await supabase
+        .from("proyecto")
+        .select(
+            `idproyecto,
         pnombre,
         descripcion,
+        fechainicio,
+        fechafin,
+        proyectoterminado,
+        idusuario,
+        rfpfile,
         cliente(
             idcliente,
             clnombre),
@@ -50,10 +55,13 @@ const fetchProjects= async () => {
                 )
             )
         )`)
+        .eq("proyectoterminado", false);
     if (error) {
         console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");};
-    return data;
+        throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");
+    };
+    const dataProyectos = selectProyectosRolesDisponibles(data);
+    return dataProyectos;
 };
 
 /**
@@ -82,12 +90,17 @@ const fetchProjects= async () => {
  * @returns 
  */
 //Case insensitive search
-const fetchProjectsByName = async (nombre_proyecto) => { 
+const fetchProjectsByName = async (nombre_proyecto) => {
     const { data, error } = await supabase
         .from("proyecto")
         .select(`idproyecto,
         pnombre,
         descripcion,
+        fechainicio,
+        fechafin,
+        proyectoterminado,
+        idusuario,
+        rfpfile,
         cliente(
             idcliente,
             clnombre),
@@ -111,11 +124,15 @@ const fetchProjectsByName = async (nombre_proyecto) => {
                 )
             )
         )`)
-        .ilike('pnombre', `%${nombre_proyecto}%`);
+        .ilike('pnombre', `%${nombre_proyecto}%`)
+        .eq("proyectoterminado", false);
+    
     if (error) {
         console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");};
-    return data;
+        throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");
+    };
+    const dataProyectos = selectProyectosRolesDisponibles(data);
+    return dataProyectos;
 }
 
 /**
@@ -140,6 +157,11 @@ const fetchProjectById = async (id_proyecto) => {
         .select(`idproyecto,
         pnombre,
         descripcion,
+        fechainicio,
+        fechafin,
+        proyectoterminado,
+        idusuario,
+        rfpfile,
         cliente(
             idcliente,
             clnombre),
@@ -166,9 +188,23 @@ const fetchProjectById = async (id_proyecto) => {
         .eq('idproyecto', id_proyecto);
     if (error) {
         console.log("error", error);
-        throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");};
+        throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");
+    };
     return data;
 };
+
+const selectProyectosRolesDisponibles = (data) => { 
+    const proyectosConRolesDisponibles = data
+  .map(proyecto => ({
+    ...proyecto,
+    proyecto_roles: Array.isArray(proyecto.proyecto_roles)
+      ? proyecto.proyecto_roles.filter(pr => pr.roles?.disponible === true)
+      : []
+  }))
+  .filter(proyecto => proyecto.proyecto_roles.length > 0);
+
+    return proyectosConRolesDisponibles;
+}
 
 /**
  * 
