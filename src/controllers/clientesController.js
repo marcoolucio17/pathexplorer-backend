@@ -52,9 +52,38 @@ const actualizarCliente = async (req, res) => {
   }
 };
 
+const uploadClientImage = async (req, res) => {
+  const { idcliente } = req.params;
+  const file = req.file;
+
+  if (!file) return res.status(400).json({ error: 'No se subió ningún archivo.' });
+
+  try {
+    const ruta = await clientesService.uploadClientImageToStorage(idcliente, file);
+    res.status(200).json({ mensaje: 'Imagen subida correctamente.', ruta });
+  } catch (error) {
+    console.error('Error al subir la imagen del cliente:', error);
+    res.status(500).json({ error: 'Error al subir la imagen del cliente.' });
+  }
+};
+
+const getClienteById = async (req, res) => {
+  const { idcliente } = req.params;
+
+  try {
+    const cliente = await clientesService.getClienteById(idcliente);
+    res.status(200).json(cliente);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener cliente.' });
+  }
+};
+
+
 module.exports = {
   obtenerClientes,
   obtenerClientePorId,
   crearCliente,
   actualizarCliente,
+  uploadClientImage,
+  getClienteById,
 };

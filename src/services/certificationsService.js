@@ -23,6 +23,32 @@ const createCertificate = async (cnombre, idhabilidad, fechaobtenido, fechaexpir
   return data;
 };
 
+//update
+const updateCertificate = async (idCertificacion, updates) => {
+  const { data, error } = await supabase
+    .from('certificaciones')
+    .update({
+      cnombre: updates.cnombre,
+      idhabilidad: updates.idhabilidad || null,
+      fechaobtenido: updates.fechaobtenido,
+      fechaexpiracion: updates.fechaexpiracion,
+      emitidopor: updates.emitidopor,
+      imagencertificado: updates.imagencertificado
+    })
+    .eq('idcertificaciones', idCertificacion)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error al actualizar certificación:', error.message);
+    throw error;
+  }
+
+  return data;
+};
+
+
+
 // Asignar certificado a un usuario
 const assignCertificateToEmployee = async (idusuario, idcertificaciones) => {
   const { data, error } = await supabase
@@ -109,5 +135,6 @@ module.exports = {
   assignCertificateToEmployee,
   getCertificatesByEmployeeId,
   uploadCertificateToStorage,
-  generateCertificateSignedUrl
+  generateCertificateSignedUrl,
+  updateCertificate
 };

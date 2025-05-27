@@ -17,5 +17,6 @@ router.post('/certificaciones/upload-image/:id', authMiddleware, upload.single('
 // Obtener URL firmada
 router.get('/certificaciones/image-url/:id', authMiddleware, certificationsController.getCertificateImageSignedUrl);
 
+router.put('/certificados/:id', certificationsController.updateCertificateController);
 
 module.exports = router;
