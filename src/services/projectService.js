@@ -160,12 +160,20 @@ const fetchProjectById = async (id_proyecto) => {
         fechainicio,
         fechafin,
         proyectoterminado,
-        idusuario,
+        usuario(idusuario,nombre),
         rfpfile,
+        projectdeliverables,
+        utp(
+            usuario(
+                idusuario,
+                nombre
+            )
+        ),
         cliente(
             idcliente,
             clnombre),
         proyecto_roles(
+            estado,
             roles(
                 idrol,
                 nombrerol,
@@ -186,12 +194,50 @@ const fetchProjectById = async (id_proyecto) => {
             )
         )`)
         .eq('idproyecto', id_proyecto);
+
     if (error) {
         console.log("error", error);
         throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");
     };
-    return data;
+    const dataProyectos = dataProjectsReorganized(data);
+    return dataProyectos;
 };
+
+const dataProjectsReorganized = (data) => { 
+    if (!data || data.length === 0) {
+        return [];
+    }
+
+
+    const informationProjects = {
+        idproyecto: data[0].idproyecto,
+        pnombre: data[0].pnombre,
+        descripcion: data[0].descripcion,
+        fechainicio: data[0].fechainicio,
+        fechafin: data[0].fechafin,
+        proyectoterminado: data[0].proyectoterminado,
+        rfpfile: data[0].rfpfile,
+        idusuario: data[0].usuario.idusuario,
+        creador: data[0].usuario.nombre,
+        cliente: data[0].cliente.clnombre,
+        idcliente: data[0].cliente.idcliente,
+        projectdeliverables: data[0].projectdeliverables,
+        roles: data[0].proyecto_roles.map(role => 
+            role.roles.nombrerol
+        ),
+        habilidades: [...new Set(data[0].proyecto_roles.flatMap(rol => 
+            
+            rol.roles.requerimientos_roles?.map(req => req.requerimientos.habilidades.nombre)
+            
+        ))],
+        miembros: data[0].utp.map(utp => 
+          utp.usuario.nombre
+        )
+
+    }
+    return informationProjects;
+
+}
 
 const selectProyectosRolesDisponibles = (data) => { 
     const proyectosConRolesDisponibles = data
