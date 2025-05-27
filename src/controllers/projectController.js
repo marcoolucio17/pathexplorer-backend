@@ -11,7 +11,7 @@ const getProjects = async (req, res) => {
         const {
             projectName = null,
             idproyecto = null
-        } = req.body || {}; 
+        } = req.query || {}; 
         
 
         if (projectName && !idproyecto) {

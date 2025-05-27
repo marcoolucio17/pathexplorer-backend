@@ -47,6 +47,7 @@ app.use('/api',goalsRoutes);
 app.use('/api', rolesRoutes); 
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api', compabilityRoutes); 
+
 app.get('/', (req, res) => {
   res.send('Welcome to the PathExplorer API!! Read our documentation to learn about how to use our different endpoints.');
 });
