@@ -62,17 +62,56 @@ const assignCertificateToEmployee = async (req, res) => {
 };
 
 const getCertificatesByEmployeeId = async (req, res) => {
-  const { idempleado } = req.params;
+  const { id } = req.params;
+
   try {
-    const certificates = await certificationsService.getCertificatesByEmployeeId(idempleado);
+    const certificates = await certificationsService.getCertificatesByEmployeeId(id);
     res.status(200).json(certificates);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener las certificaciones", error: error.message });
+    console.error('Error al obtener certificaciones del empleado:', error.message);
+    res.status(500).json({ error: 'Error al obtener certificaciones del empleado' });
   }
 };
+
+
+const uploadCertificateImage = async (req, res) => {
+  try {
+    const file = req.file;
+    const certId = req.params.id;
+
+    if (!file) {
+      console.error("No se recibió archivo");
+      return res.status(400).json({ error: 'Archivo no recibido' });
+    }
+
+    console.log("Archivo recibido:", file);
+
+    const result = await certificationsService.uploadCertificateToStorage(certId, file);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al subir la imagen del certificado:', error);
+    res.status(500).json({ error: 'Error al subir la imagen del certificado' });
+  }
+};
+
+
+const getCertificateImageSignedUrl = async (req, res) => {
+  try {
+    const certId = req.params.id;
+    const result = await certificationsService.generateCertificateSignedUrl(certId);
+    if (!result) return res.status(404).json({ error: 'Imagen no encontrada para esta certificación' });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al obtener URL firmada del certificado:', error);
+    res.status(500).json({ error: 'Error al generar la URL del certificado' });
+  }
+};
+
 
 module.exports = {
   createCertificate,
   assignCertificateToEmployee,
-  getCertificatesByEmployeeId
+  getCertificatesByEmployeeId,
+  uploadCertificateImage,
+  getCertificateImageSignedUrl
 };
