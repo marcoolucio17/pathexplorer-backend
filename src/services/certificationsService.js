@@ -16,7 +16,7 @@ const createCertificate = async (cnombre, idhabilidad, fechaobtenido, fechaexpir
     .single();
 
   if (error) {
-    console.error('❌ Error al insertar certificación:', error.message);
+    console.error('Error al insertar certificación:', error.message);
     throw error;
   }
 
@@ -32,7 +32,7 @@ const assignCertificateToEmployee = async (idusuario, idcertificaciones) => {
     .single();
 
   if (error) {
-    console.error('❌ Error al asignar certificado al usuario:', error.message);
+    console.error('Error al asignar certificado al usuario:', error.message);
     throw error;
   }
 
@@ -56,15 +56,58 @@ const getCertificatesByEmployeeId = async (idempleado) => {
     .eq('idusuario', idempleado);
 
   if (error) {
-    console.error('❌ Error al obtener certificaciones del empleado:', error.message);
+    console.error('Error al obtener certificaciones del empleado:', error.message);
     throw error;
   }
 
   return data;
 };
 
+const uploadCertificateToStorage = async (certId, file) => {
+  const filePath = `cert-${Date.now()}-${file.originalname}`;
+
+  const { data, error } = await supabase.storage
+    .from('certificaciones')
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true,
+    });
+
+  if (error) throw new Error(`Error al subir a Supabase: ${JSON.stringify(error)}`);
+
+
+  const { error: updateError } = await supabase
+    .from('certificaciones')
+    .update({ imagencertificado: filePath })
+    .eq('idcertificaciones', certId);
+
+  if (updateError) throw new Error(`Error al actualizar la tabla: ${JSON.stringify(updateError)}`);
+
+  return { message: 'Imagen del certificado subida correctamente', path: filePath };
+};
+
+const generateCertificateSignedUrl = async (certId) => {
+  const { data: cert, error } = await supabase
+    .from('certificaciones')
+    .select('imagencertificado')
+    .eq('idcertificaciones', certId)
+    .single();
+
+  if (error || !cert?.imagencertificado) return null;
+
+  const { data: urlData, error: urlError } = await supabase.storage
+    .from('certificaciones')
+    .createSignedUrl(cert.imagencertificado, 60 * 60); // 1 hora
+
+  if (urlError) throw urlError;
+
+  return { url: urlData.signedUrl };
+};
+
 module.exports = {
   createCertificate,
   assignCertificateToEmployee,
-  getCertificatesByEmployeeId
+  getCertificatesByEmployeeId,
+  uploadCertificateToStorage,
+  generateCertificateSignedUrl
 };
