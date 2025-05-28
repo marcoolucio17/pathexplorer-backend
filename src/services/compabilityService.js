@@ -22,7 +22,9 @@ const fetchCompatibility = async (id_rol,idusuario) => {
             console.log("error", errorUserHab);
             throw new ApiError(errorUserHab.status || 400, errorUserHab.message || "There is an error fetching the compatibility.");
         }
+        
         const compability = doCalculateCompatibility(dataUserHab, dataRolHab);
+        
         return compability;
     } catch (error) {
         console.log("error", error);
@@ -34,11 +36,19 @@ const fetchCompatibility = async (id_rol,idusuario) => {
 const doCalculateCompatibility = (UserHab, RolHab) => { 
     try { 
         const userSkills = new Set(UserHab.map(habilidad => habilidad.idhabilidad));
-
-        const rolSkills = RolHab[0].requerimientos_roles.map(rr => rr.requerimientos.habilidades.idhabilidad);
-
+        
+        if (RolHab[0].requerimientos_roles.length === 0) {
+            return 0; // No skills required for the role
+        }
+        const rolSkills = RolHab?.[0]?.requerimientos_roles?.flatMap(rr => 
+                    rr?.requerimientos?.habilidades?.idhabilidad ? [rr.requerimientos.habilidades.idhabilidad] : []
+                ) || [];
+        
+        
         let compatibility = 0;
-
+        if (rolSkills.length === 0) {
+            return 0; // No skills required for the role
+        }
         for (const skill of rolSkills) {
             if (userSkills.has(skill)) {
                 compatibility++;
