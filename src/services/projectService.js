@@ -431,7 +431,7 @@ const fetchCreateProject = async (informacion) => {
                     idrol: idrol
                 }]);
         }
-         return true;
+         return { idproyecto };
 
     } catch (error) {
         console.log("error", error);
