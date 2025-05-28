@@ -58,3 +58,4 @@ describe("Tests de habilidades por tipo", () => {
     expect(response.body).toHaveProperty("error");
   });
 });
+//npm test src/test/skills.test.js
