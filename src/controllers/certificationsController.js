@@ -51,6 +51,25 @@ const createCertificate = async (req, res) => {
   }
 };
 
+// PUT /api/certificados/:id
+const updateCertificateController = async (req, res) => {
+  try {
+    const idCertificacion = parseInt(req.params.id);
+    const updates = req.body;
+
+    if (!idCertificacion || isNaN(idCertificacion)) {
+      return res.status(400).json({ error: 'ID de certificación inválido.' });
+    }
+
+    const updated = await updateCertificate(idCertificacion, updates);
+    res.json(updated);
+  } catch (error) {
+    console.error('Error en el controlador al actualizar certificación:', error.message);
+    res.status(500).json({ error: 'Error al actualizar certificación' });
+  }
+};
+
+
 const assignCertificateToEmployee = async (req, res) => {
   const { idusuario, idcertificaciones } = req.body;
   try {
@@ -113,5 +132,6 @@ module.exports = {
   assignCertificateToEmployee,
   getCertificatesByEmployeeId,
   uploadCertificateImage,
-  getCertificateImageSignedUrl
+  getCertificateImageSignedUrl,
+  updateCertificateController
 };

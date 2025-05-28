@@ -3,14 +3,25 @@ const {
   obtenerClientes,
   obtenerClientePorId,
   crearCliente,
-  actualizarCliente
+  actualizarCliente,
+  uploadClienteImage,
+  getClienteWithFotoUrl
 } = require('../controllers/clientesController');
 
 const router = express.Router();
+const upload = require('../middlewares/uploadMiddleware'); 
 
 router.get('/', obtenerClientes);
 router.get('/:id', obtenerClientePorId);
 router.post('/', crearCliente);
 router.put('/:id', actualizarCliente);
+const authMiddleware = require('../middlewares/verifyHashToken');
+
+// Subir imagen del cliente
+router.post('/upload/:idcliente', authMiddleware, upload.single('file'), uploadClienteImage);
+
+// Obtener cliente con URL de la imagen
+router.get('/:idcliente/foto', authMiddleware, getClienteWithFotoUrl);
+
 
 module.exports = router;
