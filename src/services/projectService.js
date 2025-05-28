@@ -205,7 +205,6 @@ const fetchProjectById = async (id_proyecto) => {
         fechafin,
         proyectoterminado,
         usuario(idusuario,nombre),
-        rfpfile,
         projectdeliverables,
         utp(
             usuario(
@@ -243,47 +242,53 @@ const fetchProjectById = async (id_proyecto) => {
         console.log("error", error);
         throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");
     };
-    const dataProyectos = dataProjectsReorganized(data);
+    
+    
+    const url = await getRFPSignedUrl(id_proyecto);
+    const dataProyectos = dataProjectsReorganized(data,url);
     return dataProyectos;
 };
 
-const dataProjectsReorganized = (data) => { 
+const dataProjectsReorganized = (data,url) => {
     if (!data || data.length === 0) {
         return [];
     }
 
-
+  
+    const project = data[0];
+  
     const informationProjects = {
-        idproyecto: data[0].idproyecto,
-        pnombre: data[0].pnombre,
-        descripcion: data[0].descripcion,
-        fechainicio: data[0].fechainicio,
-        fechafin: data[0].fechafin,
-        proyectoterminado: data[0].proyectoterminado,
-        rfpfile: data[0].rfpfile,
-        idusuario: data[0].usuario.idusuario,
-        creador: data[0].usuario.nombre,
-        cliente: data[0].cliente.clnombre,
-        idcliente: data[0].cliente.idcliente,
-        projectdeliverables: data[0].projectdeliverables,
-        roles: data[0].proyecto_roles.map(role => 
-            role.roles.nombrerol
+        idproyecto: project.idproyecto,
+        pnombre: project.pnombre,
+        descripcion: project.descripcion,
+        fechainicio: project.fechainicio,
+        fechafin: project.fechafin,
+        proyectoterminado: project.proyectoterminado,
+        rfpfile: url,
+        idusuario: project.usuario?.idusuario || null,
+        creador: project.usuario?.nombre || null,
+        cliente: project.cliente?.clnombre || null,
+        idcliente: project.cliente?.idcliente || null,
+        projectdeliverables: project.projectdeliverables || "",
+        roles: (project.proyecto_roles || []).map(role =>
+            role.roles?.nombrerol || "Role not defined"
         ),
-        habilidades: [...new Set(data[0].proyecto_roles.flatMap(rol => 
+        habilidades: [...new Set((project.proyecto_roles || []).flatMap(rol =>
             
-            rol.roles.requerimientos_roles?.map(req => req.requerimientos.habilidades.nombre)
+            rol.roles?.requerimientos_roles?.map(req => req.requerimientos?.habilidades?.nombre || "Skill not defined") || []
             
         ))],
-        miembros: data[0].utp.map(utp => 
-          utp.usuario.nombre
+        miembros: (project.utp || []).map(utp =>
+            utp.usuario?.nombre 
         )
 
-    }
+    };
+    
     return informationProjects;
 
 }
 
-const selectProyectosRolesDisponibles = (data) => { 
+const selectProyectosRolesDisponibles = async (data) => { 
     const proyectosConRolesDisponibles = data
   .map(proyecto => ({
     ...proyecto,
@@ -498,9 +503,8 @@ const getRFPSignedUrl = async (projectId) => {
 
   if (urlError) {
     throw new Error('Error al generar URL firmada');
-  }
-
-  return signedUrlData.signedUrl;
+    }
+    return signedUrlData.signedUrl;
 };
 
 module.exports = { 
