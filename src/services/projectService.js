@@ -64,6 +64,50 @@ const fetchProjects= async () => {
     return dataProyectos;
 };
 
+const fetchMyProjects = async (id_usuario) => {
+    const { data, error } = await supabase
+                                .from("proyecto")
+                                .select(
+                                    `idproyecto,
+                                     pnombre,
+                                     descripcion,
+                                     fechainicio,
+                                     fechafin,
+                                     proyectoterminado,
+                                     idusuario,
+                                     rfpfile,
+                                     cliente(
+                                        idcliente,
+                                        clnombre),
+                                     proyecto_roles(
+                                     roles(
+                                      idrol,
+                                      nombrerol,
+                                      nivelrol,
+                                      descripcionrol,
+                                      disponible,
+                                      requerimientos_roles(
+                                          requerimientos(
+                                            idrequerimiento,
+                                            tiempoexperiencia,
+                                            habilidades(
+                                              idhabilidad,
+                                              nombre,
+                                              estecnica
+                                            )
+                                          )
+                                      )
+                                    )
+                             )`)
+        .eq("idusuario", id_usuario);
+    if (error) {
+        console.log("error", error);
+        throw new ApiError(error.status || 400, error.message || "There is an error fetching the projects.");
+    };
+    
+    return data;
+}
+
 /**
 */
 
@@ -460,7 +504,8 @@ const getRFPSignedUrl = async (projectId) => {
 };
 
 module.exports = { 
-    fetchProjects, 
+    fetchProjects,
+    fetchMyProjects,
     fetchProjectById, 
     fetchProjectsByName,
     fetchCreateProject,

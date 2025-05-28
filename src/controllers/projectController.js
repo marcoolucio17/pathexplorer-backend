@@ -2,6 +2,7 @@ const {
     fetchProjects, 
     fetchProjectById, 
     fetchProjectsByName,
+    fetchMyProjects,
     fetchCreateProject,
     fetchUpdateProject,
     uploadRFPToStorage, 
@@ -13,18 +14,26 @@ const getProjects = async (req, res) => {
     try {
         const {
             projectName = null,
-            idproyecto = null
-        } = req.query || {}; 
+            idproyecto = null,
+            idusuario = null,
+        } = req.query; 
         
 
-        if (projectName && !idproyecto) {
-            return getProjectsByName(req,res);
+        if (projectName && !idproyecto && !idusuario) {
+            return getProjectsByName(req, res);
         }
-        else if (!projectName && idproyecto) {
+        else if (!projectName && idproyecto && !idusuario) {
             return getProjectById(idproyecto, res);
-        } else if (!projectName && !idproyecto) { 
-            return getAllProjects(req,res);
-        }       
+        }
+        else if (!projectName && !idproyecto && !idusuario) {
+            return getAllProjects(req, res);
+        }
+        else if (!projectName && !idproyecto && idusuario) { 
+            return getMyProjects(req, res);
+        }
+        else { 
+            return res.status(400).json({ error: 'Invalid query parameters' });
+        }
     } catch (error) {
         return res.status(500).json({ error: 'Error fetching projects' });
     }
@@ -74,6 +83,25 @@ const getProjectById = async (idproyecto, res) => {
         
     } catch (error) {
         return res.status(500).json({ error: 'Error fetching project' });
+    }
+}
+
+const getMyProjects = async (req, res) => { 
+    try {
+        const { idusuario } = req.query;
+
+        if (idusuario) {
+            const projects = await fetchMyProjects(idusuario);
+            if (projects) {
+                return getProjectsByFilter(req, res, projects);
+            } else {
+                return res.status(404).json({ error: 'No projects found for this user' });
+            }
+        } else {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Error fetching my projects' });
     }
 }
 
