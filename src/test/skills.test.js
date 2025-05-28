@@ -38,7 +38,7 @@ describe("Tests de habilidades por tipo", () => {
     expect(Array.isArray(response.body)).toBe(true);
   });
 
-  // Test: falta el parámetro isTechnical
+  //  falta el parámetro isTechnical
   test("should return 400 when isTechnical is missing", async () => {
     const response = await request(app)
       .get("/api/habilidades/por-tipo")
@@ -48,7 +48,7 @@ describe("Tests de habilidades por tipo", () => {
     expect(response.body).toHaveProperty("error");
   });
 
-  // Test: sin token
+  //  sin token
   test("should return 401 when token is missing", async () => {
     const response = await request(app)
       .get("/api/habilidades/por-tipo")
