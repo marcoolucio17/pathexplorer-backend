@@ -172,6 +172,7 @@ const createProject = async (req, res) => {
             nombrerol = null,
             idcliente = null,
             idSkills = null } = req.body || {};
+            console.log(informacion);
         if (informacion) { 
             return createFullProject(informacion, res);
         } else if (!informacion && (projectName || idproyecto || nombrerol || idcliente || idSkills)) {
