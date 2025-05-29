@@ -8,6 +8,7 @@ const tableClient = `cliente(idcliente,clnombre)`;
 const tableSkill = `habilidades(idhabilidad,nombre,estecnica)`;
 const tableRequirement = `requerimientos(idrequerimiento,tiempoexperiencia,${tableSkill})`;
 const tableRequerimientosRoles = `requerimientos_roles(${tableRequirement})`;
+//Aquí afecta el rol
 const tableRoles = `roles(idrol,nombrerol,nivelrol,descripcionrol,disponible,${tableRequerimientosRoles})`;
 const tableProjectRoles = `proyecto_roles(${tableRoles})`;
 const textToObtainInfoProject = `${tableProject},${tableUser},${tableUtp},${tableClient},${tableProjectRoles}`;
@@ -162,6 +163,7 @@ const dataProjectsReorganized = (data, url) => {
     cliente: project.cliente?.clnombre || null,
     idcliente: project.cliente?.idcliente || null,
     projectdeliverables: project.projectdeliverables || "",
+    //Aquí afecta el rol
     roles: (project.proyecto_roles || []).map(
       (role) => role.roles?.nombrerol || "Role not defined"
     ),
@@ -231,7 +233,7 @@ const selectProyectosRolesDisponibles = (data) => {
  * ]
  * @returns
  */
-
+//El envío del json
 const fetchCreateProject = async (informacion) => {
   try {
     const { proyect, roles } = informacion;
@@ -259,6 +261,7 @@ const fetchCreateProject = async (informacion) => {
         .from("roles")
         .insert([
           {
+            //Aquí afecta el rol
             nombrerol: rol.nombrerol,
             nivelrol: rol.nivelrol,
             descripcionrol: rol.descripcionrol,
@@ -272,8 +275,6 @@ const fetchCreateProject = async (informacion) => {
         throw new ApiError(500, rolError?.message || "Error al crear el rol.");
       }
       const idrol = rolData.idrol;
-
-      const { requerimientos } = rol;
 
       for (const req of rol.requerimientos) {
         const { tiempoexperiencia, idhabilidad } = req;
