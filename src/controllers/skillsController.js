@@ -1,4 +1,4 @@
-const { getSkillsByType } = require('../services/skillsService');
+const { getSkillsByType, getAllSkills } = require('../services/skillsService');
 
 const getHabilidadesPorTipo = async (req, res) => {
     try {
@@ -7,11 +7,20 @@ const getHabilidadesPorTipo = async (req, res) => {
         const isTechnical = estecnica === 'true';
 
         const habilidades = await getSkillsByType(isTechnical);
-        res.json(habilidades);
+        res.status(200).json(habilidades);
     } catch (error) {
         console.error("Error al obtener habilidades por tipo:", error);
         res.status(500).json({ error: "Error al obtener habilidades por tipo" });
     }
 };
 
-module.exports = { getHabilidadesPorTipo };
+const getTodasHabilidades = async (req, res) => { 
+    try {
+        const habilidades = await getAllSkills();
+        res.status(200).json(habilidades);
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener todas las habilidades" });
+    }
+}
+
+module.exports = { getHabilidadesPorTipo, getTodasHabilidades };
