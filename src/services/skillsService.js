@@ -15,7 +15,17 @@ const getSkillsByType = async (isTechnical) => {
     return data;
 };
 
+const getAllSkills = async () => {
+    const { data, error } = await supabase
+        .from('habilidades')
+        .select('*');
+
+    if (error) throw error;
+
+    return data;
+};
 
 module.exports = {
-  getSkillsByType,
+    getSkillsByType,
+    getAllSkills
 };

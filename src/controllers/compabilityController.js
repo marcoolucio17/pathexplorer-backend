@@ -3,7 +3,8 @@ const { fetchCompatibility } = require("../services/compabilityService");
 
 const getCompatibilitysFunctions = async (req, res) => { 
     try {
-        const { id_rol = null, idusuario = null } = req.body || {};
+        const { id_rol = null, idusuario = null } = req.query || {};
+        
         if (id_rol && idusuario) {
             getCompatibility(req, res);
         } else {
@@ -16,12 +17,14 @@ const getCompatibilitysFunctions = async (req, res) => {
 
 const getCompatibility = async (req, res) => {
     try {
-        const { id_rol, idusuario } = req.body;
+        const { id_rol, idusuario } = req.query;
         const result = await fetchCompatibility(id_rol, idusuario);
-        if (result) {
+        
+        if (typeof result === 'number') {
+            
             res.status(200).json(result);
         } else {
-            res.status(404).json({ error: 'No compatibility found' });
+            res.status(200).json({ error: 'Invalid compatibility result' });
         }
     } catch (error) {
         res.status(500).json({ error: 'Error fetching compatibility' });

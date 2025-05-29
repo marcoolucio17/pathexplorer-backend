@@ -43,7 +43,7 @@ app.use('/api', skillsRoutes);
 app.use('/api', authenticationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use('/api', appsRoutes); 
-app.use('/api',goalsRoutes);
+app.use('/api', goalsRoutes);
 app.use('/api', rolesRoutes); 
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api', compabilityRoutes); 
