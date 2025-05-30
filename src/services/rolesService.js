@@ -16,26 +16,10 @@ const ApiError = require("../utils/errorHelper");
  *          Es técnica (booleano)
  */
 
-//Aquí afecta el rol
-const fetchRoles = async () => {
-  const { data, error } = await supabase.from("roles").select(`
-                idrol,
-                nombrerol,
-                nivelrol,
-                descripcionrol,
-                disponible,
-                requerimientos_roles(
-                    requerimientos(
-                        idrequerimiento,
-                        tiempoexperiencia,
-                        habilidades(
-                            idhabilidad,
-                            nombre,
-                            estecnica
-                        )
-                        
-                    )
-                )`);
+const fetchRolesName = async () => {
+  const { data, error } = await supabase
+    .from("titulo")
+    .select(`idtitulo,tnombre`);
   if (error) {
     console.log("error", error);
     throw new ApiError(
@@ -260,7 +244,7 @@ const deleteRoleProject = async (id_rol, id_proyecto, requerimientos) => {
 };
 
 module.exports = {
-  fetchRoles,
+  fetchRolesName,
   fetchRoleById,
   addRole,
   updateRole,
