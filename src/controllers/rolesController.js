@@ -11,7 +11,7 @@ const {
 //Revisado
 const getRolesFunctions = async (req, res) => {
   try {
-    const { id_rol = null } = req.body || {};
+    const { id_rol = null } = req.query || {};
     if (id_rol) {
       getRoleById(req, res);
     } else if (!id_rol) {
@@ -40,7 +40,7 @@ const getRoles = async (req, res) => {
 //Función para llamar un rol por id
 // Revisado
 const getRoleById = async (req, res) => {
-  const { id_rol = null } = req.body || {};
+  const { id_rol = null } = req.query || {};
   try {
     const role = await fetchRoleById(id_rol);
     if (!role) {
