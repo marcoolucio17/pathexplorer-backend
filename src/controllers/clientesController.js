@@ -12,7 +12,7 @@ const clientesService = require('../services/clientesService');
 const obtenerClientes = async (req, res) => {
   try {
     const data = await fetchClientes();
-    res.json(data);
+    res.status(200).json(data);
   } catch (error) {
     console.error('Error al obtener clientes:', error.message);
     res.status(500).json({ error: 'Error al obtener clientes' });

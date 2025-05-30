@@ -1,97 +1,189 @@
-const request = require('supertest');
-const app = require('../app');
+const request = require("supertest");
+const app = require("../app");
 
-describe('api/projects/get', () => {
+describe("api/projects/get", () => {
+  let token;
+
+  // prep antes de empezar test
+  beforeAll(async () => {});
+
+  // prep después del test
+  afterAll(async () => {});
+
+  // ## etapa 1.
+  // autenticación
+  test("should return 200 and a token on successful login", async () => {
+    const userCredentials = {
+      providerid: "antonio.sosa",
+      password: "hola123",
+    };
+    const res = await request(app)
+      .post("/api/authenticate")
+      .send(userCredentials);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("token");
+    token = res.body.token;
+  });
   //Paso
-  test('Should return all projects with their roles and status 200', async () => {
-    const response = await request(app).get('/api/projects');
+  test("Should return all projects with their roles and status 200", async () => {
+    const response = await request(app)
+      .get("/api/projects")
+      .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
   });
   //Paso
-  test('Should return a projects or a bunch of projects by name with status 200', async () => { 
-    const response = await request(app).get('/api/projects').send({ projectName: 'Aplicación' });
+  test("Should return a projects or a bunch of projects by name with status 200", async () => {
+    const response = await request(app)
+      .get("/api/projects")
+      .send({ projectName: "Aplicación" })
+      .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
   });
   //Paso
-  test('Should return a project by id with status 200', async () => {
-    const response = await request(app).get('/api/projects').send({ idproyecto: '1' });
+  test("Should return a project by id with status 200", async () => {
+    const response = await request(app)
+      .get("/api/projects")
+      .send({ idproyecto: "1" })
+      .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Object);
   });
 });
 
-describe('api/projects/post', () => { 
-  //Paso
-  test('Should create a new project with status 201', async () => {
-    const newProject ={
-    "informacion": {
-        "proyect" : {
-            "pnombre": "Aplicación web",
-            "descripcion": "Realizar una aplicación web que permita gestionar la tienda Marcos Maximos",
-            "fechainicio": "2025-05-12",
-            "fechafin": "2027-01-04",
-            "idcliente": 1
-        },
-        "roles": [{
-            "nombrerol": "Developer Frontend Sr",
-            "nivelrol": 5,
-            "descripcionrol": "Conocimiento y experiencia previa con el uso de HTML",
-            "disponible": true,
-            "requerimientos": [{
-                "tiempoexperiencia": "0.4 meses con",
-                "idhabilidad": 6
-            },{
-                "tiempoexperiencia": "0.2 meses con",
-                "idhabilidad": 31
-            },{
-                "tiempoexperiencia": "0.6 meses con",
-                "idhabilidad": 90
-            }
-            ]
-        }, {
-            "nombrerol": "Developer Backend Jr",
-            "nivelrol": 10,
-            "descripcionrol": "Pues que sepa diseñar lo básico",
-            "disponible": true,
-            "requerimientos": [{
-                "tiempoexperiencia": "0.5 meses con",
-                "idhabilidad": 2
-            },{
-                "tiempoexperiencia": "0.1 meses con",
-                "idhabilidad": 1
-            },{
-                "tiempoexperiencia": "0.2 meses con",
-                "idhabilidad": 70
-            }
-            ]
-        }]
-    }
+describe("api/projects/post", () => {
+  let token;
+
+  // prep antes de empezar test
+  beforeAll(async () => {});
+
+  // prep después del test
+  afterAll(async () => {});
+
+  // ## etapa 1.
+  // autenticación
+  test("should return 200 and a token on successful login", async () => {
+    const userCredentials = {
+      providerid: "antonio.sosa",
+      password: "hola123",
     };
-    const response = await request(app).post('/api/projects').send(newProject);
+    const res = await request(app)
+      .post("/api/authenticate")
+      .send(userCredentials);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("token");
+    token = res.body.token;
+  });
+  //Paso
+  test("Should create a new project with status 201", async () => {
+    const newProject = {
+      informacion: {
+        proyect: {
+          pnombre: "Aplicación web",
+          descripcion: "El pepe",
+          fechainicio: "2025-05-12",
+          fechafin: "2027-01-04",
+          idcliente: 1,
+        },
+        roles: [
+          {
+            nombrerol: "Developer Frontend Sr",
+            nivelrol: 5,
+            descripcionrol:
+              "Conocimiento y experiencia previa con el uso de HTML",
+            disponible: true,
+            requerimientos: [
+              {
+                tiempoexperiencia: "0.4 meses con",
+                idhabilidad: 6,
+              },
+              {
+                tiempoexperiencia: "0.2 meses con",
+                idhabilidad: 31,
+              },
+              {
+                tiempoexperiencia: "0.6 meses con",
+                idhabilidad: 90,
+              },
+            ],
+          },
+          {
+            nombrerol: "Developer Backend Jr",
+            nivelrol: 10,
+            descripcionrol: "Pues que sepa diseñar lo básico",
+            disponible: true,
+            requerimientos: [
+              {
+                tiempoexperiencia: "0.5 meses con",
+                idhabilidad: 2,
+              },
+              {
+                tiempoexperiencia: "0.1 meses con",
+                idhabilidad: 1,
+              },
+              {
+                tiempoexperiencia: "0.2 meses con",
+                idhabilidad: 70,
+              },
+            ],
+          },
+        ],
+      },
+    };
+    const response = await request(app)
+      .post("/api/projects")
+      .send(newProject)
+      .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(201);
   });
-
 });
 
-describe('api/projects/patch', () => {
+describe("api/projects/patch", () => {
+  let token;
+
+  // prep antes de empezar test
+  beforeAll(async () => {});
+
+  // prep después del test
+  afterAll(async () => {});
+
+  // ## etapa 1.
+  // autenticación
+  test("should return 200 and a token on successful login", async () => {
+    const userCredentials = {
+      providerid: "antonio.sosa",
+      password: "hola123",
+    };
+    const res = await request(app)
+      .post("/api/authenticate")
+      .send(userCredentials);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("token");
+    token = res.body.token;
+  });
   //Paso
-  test('Should update a project with status 200', async () => {
+  test("Should update a project with status 200", async () => {
     const updatedProject = {
-    "idproyecto": 46,
-    "informacion": {
-        "proyect" : {
-            "pnombre": "Aplicación web prueba",
-            "descripcion": "Realizar una aplicación web que permita gestionar la tienda Marcos Maximos",
-            "fechainicio": "2025-05-12",
-            "fechafin": "2027-01-04",
-            "idcliente": 1
-        }
-    }
-}
-    const response = await request(app).patch('/api/projects').send(updatedProject);
+      idproyecto: 46,
+      informacion: {
+        proyect: {
+          pnombre: "Aplicación web prueba",
+          descripcion:
+            "Realizar una aplicación web que permita gestionar la tienda Marcos Maximos",
+          fechainicio: "2025-05-12",
+          fechafin: "2027-01-04",
+          idcliente: 1,
+        },
+      },
+    };
+    const response = await request(app)
+      .patch("/api/projects")
+      .send(updatedProject)
+      .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
-   
   });
 });

@@ -12,7 +12,7 @@ const clientesRoutes = require('./routes/clientesRoutes');
 const authenticationRoutes = require('./routes/authRoutes');
 const notificationRoutes =  require('./routes/notificationRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
-
+const compabilityRoutes = require('./routes/compabilityRoutes');
 const app = express();
 
 const corsOptions = {
@@ -43,9 +43,10 @@ app.use('/api', skillsRoutes);
 app.use('/api', authenticationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use('/api', appsRoutes); 
-app.use('/api',goalsRoutes);
+app.use('/api', goalsRoutes);
 app.use('/api', rolesRoutes); 
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api', compabilityRoutes); 
 
 app.get('/', (req, res) => {
   res.send('Welcome to the PathExplorer API!! Read our documentation to learn about how to use our different endpoints.');

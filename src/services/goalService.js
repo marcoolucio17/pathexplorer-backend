@@ -12,9 +12,7 @@ const ApiError = require('../utils/errorHelper');
 const fetchGoal = async (id_usuario) => { 
     const {data,error} = await supabase
     .from("metas")
-    .select(`idmeta,
-             meta,
-             plazo`)
+    .select("*")
     .eq('idusuario', id_usuario);
     if (error) {
         console.log("error", error);
@@ -34,7 +32,7 @@ const fetchGoal = async (id_usuario) => {
 const fetchGoalById = async (id_meta) => { 
     const { data, error } = await supabase
         .from("metas")
-        .select("idmeta,meta,plazo")
+        .select("*")
         .eq('idmeta', id_meta);
     if (error) {
         console.log("error", error);
