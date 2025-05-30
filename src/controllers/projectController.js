@@ -2,6 +2,7 @@ const {
     fetchProjects, 
     fetchProjectById, 
     fetchProjectsByName,
+    fetchMyProjects,
     fetchCreateProject,
     fetchUpdateProject,
     uploadRFPToStorage, 
@@ -11,55 +12,71 @@ const {
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
     try {
-        const { projectName = null, idproyecto = null } = req.body || {};    
-        if (projectName && !idproyecto) {
-            getProjectsByName(req, res);
+        const {
+            projectName = null,
+            idproyecto = null,
+            idusuario = null,
+        } = req.query; 
+        
+
+        if (projectName && !idproyecto && !idusuario) {
+            return getProjectsByName(req, res);
         }
-        else if (!projectName && idproyecto) {
-            getProjectById(req, res);
-        } else if (!projectName && !idproyecto) { 
-            getAllProjects(req, res);
-        }    
+        else if (!projectName && idproyecto && !idusuario) {
+            return getProjectById(idproyecto, res);
+        }
+        else if (!projectName && !idproyecto && !idusuario) {
+            return getAllProjects(req, res);
+        }
+        else if (!projectName && !idproyecto && idusuario) { 
+            return getMyProjects(req, res);
+        }
+        else { 
+            return res.status(400).json({ error: 'Invalid query parameters' });
+        }
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching projects' });
+        return res.status(500).json({ error: 'Error fetching projects' });
     }
 }
 
-const getAllProjects = async (req, res) => { 
+const getAllProjects = async (req,res) => { 
     try {
         const projects = await fetchProjects();
-    if (!projects) {
-        res.status(404).json({ error: 'No projects found' });
-    } else {
-        res.status(200).json(projects);
-    }
+        if (projects) {
+            getProjectsByFilter(req, res, projects);
+           
+        } else {
+            res.status(404).json({ error: 'No projects found' });
+            
+        }
     } catch (error) {
         res.status(500).json({ error: 'Error fetching projects' });
     }
 }
     
-const getProjectsByName = async (req, res) => { 
+const getProjectsByName = async (req,res) => { 
     try {    
-        const { projectName } = req.body;
+        const {
+            projectName = null
+        } = req.body || {}; 
         const projects = await fetchProjectsByName(projectName);
         if (projects) {
-            res.status(200).json(projects);
+             return getProjectsByFilter(req, res, projects);
         } else {
-            res.status(404).json({ error: 'Project not found' });
+            return res.status(404).json({ error: 'Project not found' });
         }   
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching projects' });
+        return res.status(500).json({ error: 'Error fetching projects' });
     }
 }
 
 
 //Función para utilizar la consulta de llamar un proyecto por id
-const getProjectById = async (req, res) => {
+const getProjectById = async (idproyecto, res) => {
     try {
-        const { idproyecto } = req.body;
         const project = await fetchProjectById(idproyecto);
         if (project) {
-            return  res.status(200).json(project);
+            return res.status(200).json(project);
         } else {
             return res.status(404).json({ error: 'Project not found' });
         }
@@ -69,32 +86,117 @@ const getProjectById = async (req, res) => {
     }
 }
 
-const createProject = async (req, res) => {
+const getMyProjects = async (req, res) => { 
     try {
-        const { informacion = null } = req.body || {};
-        if (informacion) { 
-            createFullProject(req, res);
+        const { idusuario } = req.query;
+
+        if (idusuario) {
+            const projects = await fetchMyProjects(idusuario);
+            if (projects) {
+                return getProjectsByFilter(req, res, projects);
+            } else {
+                return res.status(404).json({ error: 'No projects found for this user' });
+            }
         } else {
-            res.status(400).json({ error: 'No project information provided' });
+            return res.status(400).json({ error: 'User ID is required' });
         }
-        
     } catch (error) {
-        res.status(500).json({ error: 'Error creating project' });
+        return res.status(500).json({ error: 'Error fetching my projects' });
     }
 }
 
-const createFullProject = async (req, res) => {
+const getProjectsByFilter = async (req,res, projects) => {
+     
     try {
-        const { informacion } = req.body;
-        const result = await fetchCreateProject(informacion);
-        if (!result) {
-            res.status(404).json({ error: 'Project not found' });
-        } else {
-            res.status(201).json(result);
+        const { nombrerol = null, idcliente = null, idSkills = null } = req.body || {};
+
+        const requiredSkills = new Set(idSkills) ?? [];
+
+        const projectsFiltered = projects
+        .filter(project => {
+            return !idcliente || project.cliente.idcliente === idcliente;
+        })
+        .map(project => {
+    
+            const rolesFiltrados = project.proyecto_roles.filter(role => {
+                const datosRol = role.roles;
+    
+                if (nombrerol && datosRol.nombrerol !== nombrerol) return false;
+    
+                if (requiredSkills.length > 0) {
+                    const habilidades = datosRol.requerimientos_roles.map(r => r.requerimientos.habilidades.idhabilidad);
+                    const cumpleTodas = requiredSkills.every(idSkill => habilidades.includes(idSkill));
+                
+                    if (!cumpleTodas) return false;
+                }
+                return true;
+    
+            });
+            const getDuracionEnMeses = (inicio, fin) => {
+                const anios = fin.getFullYear() - inicio.getFullYear();
+                const meses = fin.getMonth() - inicio.getMonth();
+                const totalMeses = anios * 12 + meses;
+
+                // Ajustar si el día de fin es menor que el de inicio
+                if (fin.getDate() < inicio.getDate()) {
+                    return totalMeses - 1;
+                }
+                return totalMeses;
+            };
+
+            const fechaInicio = new Date(project.fechainicio);
+            const fechaFin = new Date(project.fechafin);
+            const duracionMes = getDuracionEnMeses(fechaInicio, fechaFin);
+            return {
+                ...project,
+                duracionMes,
+                proyecto_roles: rolesFiltrados
+            };
+        });
+
+        return res.status(200).json(projectsFiltered);
+        
+        
+    } catch (error) { 
+        return res.status(500).json({ error: 'Error fetching projects' });
+    }
+
+}
+
+
+const createProject = async (req, res) => {
+    try {
+        const { informacion = null,
+            projectName = null,
+            idproyecto = null,
+            nombrerol = null,
+            idcliente = null,
+            idSkills = null } = req.body || {};
+        if (informacion) { 
+            return createFullProject(informacion, res);
+        } else if (!informacion && (projectName || idproyecto || nombrerol || idcliente || idSkills)) {
+            return getProjects(req, res);
+        }
+        else {
+            return res.status(400).json({ error: 'No project information provided' });
         }
         
     } catch (error) {
-        res.status(500).json({ error: 'Error creating project' });
+        return res.status(500).json({ error: 'Error creating project' });
+    }
+}
+
+const createFullProject = async (informacion, res) => {
+    try {
+        const result = await fetchCreateProject(informacion);
+        if (!result) {
+            return res.status(404).json({ error: 'Project not found' });
+        } else {
+            return res.status(201).json(result);
+        }
+        
+    } catch (error) {
+        return res.status(500).json({ error: 'Error creating project' });
     }
 }
 
@@ -102,31 +204,27 @@ const updateProject = async (req, res) => {
     try {
         const { idproyecto = null } = req.body || {};
         const { proyect = null } = req.body.informacion || {};
-        console.log(idproyecto, proyect);
         if (idproyecto && proyect) {
-            updatingProject(req, res);
+            return updatingProject(idproyecto,proyect, res);
         } else {
-            res.status(400).json({ error: 'No project information provided' });
+            return res.status(400).json({ error: 'No project information provided' });
         }
     } catch (error) {
-         res.status(500).json({ error: 'Error updating project' });
+         return res.status(500).json({ error: 'Error updating project' });
     }
 }
 
-const updatingProject = async (req, res) => {
+const updatingProject = async (idproyecto,proyect, res) => {
     try {
-        console.log('Updating project');
-        const { idproyecto } = req.body;
-        const { proyecto } = req.body.informacion;
-        const result = await fetchUpdateProject(idproyecto, proyecto);
+        const result = await fetchUpdateProject(idproyecto, proyect);
         if (result) {
-            res.status(200).json(result);   
+            return res.status(200).json(result);   
         } else {
-            res.status(404).json({ error: 'Project not found' });
+            return res.status(404).json({ error: 'Project not found' });
         }
          
     } catch (error) {
-         res.status(500).json({ error: 'Error updating project' });
+         return res.status(500).json({ error: 'Error updating project' });
     }
 }
 
