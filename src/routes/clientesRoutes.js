@@ -7,15 +7,15 @@ const {
   uploadClienteImage,
   getClienteWithFotoUrl
 } = require('../controllers/clientesController');
+const authMiddleware = require('../middlewares/verifyHashToken');
 
 const router = express.Router();
 const upload = require('../middlewares/uploadMiddleware'); 
 
-router.get('/', obtenerClientes);
-router.get('/:id', obtenerClientePorId);
+router.get('/', authMiddleware, obtenerClientes);
+router.get('/:id',authMiddleware, obtenerClientePorId);
 router.post('/', crearCliente);
 router.put('/:id', actualizarCliente);
-const authMiddleware = require('../middlewares/verifyHashToken');
 
 // Subir imagen del cliente
 router.post('/upload/:idcliente', authMiddleware, upload.single('file'), uploadClienteImage);

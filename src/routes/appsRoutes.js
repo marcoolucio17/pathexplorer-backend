@@ -10,10 +10,21 @@ const {
 const router = express.Router();
 const authMiddleware = require('../middlewares/verifyHashToken');
 
-router.get('/aplicaciones/proyecto/:projectId', authMiddleware, getAppsByProjectId); // GET: Todas las aplicaciones de un proyecto
-router.get('/aplicaciones/usuario/:userId', authMiddleware, getAppsByUserId); // GET: Todas las aplicaciones de un usuario
-router.get('/aplicaciones/:userId/:appId', authMiddleware, getUserAppInProject);  // GET: Aplicación de un usuario en un proyecto
-router.patch('/aplicaciones/:userId/:appId', authMiddleware, patchAppStatus);
-router.post('/roles/:projectId', authMiddleware, createApp);
+// GET: Todas las apps de un proyecto
+router.get('/apps/proyecto/:projectId', authMiddleware, getAppsByProjectId);
+
+// GET: Todas las apps de un usuario
+router.get('/apps/usuario/:userId', authMiddleware, getAppsByUserId);
+
+// GET: Una app específica de un usuario
+router.get('/apps/usuario/:userId/app/:appId', authMiddleware, getUserAppInProject);
+
+// PATCH: Cambiar el estatus de una app
+router.patch('/apps/usuario/:userId/app/:appId', authMiddleware, patchAppStatus);
+
+// POST: Crear nueva aplicación     
+router.post('/apps', authMiddleware, createApp);
+
+
 
 module.exports = router;

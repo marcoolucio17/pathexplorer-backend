@@ -17,11 +17,13 @@ const fetchClientePorId = async (id) => {
     .from('cliente')
     .select('*')
     .eq('idcliente', id)
-    .single();
+    .maybeSingle(); // Devuelve null si no hay coincidencia
 
   if (error) throw error;
-  return data;
+  return data; // puede ser null si no se encontró
 };
+
+
 
 const insertarCliente = async ({ clnombre, inversion, fotodecliente }) => {
   const { data, error } = await supabase
