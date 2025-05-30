@@ -22,7 +22,6 @@ const getAppsByUserId = async (req, res) => {
     }
 };
 
-
 // GET: Aplicación específica
 const getUserAppInProject = async (req, res) => {
     const { userId, appId } = req.params;
@@ -39,8 +38,8 @@ const patchAppStatus = async (req, res) => {
     const { userId, appId } = req.params;
     const { estatus } = req.body;
 
-    if (!estatus || !['vacante', 'asignado'].includes(estatus)) {
-        return res.status(400).json({ message: "Estatus inválido. Debe ser 'vacante' o 'asignado'." });
+    if (!estatus || !['Vacante', 'Asignado', 'Pendiente', 'Revision'].includes(estatus)) {
+        return res.status(400).json({ message: "Estatus inválido. Debe ser 'Vacante', 'Asignado', 'Revision' o 'Pendiente'." });
     }
 
     try {
@@ -53,20 +52,20 @@ const patchAppStatus = async (req, res) => {
 
 // POST: Crear una nueva aplicación
 const createApp = async (req, res) => {
-    const { idrol, idusuario } = req.body;
+  try {
+    const { idusuario, idrol, message } = req.body;
 
-    if (!idrol || !idusuario) {
-        return res.status(400).json({ message: "Faltan idrol o idusuario." });
+    if (!idusuario || !idrol || !message) {
+      return res.status(400).json({ error: 'Faltan campos requeridos (idusuario, idrol, message).' });
     }
 
-    try {
-        const result = await appService.createApp(idrol, idusuario);
-        res.status(201).json({ message: "Aplicación creada exitosamente", data: result });
-    } catch (error) {
-        res.status(500).json({ message: "Error al crear la aplicación", error: error.message });
-    }
+    const data = await appService.createAppService({ idusuario, idrol, message });
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Error general al crear la aplicación:', err.message);
+    res.status(500).json({ message: 'Error al crear la aplicación.', error: err.message });
+  }
 };
-
 
 module.exports = {
     getAppsByProjectId,
