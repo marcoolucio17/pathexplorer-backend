@@ -7,7 +7,6 @@ router.get('/por-tipo', authMiddleware, getHabilidadesPorTipo);
 
 router.post('/asignar', authMiddleware, assignSkill);
 
-
 router.get('', authMiddleware, getTodasHabilidades);
 
 module.exports = router;

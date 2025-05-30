@@ -27,15 +27,16 @@ const getTodasHabilidades = async (req, res) => {
 }
 
 const assignSkill = async (req, res) => {
-  const { idusuario, idhabilidad } = req.body;
+  const { idusuario, nombreHabilidad } = req.body;
 
   try {
-    const data = await assignSkillToUser(idusuario, idhabilidad);
-    res.status(200).json(data);
+    const result = await assignSkillToUser(idusuario, nombreHabilidad);
+    res.status(201).json({ message: 'Habilidad asignada correctamente', result });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
+
 
 
 module.exports = { 

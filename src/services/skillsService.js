@@ -26,14 +26,33 @@ const getAllSkills = async () => {
 };
 
 
-const assignSkillToUser = async (idusuario, idhabilidad) => {
-  //checa si si ya esta
+const assignSkillToUser = async (idusuario, nombreHabilidad) => {
+  // 1. Buscar el ID de la habilidad por su nombre
+  const { data: habilidad, error: habilidadError } = await supabase
+    .from('habilidades')
+    .select('idhabilidad')
+    .ilike('nombre', nombreHabilidad) // ilike para no ser case-sensitive
+    .maybeSingle();
+
+  if (habilidadError) {
+    console.error('Error al buscar la habilidad:', habilidadError);
+    throw new Error('Error al buscar la habilidad');
+  }
+
+  if (!habilidad) {
+    throw new Error('La habilidad no existe');
+  }
+
+  const idhabilidad = habilidad.idhabilidad;
+
+  // 2. Verificar si ya está asignada
   const { data: existing, error: selectError } = await supabase
     .from('usuario_habilidad')
     .select('*')
     .eq('idusuario', idusuario)
     .eq('idhabilidad', idhabilidad)
-    .maybeSingle(); 
+    .maybeSingle();
+
   if (selectError) {
     console.error('Error al verificar si ya existe:', selectError);
     throw new Error('Error al verificar la relación');
@@ -43,7 +62,7 @@ const assignSkillToUser = async (idusuario, idhabilidad) => {
     throw new Error('Esta habilidad ya está asignada al usuario');
   }
 
-  //si no esta, la agrega 
+  // 3. Asignar la habilidad
   const { data, error } = await supabase
     .from('usuario_habilidad')
     .insert([{ idusuario, idhabilidad }]);
@@ -55,6 +74,7 @@ const assignSkillToUser = async (idusuario, idhabilidad) => {
 
   return data;
 };
+
 
 
 module.exports = {
