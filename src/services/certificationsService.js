@@ -48,7 +48,6 @@ const updateCertificate = async (idCertificacion, updates) => {
 };
 
 
-
 // Asignar certificado a un usuario
 const assignCertificateToEmployee = async (idusuario, idcertificaciones) => {
   const { data, error } = await supabase
@@ -130,11 +129,28 @@ const generateCertificateSignedUrl = async (certId) => {
   return { url: urlData.signedUrl };
 };
 
+const deleteCertificationById = async (id) => {
+  const { data, error } = await supabase
+    .from('certificaciones')
+    .delete()
+    .eq('idcertificaciones', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+
 module.exports = {
   createCertificate,
   assignCertificateToEmployee,
   getCertificatesByEmployeeId,
   uploadCertificateToStorage,
   generateCertificateSignedUrl,
-  updateCertificate
+  updateCertificate,
+  deleteCertificationById
 };

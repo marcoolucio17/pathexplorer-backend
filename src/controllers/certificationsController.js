@@ -127,11 +127,29 @@ const getCertificateImageSignedUrl = async (req, res) => {
 };
 
 
+const removeCertification = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await certificationsService.deleteCertificationById(id);
+    if (!result) {
+      return res.status(404).json({ message: 'Certificación no encontrada' });
+    }
+
+    res.status(200).json({ message: 'Certificación eliminada con éxito', result });
+  } catch (error) {
+    console.error('Error al eliminar certificación:', error.message);
+    res.status(500).json({ message: 'Error al eliminar la certificación', error: error.message });
+  }
+};
+
+
 module.exports = {
   createCertificate,
   assignCertificateToEmployee,
   getCertificatesByEmployeeId,
   uploadCertificateImage,
   getCertificateImageSignedUrl,
-  updateCertificateController
+  updateCertificateController,
+  removeCertification  
 };
