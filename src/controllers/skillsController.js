@@ -17,6 +17,14 @@ const getHabilidadesPorTipo = async (req, res) => {
   }
 };
 
+const getTodasHabilidades = async (req, res) => { 
+    try {
+        const habilidades = await getAllSkills();
+        res.status(200).json(habilidades);
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener todas las habilidades" });
+    }
+}
 
 const assignSkill = async (req, res) => {
   const { idusuario, idhabilidad } = req.body;
@@ -32,5 +40,6 @@ const assignSkill = async (req, res) => {
 
 module.exports = { 
     getHabilidadesPorTipo,
-    assignSkill
+    assignSkill,
+    getTodasHabilidades
 };

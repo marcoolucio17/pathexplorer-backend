@@ -15,6 +15,17 @@ const getSkillsByType = async (isTechnical) => {
     return data;
 };
 
+const getAllSkills = async () => {
+    const { data, error } = await supabase
+        .from('habilidades')
+        .select('*');
+
+    if (error) throw error;
+
+    return data;
+};
+
+
 const assignSkillToUser = async (idusuario, idhabilidad) => {
   //checa si si ya esta
   const { data: existing, error: selectError } = await supabase
@@ -46,9 +57,8 @@ const assignSkillToUser = async (idusuario, idhabilidad) => {
 };
 
 
-
-
 module.exports = {
   getSkillsByType,
-  assignSkillToUser
+  assignSkillToUser,
+  getAllSkills
 };
