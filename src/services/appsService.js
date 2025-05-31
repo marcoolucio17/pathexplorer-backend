@@ -1,4 +1,5 @@
 const supabase = require('../config/supabaseClient');
+const { generateProfileSignedUrl } = require('../services/userService');
 
 // Obtener todas las aplicaciones de un proyecto
 const fetchAppsByProjectId = async (projectId) => {
@@ -143,7 +144,7 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
   // Paso 1: Obtener todos los proyectos creados por ese usuario
   const { data: proyectos, error: errorProyectos } = await supabase
     .from('proyecto')
-    .select('idproyecto')
+    .select('idproyecto, pnombre')
     .eq('idusuario', idusuario);
 
   if (errorProyectos) throw errorProyectos;
@@ -154,16 +155,21 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
   // Paso 2: Obtener todos los roles de esos proyectos
   const { data: roles, error: errorRoles } = await supabase
     .from('proyecto_roles')
-    .select('idrol')
+    .select('idrol, idproyecto')
     .in('idproyecto', idsProyectos);
 
   if (errorRoles) throw errorRoles;
+
+  const rolProyectoMap = {};
+  roles.forEach(r => {
+    rolProyectoMap[r.idrol] = r.idproyecto;
+  });
 
   const idsRoles = roles.map(r => r.idrol);
   if (idsRoles.length === 0) return [];
 
   // Paso 3: Obtener las aplicaciones a esos roles
-  const { data: aplicaciones, error: errorAplicaciones } = await supabase
+  const { data: aplicaciones, error: errorApps } = await supabase
     .from('aplicacion')
     .select(`
       idaplicacion,
@@ -172,14 +178,49 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
       message,
       idrol,
       idusuario,
-      usuario(idusuario, nombre, correoelectronico),
-      roles(idrol, nombrerol, descripcionrol)
+      usuario (
+        idusuario,
+        nombre,
+        correoelectronico,
+        fotodeperfil
+      ),
+      roles (
+        idrol,
+        nombrerol,
+        descripcionrol
+      )
     `)
     .in('idrol', idsRoles);
 
-  if (errorAplicaciones) throw errorAplicaciones;
+  if (errorApps) throw errorApps;
 
-  return aplicaciones;
+  const proyectoMap = Object.fromEntries(proyectos.map(p => [p.idproyecto, p.pnombre]));
+
+  // Paso 4: Agregar nombre del proyecto y foto de perfil firmada
+  const aplicacionesEnriquecidas = await Promise.all(
+    aplicaciones.map(async (app) => {
+      const idproyecto = rolProyectoMap[app.idrol];
+      const nombreproyecto = proyectoMap[idproyecto] || null;
+
+      let fotodeperfil_url = null;
+      if (app.usuario?.fotodeperfil) {
+        const result = await generateProfileSignedUrl(app.usuario.idusuario);
+        fotodeperfil_url = result?.url || null;
+      }
+
+      return {
+        ...app,
+        idproyecto,
+        nombreproyecto,
+        usuario: {
+          ...app.usuario,
+          fotodeperfil_url
+        }
+      };
+    })
+  );
+
+  return aplicacionesEnriquecidas;
 };
 
 
