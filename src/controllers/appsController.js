@@ -38,8 +38,8 @@ const patchAppStatus = async (req, res) => {
     const { userId, appId } = req.params;
     const { estatus } = req.body;
 
-    if (!estatus || !['Asignado', 'Pendiente', 'Revision'].includes(estatus)) {
-        return res.status(400).json({ message: "Estatus inválido. Debe ser 'Asignado', 'Revision' o 'Pendiente'." });
+    if (!estatus || !['Asignado', 'Pendiente', 'Revision', 'Rechazado'].includes(estatus)) {
+        return res.status(400).json({ message: "Estatus inválido. Debe ser 'Asignado', 'Revision', 'Rechazado' o 'Pendiente'." });
     }
 
     try {
@@ -67,10 +67,24 @@ const createApp = async (req, res) => {
   }
 };
 
+const getAplicacionesPorCreador = async (req, res) => {
+  try {
+    const { idusuario } = req.params;
+    const data = await appService.obtenerAplicacionesPorCreador(parseInt(idusuario));
+    res.json(data);
+  } catch (error) {
+    console.error('[ERROR]', error);
+    res.status(500).json({ error: error.message || 'Error al obtener las aplicaciones' });
+  }
+};
+
+
+
 module.exports = {
     getAppsByProjectId,
     getAppsByUserId,
     getUserAppInProject,
     patchAppStatus,
-    createApp
+    createApp,
+    getAplicacionesPorCreador
 };
