@@ -171,11 +171,12 @@ const createProject = async (req, res) => {
             idproyecto = null,
             nombrerol = null,
             idcliente = null,
+            idusuario= null,
             idSkills = null } = req.body || {};
             console.log(informacion);
         if (informacion) { 
             return createFullProject(informacion, res);
-        } else if (!informacion && (projectName || idproyecto || nombrerol || idcliente || idSkills)) {
+        } else if (!informacion && (projectName || idproyecto || nombrerol || idcliente || idSkills || idusuario)) {
             return getProjects(req, res);
         }
         else {
