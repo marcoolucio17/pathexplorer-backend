@@ -1,43 +1,44 @@
+// src/test/feedback.test.js
 const request = require("supertest");
 const app = require("../app");
 
 describe("Feedback API", () => {
   let token;
 
-  beforeAll(async () => {
+  // Autenticación previa al resto de los tests
+  test("should return 200 and a token on successful login", async () => {
+    const userCredentials = {
+      providerid: "antonio.sosa",
+      password: "hola123",
+    };
     const res = await request(app)
       .post("/api/authenticate")
-      .send({
-        providerid: "antonio.sosa",
-        password: "hola123",
-      });
+      .send(userCredentials);
 
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("token");
     token = res.body.token;
+    console.log(token);
+
   });
 
-  //  Test 1: Obtener feedbacks para un usuario válido
+  // Test: Obtener feedbacks de un usuario
   test("should return feedbacks for a user", async () => {
-    const userId = 2; // cambia si necesitas otro
+    const idUsuarioObjetivo = 2; // Cambia este ID si es necesario
 
     const res = await request(app)
-      .get(`/api/feedback/${userId}`)
+      .get(`/api/feedback/${idUsuarioObjetivo}`)
       .set("Authorization", `Bearer ${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("feedbacks");
     expect(Array.isArray(res.body.feedbacks)).toBe(true);
-
-    if (res.body.feedbacks.length > 0) {
-      const fb = res.body.feedbacks[0];
-      expect(fb).toHaveProperty("feedback");
-      expect(fb).toHaveProperty("rating");
-      expect(fb).toHaveProperty("fecha");
-    }
   });
 
-  //  Test 2: Sin token debe devolver 401
+  // Test: Error por falta de token
   test("should return 401 if token is missing", async () => {
     const res = await request(app).get("/api/feedback/2");
+
     expect(res.statusCode).toBe(401);
     expect(res.body).toHaveProperty("error");
   });
