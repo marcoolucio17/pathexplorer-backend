@@ -9,7 +9,8 @@ const {
   uploadUserCV,
   uploadUserProfilePicture,
   getUserCVSignedUrl,
-  getUserProfileSignedUrl
+  getUserProfileSignedUrl,
+  patchUsuario
 } = require('../controllers/userController');
 
 router.get('/usuario/:ID', authMiddleware, userController.getUserById);
@@ -19,6 +20,7 @@ router.post('/upload-cv/:id', authMiddleware, upload.single('file'), uploadUserC
 router.post('/upload-profile/:id', authMiddleware, upload.single('file'), uploadUserProfilePicture);
 router.get('/cv-url/:id', authMiddleware, getUserCVSignedUrl);
 router.get('/profile-url/:id', authMiddleware, getUserProfileSignedUrl);
+router.patch('/usuario/:id', authMiddleware, patchUsuario);
 
 
 module.exports = router;    
