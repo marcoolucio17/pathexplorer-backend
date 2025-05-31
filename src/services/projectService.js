@@ -12,6 +12,9 @@ const tableRequerimientosRoles = `requerimientos_roles(${tableRequirement})`;
 const tableRoles = `roles(idrol,nombrerol,nivelrol,descripcionrol,disponible,${tableRequerimientosRoles})`;
 const tableProjectRoles = `proyecto_roles(${tableRoles})`;
 const textToObtainInfoProject = `${tableProject},${tableUser},${tableUtp},${tableClient},${tableProjectRoles}`;
+const { getClienteFotoUrl } = require('../services/clientesService');
+const { generateProfileSignedUrl } = require('../services/userService');
+
 
 //Consulta para llamar la info para el proyecto en la pantalla de Dashboard
 
@@ -454,13 +457,90 @@ const obtenerProyectoCompleto = async (idProyecto) => {
     .from('proyecto')
     .select(`
       *,
-      cliente(idcliente, clnombre, inversion, fotodecliente),
-      proyecto_roles(idrol, estado, roles(idrol, nombrerol, nivelrol, descripcionrol))
+      cliente (
+        idcliente,
+        clnombre,
+        inversion,
+        fotodecliente
+      ),
+      usuario (
+        idusuario,
+        employeeeid,
+        nombre,
+        correoelectronico,
+        telefono,
+        ubicacion,
+        linkedin,
+        github,
+        fotodeperfil
+      ),
+      proyecto_roles (
+        idrol,
+        estado,
+        roles (
+          idrol,
+          nombrerol,
+          nivelrol,
+          descripcionrol,
+          requerimientos_roles (
+            requerimientos (
+              idrequerimiento,
+              tiempoexperiencia,
+              habilidades (
+                idhabilidad,
+                nombre,
+                estecnica
+              )
+            )
+          )
+        )
+      ),
+      utp (
+        idusuario,
+        estado,
+        usuario (
+          idusuario,
+          nombre,
+          correoelectronico,
+          telefono,
+          fotodeperfil,
+          github,
+          linkedin
+        )
+      )
     `)
     .eq('idproyecto', idProyecto)
     .single();
 
   if (error) throw error;
+
+  // 🔹 Reemplazar cliente con datos que incluyan la URL firmada
+  if (proyecto.cliente?.idcliente) {
+    const clienteConUrl = await getClienteFotoUrl(proyecto.cliente.idcliente);
+    proyecto.cliente = { ...proyecto.cliente, ...clienteConUrl };
+  }
+
+  // 🔹 Añadir URL de la foto del usuario creador
+  if (proyecto.usuario?.idusuario) {
+    const signedUrlObj = await generateProfileSignedUrl(proyecto.usuario.idusuario);
+    if (signedUrlObj?.url) {
+      proyecto.usuario.fotodeperfil_url = signedUrlObj.url;
+    }
+  }
+
+  // 🔹 Añadir URL de la foto de perfil a cada usuario en UTP
+  if (Array.isArray(proyecto.utp)) {
+    for (const miembro of proyecto.utp) {
+      const userId = miembro?.usuario?.idusuario;
+      if (userId) {
+        const signedUrlObj = await generateProfileSignedUrl(userId);
+        if (signedUrlObj?.url) {
+          miembro.usuario.fotodeperfil_url = signedUrlObj.url;
+        }
+      }
+    }
+  }
+
   return proyecto;
 };
 
