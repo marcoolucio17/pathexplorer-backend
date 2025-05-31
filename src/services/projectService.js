@@ -425,19 +425,29 @@ const getRFPSignedUrl = async (projectId) => {
 
 
 const obtenerProyectoPorRol = async (idProyecto, idRol) => {
-  const { data: proyecto, error } = await supabase
+  const { data, error } = await supabase
     .from('proyecto')
     .select(`
       *,
-      proyecto_roles!inner(idrol, estado)
+      proyecto_roles!inner(
+        estado,
+        idrol,
+        roles (
+          idrol,
+          nombrerol,
+          nivelrol,
+          descripcionrol
+        )
+      )
     `)
     .eq('idproyecto', idProyecto)
     .eq('proyecto_roles.idrol', idRol)
     .single();
 
   if (error) throw error;
-  return proyecto;
+  return data;
 };
+
 
 const obtenerProyectoCompleto = async (idProyecto) => {
   const { data: proyecto, error } = await supabase
