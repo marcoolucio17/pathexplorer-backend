@@ -35,7 +35,6 @@ const fetchAppsByProjectId = async (projectId) => {
 
 // Obtener todas las aplicaciones de un usuario
 const fetchAppsByUserId = async (userId) => {
-  // Paso 1: obtén todas las aplicaciones del usuario con los datos del rol
   const { data: apps, error } = await supabase
     .from('aplicacion')
     .select(`
@@ -56,7 +55,6 @@ const fetchAppsByUserId = async (userId) => {
     throw new Error('Error al obtener las aplicaciones del usuario.');
   }
 
-  // Paso 2: por cada aplicación, busca el proyecto relacionado al rol
   const aplicacionesConProyecto = await Promise.all(apps.map(async (app) => {
     const { data: proyectoRol, error: errorPR } = await supabase
       .from('proyecto_roles')
