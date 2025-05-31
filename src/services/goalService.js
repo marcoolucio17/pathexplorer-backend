@@ -63,10 +63,10 @@ const fetchCreateGoal = async (goal) => {
  * @param {object} goal - Objeto con la información de la meta a actualizar
  * @returns true si la meta fue actualizada correctamente
  */
-const fetchUpdateGoal = async (id, goal) => {
+const fetchUpdateGoal = async (id, cambio) => {
     const { data, error } = await supabase
         .from("metas")
-        .update([goal])
+        .update(cambio)
         .eq('idmeta', id);
     if (error) {
         console.log("error", error);
@@ -92,10 +92,22 @@ const fetchDeleteGoal = async (id_goal) => {
     return true;
 }
 
+// suck nigga balls 
+const updateAllGoals = async (userid, goals) => {
+  const { data, error } = await supabase.from('metas').delete().eq('idusuario', userid);
+
+  goals.forEach(goal => {
+    fetchCreateGoal(goal);
+  });
+
+  return true
+}
+
 module.exports = {
     fetchGoal,
     fetchGoalById,
     fetchCreateGoal,
     fetchUpdateGoal,
-    fetchDeleteGoal
+    fetchDeleteGoal,
+    updateAllGoals
 };

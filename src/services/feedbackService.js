@@ -10,7 +10,7 @@ const supabase = require('../config/supabaseClient');
 const obtenerFeedbackPorUsuario = async (idUsuarioObjetivo) => {
   const { data, error } = await supabase
     .from('feedback')          // tabla debe estar en minúsculas
-    .select('feedback')        // solo queremos la columna de texto
+    .select('feedback, rating, fecha')        // solo queremos la columna de texto
     .eq('idusuario', idUsuarioObjetivo); // filtra por el ID del usuario objetivo
 
   if (error) {

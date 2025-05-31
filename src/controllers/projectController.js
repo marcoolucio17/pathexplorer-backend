@@ -7,6 +7,8 @@ const {
   uploadRFPToStorage,
   saveRFPPathToProject,
   getRFPSignedUrl,
+  obtenerProyectoCompleto,
+  obtenerProyectoPorRol,
 } = require("../services/projectService");
 
 //Función para utilizar la consulta de llamar todos los proyectos
@@ -144,13 +146,20 @@ const createProject = async (req, res) => {
       idproyecto = null,
       nombrerol = null,
       idcliente = null,
+      idusuario = null,
       idSkills = null,
     } = req.body || {};
+    console.log(informacion);
     if (informacion) {
       return createFullProject(informacion, res);
     } else if (
       !informacion &&
-      (projectName || idproyecto || nombrerol || idcliente || idSkills)
+      (projectName ||
+        idproyecto ||
+        nombrerol ||
+        idcliente ||
+        idSkills ||
+        idusuario)
     ) {
       return getProjects(req, res);
     } else {
@@ -240,10 +249,37 @@ const getRFPUrl = async (req, res) => {
   }
 };
 
+const getProyectoPorRol = async (req, res) => {
+  try {
+    const { id, idrol } = req.params;
+    const data = await obtenerProyectoPorRol(id, idrol);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener el proyecto por rol" });
+  }
+};
+
+const getProyectoCompleto = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await obtenerProyectoCompleto(id);
+    res.json(data);
+  } catch (error) {
+    console.error("[ERROR en obtenerProyectoCompleto]", error); // 👈
+    res
+      .status(500)
+      .json({
+        error: error.message || "Error al obtener el proyecto completo",
+      });
+  }
+};
+
 module.exports = {
   getProjects,
   createProject,
   updateProject,
   uploadRFP,
   getRFPUrl,
+  getProyectoPorRol,
+  getProyectoCompleto,
 };

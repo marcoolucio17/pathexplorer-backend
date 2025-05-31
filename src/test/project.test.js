@@ -187,3 +187,57 @@ describe("api/projects/patch", () => {
     expect(response.statusCode).toBe(200);
   });
 });
+
+describe("api/projects/endpoints projecto custom para leo", () => {
+  let token;
+
+  // Autenticación
+  beforeAll(async () => {
+    const userCredentials = {
+      providerid: "antonio.sosa",
+      password: "hola123",
+    };
+    const res = await request(app)
+      .post("/api/authenticate")
+      .send(userCredentials);
+
+    token = res.body.token;
+  });
+
+  // Test 1: Proyecto por rol (estado + datos del rol)
+  test("Should return a project with role details by role id", async () => {
+    const idProyecto = 1;
+    const idRol = 1;
+
+    const res = await request(app)
+      .get(`/api/${idProyecto}/por-rol/${idRol}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("idproyecto");
+    expect(res.body).toHaveProperty("proyecto_roles");
+    expect(Array.isArray(res.body.proyecto_roles)).toBe(true);
+    expect(res.body.proyecto_roles.length).toBeGreaterThan(0);
+    expect(res.body.proyecto_roles[0]).toHaveProperty("estado");
+    expect(res.body.proyecto_roles[0]).toHaveProperty("roles");
+    expect(res.body.proyecto_roles[0].roles).toHaveProperty("nombrerol");
+
+  });
+
+  // Test 2: Aplicaciones a proyectos creados por un usuario
+  test("Should return all applications for all projects created by a user", async () => {
+    const idUsuarioCreador = 1;
+
+    const res = await request(app)
+      .get(`/api/creador/${idUsuarioCreador}/aplicaciones`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    if (res.body.length > 0) {
+      expect(res.body[0]).toHaveProperty("idaplicacion");
+      expect(res.body[0]).toHaveProperty("usuario");
+      expect(res.body[0]).toHaveProperty("roles");
+    }
+  });
+});

@@ -51,7 +51,7 @@ describe("End to end test", () => {
   // fetch de todas las aplicaciones en cierto proyecto
   test("should return applications of a certain project with status 200", async () => {
     const response = await request(app)
-      .get("/api/aplicaciones/proyecto/1")
+      .get("/api/apps/proyecto/89")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -60,7 +60,7 @@ describe("End to end test", () => {
   // fetch de todas las aplicaciones de cierto usuario
   test("should return applications of a certain project with status 200", async () => {
     const response = await request(app)
-      .get("/api/aplicaciones/usuario/1")
+      .get("/api/apps/usuario/2")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -69,10 +69,7 @@ describe("End to end test", () => {
   // fetch de las skills técnicas
   test("should return the technical skills with status 200", async () => {
     const response = await request(app)
-      .get("/api/habilidades/por-tipo")
-      .send({
-        isTechnical: true,
-      })
+      .get("/api/habilidades/por-tipo?isTechnical=true")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -81,10 +78,7 @@ describe("End to end test", () => {
   // fetch de las skills no técnicas
   test("should return the non-technical skills with status 200", async () => {
     const response = await request(app)
-      .get("/api/habilidades/por-tipo")
-      .send({
-        isTechnical: false,
-      })
+      .get("/api/habilidades/por-tipo?isTechnical=false")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);

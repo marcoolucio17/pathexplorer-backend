@@ -4,6 +4,7 @@ const {
   fetchCreateGoal,
   fetchUpdateGoal,
   fetchDeleteGoal,
+  updateAllGoals,
 } = require("../services/goalService");
 
 //Función para obtener todas las metas de un usuario
@@ -55,12 +56,8 @@ const getGoalById = async (req, res) => {
 //Función para crear una meta
 const createGoal = async (req, res) => {
   try {
-    const { goal = null } = req.body.informacion || {};
-    if (goal) {
-      createNewGoal(req, res);
-    } else {
-      res.status(400).json({ error: "Goal is required" });
-    }
+    const data = req.body || {};
+    createNewGoal(req, res);
   } catch (error) {
     res.status(500).json({ error: "Error creating goal" });
   }
@@ -68,9 +65,9 @@ const createGoal = async (req, res) => {
 
 const createNewGoal = async (req, res) => {
   try {
-    const { goal = null } = req.body.informacion || {};
+    const data = req.body || {};
 
-    const result = await fetchCreateGoal(goal);
+    const result = await fetchCreateGoal(data);
     if (!result) {
       res.status(400).json({ error: "Error creating goal" });
     }
@@ -83,25 +80,11 @@ const createNewGoal = async (req, res) => {
 //Función para actualizar una meta por id
 const updateGoal = async (req, res) => {
   try {
-    const { idmeta = null } = req.body || {};
-    const { goal = null } = req.body.informacion || {};
+    const { idmeta, cambio } = req.body || {};
 
-    if (idmeta && goal) {
-      updatingAGoalUser(req, res);
-    } else {
-      res.status(400).json({ error: "User ID and goal are required" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: "Error updating goal" });
-  }
-};
+    // parchesote porque los del front tenían otro back en mente
 
-const updatingAGoalUser = async (req, res) => {
-  try {
-    const { idmeta = null } = req.body || {};
-    const { goal = null } = req.body.informacion || {};
-    console.log(idmeta, goal);
-    const result = await fetchUpdateGoal(idmeta, goal);
+    const result = await fetchUpdateGoal(idmeta, cambio);
     if (result) {
       res.status(200).json({ message: "Goal updated successfully" });
     } else {
@@ -140,9 +123,27 @@ const deleteGoalById = async (req, res) => {
   }
 };
 
+const updateUserGoals = async (req, res) => {
+  try {
+    const { userid } = req.params;
+    const { goals } = req.body;
+    const result = await updateAllGoals(userid, goals);
+    if (result) {
+      res.status(200).json({ message: "Goals updated successfully" });
+    } else {
+      res
+        .status(404)
+        .json({ error: "Error updating goals due to bad request format." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error deleting goal" });
+  }
+};
+
 module.exports = {
   getGoals,
   createGoal,
   updateGoal,
   deleteGoal,
+  updateUserGoals,
 };
