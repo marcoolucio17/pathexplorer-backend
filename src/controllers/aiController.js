@@ -1,6 +1,7 @@
 const { extractCVDataWithGemini } = require('../services/aiService');
 const { guardarDatosCVExtraidos } = require('../services/aiService'); // Ajusta la ruta si es necesario
 const { uploadCVToStorage } = require('../services/userService'); // asegúrate de que esté exportado ahí
+const { mejorarTextoConGemini } = require('../services/aiService'); // asegúrate de que esté exportado ahí
 
 const handleCVUpload = async (req, res) => {
   try {
@@ -45,4 +46,19 @@ const handleCVUpload = async (req, res) => {
   }
 };
 
-module.exports = { handleCVUpload };
+const mejorarTexto = async (req, res) => {
+  try {
+    const { texto } = req.body;
+    if (!texto) {
+      return res.status(400).json({ error: 'Texto no proporcionado' });
+    }
+
+    const resultado = await mejorarTextoConGemini(texto);
+    res.status(200).json({ original: texto, mejorado: resultado });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Error interno' });
+  }
+};
+
+
+module.exports = { handleCVUpload, mejorarTexto };
