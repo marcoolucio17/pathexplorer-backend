@@ -450,19 +450,72 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
 
 
 const obtenerProyectoCompleto = async (idProyecto) => {
-  const { data: proyecto, error } = await supabase
+  const { data, error } = await supabase
     .from('proyecto')
     .select(`
       *,
-      cliente(idcliente, clnombre, inversion, fotodecliente),
-      proyecto_roles(idrol, estado, roles(idrol, nombrerol, nivelrol, descripcionrol))
+      cliente (
+        idcliente,
+        clnombre,
+        inversion,
+        fotodecliente
+      ),
+      usuario (
+        idusuario,
+        employeeeid,
+        nombre,
+        correoelectronico,
+        telefono,
+        ubicacion,
+        linkedin,
+        github,
+        fotodeperfil
+      ),
+      proyecto_roles (
+        idrol,
+        estado,
+        roles (
+          idrol,
+          nombrerol,
+          nivelrol,
+          descripcionrol,
+          requerimientos_roles (
+            requerimientos (
+              idrequerimiento,
+              tiempoexperiencia,
+              habilidades (
+                idhabilidad,
+                nombre,
+                estecnica
+              )
+            )
+          )
+        )
+      ),
+      miembro (
+        idmiembro,
+        idusuario,
+        usuario (
+          idusuario,
+          employeeeid,
+          nombre,
+          correoelectronico,
+          telefono,
+          fotodeperfil,
+          github,
+          linkedin
+        )
+      )
     `)
     .eq('idproyecto', idProyecto)
     .single();
 
   if (error) throw error;
-  return proyecto;
+  return data;
 };
+
+
+
 
 module.exports = {
   fetchProjects,
