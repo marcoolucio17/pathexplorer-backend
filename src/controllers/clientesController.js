@@ -20,18 +20,22 @@ const obtenerClientes = async (req, res) => {
 };
 
 const obtenerClientePorId = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const id = parseInt(req.params.id);
     const data = await fetchClientePorId(id);
+
     if (!data) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
+
     res.json(data);
   } catch (error) {
     console.error('Error al obtener cliente por ID:', error.message);
     res.status(500).json({ error: 'Error al obtener cliente' });
   }
 };
+
 
 const crearCliente = async (req, res) => {
   try {
@@ -81,7 +85,7 @@ const getClienteWithFotoUrl = async (req, res) => {
     console.error('Error al obtener el cliente:', error);
     res.status(500).json({ error: 'Error al obtener el cliente con URL de la imagen.' });
   }
-};
+};  
 
 module.exports = {
   obtenerClientes,

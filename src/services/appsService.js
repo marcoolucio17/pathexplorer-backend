@@ -1,165 +1,235 @@
 const supabase = require('../config/supabaseClient');
+const { generateProfileSignedUrl } = require('../services/userService');
 
 // Obtener todas las aplicaciones de un proyecto
 const fetchAppsByProjectId = async (projectId) => {
-    const parsedId = parseInt(projectId);
-    if (isNaN(parsedId)) throw new Error("projectId inválido");
-
+    // Primero obtenemos los roles asociados al proyecto
     const { data: roles, error: rolesError } = await supabase
         .from('proyecto_roles')
         .select('idrol')
-        .eq('idproyecto', parsedId);
+        .eq('idproyecto', projectId);
 
-    if (rolesError) throw rolesError;
-
+    if (rolesError) throw new Error(rolesError.message);
     const roleIds = roles.map(r => r.idrol);
 
     if (roleIds.length === 0) return [];
 
+    // Luego obtenemos las aplicaciones asociadas a esos roles
     const { data: apps, error: appsError } = await supabase
         .from('aplicacion')
         .select(`
             idaplicacion,
-            estatus,
             idusuario,
             idrol,
+            estatus,
+            fechaaplicacion,
+            message,
             usuario(nombre, correoelectronico),
             roles(nombrerol)
         `)
         .in('idrol', roleIds);
 
-    if (appsError) throw appsError;
+    if (appsError) throw new Error(appsError.message);
 
     return apps;
 };
 
-
 // Obtener todas las aplicaciones de un usuario
 const fetchAppsByUserId = async (userId) => {
-    const parsedId = parseInt(userId);
-    if (isNaN(parsedId)) throw new Error("userId inválido");
+  const { data: apps, error } = await supabase
+    .from('aplicacion')
+    .select(`
+      idaplicacion,
+      estatus,
+      fechaaplicacion,
+      message,
+      idrol,
+      roles (
+        idrol,
+        nombrerol
+      )
+    `)
+    .eq('idusuario', userId);
 
+  if (error) {
+    console.error('Error al obtener aplicaciones:', error);
+    throw new Error('Error al obtener las aplicaciones del usuario.');
+  }
+
+  const aplicacionesConProyecto = await Promise.all(apps.map(async (app) => {
+    const { data: proyectoRol, error: errorPR } = await supabase
+      .from('proyecto_roles')
+      .select(`
+        idproyecto,
+        proyecto (
+          idproyecto,
+          pnombre
+        )
+      `)
+      .eq('idrol', app.idrol)
+      .limit(1)
+      .single();
+
+    if (errorPR) {
+      console.warn('No se encontró proyecto para el rol', app.idrol);
+      return { ...app, proyecto: null };
+    }
+
+    return {
+      ...app,
+      proyecto: proyectoRol.proyecto,
+    };
+  }));
+
+  return aplicacionesConProyecto;
+};
+
+
+// Obtener una aplicación específica de un usuario
+const fetchUserAppInProject = async (userId, appId) => {
     const { data, error } = await supabase
         .from('aplicacion')
         .select(`
             idaplicacion,
-            estatus,
+            idusuario,
             idrol,
-            roles(nombrerol),
-            usuario(nombre, correoelectronico)
+            estatus,
+            fechaaplicacion,
+            message,
+            usuario(nombre),
+            roles(nombrerol)
         `)
-        .eq('idusuario', parsedId);
-
-    if (error) throw error;
-    return data;
-};
-
-// Obtener una aplicación específica de un usuario
-const getAppByUserAndAppId = async (userId, appId) => {
-    const parsedUserId = parseInt(userId);
-    const parsedAppId = parseInt(appId);
-    if (isNaN(parsedUserId) || isNaN(parsedAppId)) throw new Error("IDs inválidos");
-
-    const { data, error } = await supabase
-        .from('aplicacion')
-        .select('*')
-        .eq('idusuario', parsedUserId)
-        .eq('idaplicacion', parsedAppId)
-        .single();
-
-    if (error) throw error;
-    return data;
-};
-
-
-// Obtener una aplicación específica de un usuario en un proyecto
-const fetchUserAppInProject = async (userId, appId) => {
-    const { data, error } = await supabase
-        .from('aplicacion')
-        .select('*')
         .eq('idusuario', userId)
         .eq('idaplicacion', appId)
         .single();
-    if (error) throw error;
+
+
+    if (error) throw new Error(error.message);
+
     return data;
 };
+//URL: http://localhost:8080/api/apps/usuario/1/app/5
+// Reemplazar 1 por el ID del usuario y 5 por el ID de la aplicación
 
-// Cambiar el estatus de una aplicación
 const updateAppStatus = async (userId, appId, estatus) => {
-    const parsedUserId = parseInt(userId);
-    const parsedAppId = parseInt(appId);
-    if (isNaN(parsedUserId) || isNaN(parsedAppId)) throw new Error("IDs inválidos");
-
     const { data, error } = await supabase
         .from('aplicacion')
         .update({ estatus })
-        .eq('idusuario', parsedUserId)
-        .eq('idaplicacion', parsedAppId)
+        .eq('idusuario', userId)
+        .eq('idaplicacion', appId)
         .select()
         .single();
 
-    if (error) throw error;
+    if (error) throw new Error(error.message);
+
     return data;
 };
 
-const createRole = async (projectId, nombreRol, nivelRol, descripcionRol, estado) => {
-    const parsedProjectId = parseInt(projectId);
-    if (isNaN(parsedProjectId)) throw new Error("projectId inválido");
+// Crear una nueva aplicación
+const createAppService = async ({ idusuario, idrol, message }) => {
+  const { data, error } = await supabase
+    .from('aplicacion')
+    .insert([{ idusuario, idrol, message }])
+    .select()
+    .single();
 
-    // Insertar en tabla roles
-    const { data: roleData, error: roleError } = await supabase
-        .from('roles')
-        .insert({ nombrerol: nombreRol, nivelrol: nivelRol, descripcionrol: descripcionRol })
-        .select()
-        .single();
+  if (error) {
+    throw new Error(error.message);
+  }
 
-    if (roleError) throw roleError;
+  return data;
+};
 
-    // Insertar en tabla proyecto_roles
-    const { data: linkData, error: linkError } = await supabase
-        .from('proyecto_roles')
-        .insert({ idproyecto: parsedProjectId, idrol: roleData.idrol, estado })
-        .select()
-        .single();
+const obtenerAplicacionesPorCreador = async (idusuario) => {
+  // Paso 1: Obtener todos los proyectos creados por ese usuario
+  const { data: proyectos, error: errorProyectos } = await supabase
+    .from('proyecto')
+    .select('idproyecto, pnombre')
+    .eq('idusuario', idusuario);
 
-    if (linkError) throw linkError;
+  if (errorProyectos) throw errorProyectos;
 
-    return { ...roleData, proyecto_rol: linkData };
+  const idsProyectos = proyectos.map(p => p.idproyecto);
+  if (idsProyectos.length === 0) return [];
+
+  // Paso 2: Obtener todos los roles de esos proyectos
+  const { data: roles, error: errorRoles } = await supabase
+    .from('proyecto_roles')
+    .select('idrol, idproyecto')
+    .in('idproyecto', idsProyectos);
+
+  if (errorRoles) throw errorRoles;
+
+  const rolProyectoMap = {};
+  roles.forEach(r => {
+    rolProyectoMap[r.idrol] = r.idproyecto;
+  });
+
+  const idsRoles = roles.map(r => r.idrol);
+  if (idsRoles.length === 0) return [];
+
+  // Paso 3: Obtener las aplicaciones a esos roles
+  const { data: aplicaciones, error: errorApps } = await supabase
+    .from('aplicacion')
+    .select(`
+      idaplicacion,
+      estatus,
+      fechaaplicacion,
+      message,
+      idrol,
+      idusuario,
+      usuario (
+        idusuario,
+        nombre,
+        correoelectronico,
+        fotodeperfil
+      ),
+      roles (
+        idrol,
+        nombrerol,
+        descripcionrol
+      )
+    `)
+    .in('idrol', idsRoles);
+
+  if (errorApps) throw errorApps;
+
+  const proyectoMap = Object.fromEntries(proyectos.map(p => [p.idproyecto, p.pnombre]));
+
+  // Paso 4: Agregar nombre del proyecto y foto de perfil firmada
+  const aplicacionesEnriquecidas = await Promise.all(
+    aplicaciones.map(async (app) => {
+      const idproyecto = rolProyectoMap[app.idrol];
+      const nombreproyecto = proyectoMap[idproyecto] || null;
+
+      let fotodeperfil_url = null;
+      if (app.usuario?.fotodeperfil) {
+        const result = await generateProfileSignedUrl(app.usuario.idusuario);
+        fotodeperfil_url = result?.url || null;
+      }
+
+      return {
+        ...app,
+        idproyecto,
+        nombreproyecto,
+        usuario: {
+          ...app.usuario,
+          fotodeperfil_url
+        }
+      };
+    })
+  );
+
+  return aplicacionesEnriquecidas;
 };
 
 
-// Crear nuevo rol y asignarlo a un proyecto
-const addRoleToProject = async (projectId, role) => {
-    const { data: newRole, error: roleError } = await supabase
-        .from('roles')
-        .insert([{
-            NombreRol: role.NombreRol,
-            NivelRol: role.NivelRol,
-            DescripcionRol: role.DescripcionRol
-        }])
-        .select()
-        .single();
-
-    if (roleError) throw roleError;
-
-    const { data: projectRole, error: projRoleError } = await supabase
-        .from('Proyecto_Roles')
-        .insert([{
-            IDProyecto: projectId,
-            IDRol: newRole.IDRol,
-            Estado: role.Estado || 'Abierto'
-        }]);
-    if (projRoleError) throw projRoleError;
-
-    return projectRole;
-};
 
 module.exports = {
     fetchAppsByProjectId,
     fetchAppsByUserId,
     fetchUserAppInProject,
     updateAppStatus,
-    addRoleToProject,
-    getAppByUserAndAppId,
-    createRole
+    createAppService,
+    obtenerAplicacionesPorCreador
 };

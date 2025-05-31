@@ -19,4 +19,6 @@ router.get('/certificaciones/image-url/:id', authMiddleware, certificationsContr
 
 router.put('/certificados/:id', certificationsController.updateCertificateController);
 
+router.delete('/certificaciones/:id', authMiddleware, certificationsController.removeCertification);
+
 module.exports = router;

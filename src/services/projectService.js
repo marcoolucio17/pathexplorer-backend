@@ -12,6 +12,9 @@ const tableRequerimientosRoles = `requerimientos_roles(${tableRequirement})`;
 const tableRoles = `roles(idrol,nombrerol,nivelrol,descripcionrol,disponible,${tableRequerimientosRoles})`;
 const tableProjectRoles = `proyecto_roles(${tableRoles})`;
 const textToObtainInfoProject = `${tableProject},${tableUser},${tableUtp},${tableClient},${tableProjectRoles}`;
+const { getClienteFotoUrl } = require('../services/clientesService');
+const { generateProfileSignedUrl } = require('../services/userService');
+
 
 //Consulta para llamar la info para el proyecto en la pantalla de Dashboard
 
@@ -244,7 +247,7 @@ const fetchCreateProject = async (informacion) => {
     const { data: proyectData, error: proyectError } = await supabase
       .from("proyecto")
       .insert([proyect])
-      .select(`idproyecto`)
+      .select("idproyecto")
       .single();
 
     if (proyectError || !proyectData) {
@@ -342,7 +345,7 @@ const fetchCreateProject = async (informacion) => {
         );
       }
     }
-    return true;
+    return {idproyecto};
   } catch (error) {
     console.log("error", error);
     throw new ApiError(
@@ -423,6 +426,124 @@ const getRFPSignedUrl = async (projectId) => {
   return signedUrlData.signedUrl;
 };
 
+
+const obtenerProyectoPorRol = async (idProyecto, idRol) => {
+  const { data, error } = await supabase
+    .from('proyecto')
+    .select(`
+      *,
+      proyecto_roles!inner(
+        estado,
+        idrol,
+        roles (
+          idrol,
+          nombrerol,
+          nivelrol,
+          descripcionrol
+        )
+      )
+    `)
+    .eq('idproyecto', idProyecto)
+    .eq('proyecto_roles.idrol', idRol)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+
+const obtenerProyectoCompleto = async (idProyecto) => {
+  const { data: proyecto, error } = await supabase
+    .from('proyecto')
+    .select(`
+      *,
+      cliente (
+        idcliente,
+        clnombre,
+        inversion,
+        fotodecliente
+      ),
+      usuario (
+        idusuario,
+        employeeeid,
+        nombre,
+        correoelectronico,
+        telefono,
+        ubicacion,
+        linkedin,
+        github,
+        fotodeperfil
+      ),
+      proyecto_roles (
+        idrol,
+        estado,
+        roles (
+          idrol,
+          nombrerol,
+          nivelrol,
+          descripcionrol,
+          requerimientos_roles (
+            requerimientos (
+              idrequerimiento,
+              tiempoexperiencia,
+              habilidades (
+                idhabilidad,
+                nombre,
+                estecnica
+              )
+            )
+          )
+        )
+      ),
+      utp (
+        idusuario,
+        estado,
+        usuario (
+          idusuario,
+          nombre,
+          correoelectronico,
+          telefono,
+          fotodeperfil,
+          github,
+          linkedin
+        )
+      )
+    `)
+    .eq('idproyecto', idProyecto)
+    .single();
+
+  if (error) throw error;
+
+  // 🔹 Reemplazar cliente con datos que incluyan la URL firmada
+  if (proyecto.cliente?.idcliente) {
+    const clienteConUrl = await getClienteFotoUrl(proyecto.cliente.idcliente);
+    proyecto.cliente = { ...proyecto.cliente, ...clienteConUrl };
+  }
+
+  // 🔹 Añadir URL de la foto del usuario creador
+  if (proyecto.usuario?.idusuario) {
+    const signedUrlObj = await generateProfileSignedUrl(proyecto.usuario.idusuario);
+    if (signedUrlObj?.url) {
+      proyecto.usuario.fotodeperfil_url = signedUrlObj.url;
+    }
+  }
+
+  // 🔹 Añadir URL de la foto de perfil a cada usuario en UTP
+  if (Array.isArray(proyecto.utp)) {
+    for (const miembro of proyecto.utp) {
+      const userId = miembro?.usuario?.idusuario;
+      if (userId) {
+        const signedUrlObj = await generateProfileSignedUrl(userId);
+        if (signedUrlObj?.url) {
+          miembro.usuario.fotodeperfil_url = signedUrlObj.url;
+        }
+      }
+    }
+  }
+
+  return proyecto;
+};
+
 module.exports = {
   fetchProjects,
   fetchMyProjects,
@@ -433,4 +554,6 @@ module.exports = {
   uploadRFPToStorage,
   saveRFPPathToProject,
   getRFPSignedUrl,
+  obtenerProyectoPorRol,
+  obtenerProyectoCompleto
 };
