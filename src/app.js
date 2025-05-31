@@ -40,7 +40,6 @@ app.use('/api', certificationsRoutes);
 app.use('/api', appsRoutes); 
 app.use('/api/habilidades', skillsRoutes);
 app.use('/api/clientes', clientesRoutes);
-app.use('/api', skillsRoutes);
 app.use('/api', authenticationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use('/api', appsRoutes); 
