@@ -139,6 +139,49 @@ const createAppService = async ({ idusuario, idrol, message }) => {
   return data;
 };
 
+const obtenerAplicacionesPorCreador = async (idusuario) => {
+  // Paso 1: Obtener todos los proyectos creados por ese usuario
+  const { data: proyectos, error: errorProyectos } = await supabase
+    .from('proyecto')
+    .select('idproyecto')
+    .eq('idusuario', idusuario);
+
+  if (errorProyectos) throw errorProyectos;
+
+  const idsProyectos = proyectos.map(p => p.idproyecto);
+  if (idsProyectos.length === 0) return [];
+
+  // Paso 2: Obtener todos los roles de esos proyectos
+  const { data: roles, error: errorRoles } = await supabase
+    .from('proyecto_roles')
+    .select('idrol')
+    .in('idproyecto', idsProyectos);
+
+  if (errorRoles) throw errorRoles;
+
+  const idsRoles = roles.map(r => r.idrol);
+  if (idsRoles.length === 0) return [];
+
+  // Paso 3: Obtener las aplicaciones a esos roles
+  const { data: aplicaciones, error: errorAplicaciones } = await supabase
+    .from('aplicacion')
+    .select(`
+      idaplicacion,
+      estatus,
+      fechaaplicacion,
+      message,
+      idrol,
+      idusuario,
+      usuario(idusuario, nombre, correoelectronico),
+      roles(idrol, nombrerol, descripcionrol)
+    `)
+    .in('idrol', idsRoles);
+
+  if (errorAplicaciones) throw errorAplicaciones;
+
+  return aplicaciones;
+};
+
 
 
 module.exports = {
@@ -146,5 +189,6 @@ module.exports = {
     fetchAppsByUserId,
     fetchUserAppInProject,
     updateAppStatus,
-    createAppService
+    createAppService,
+    obtenerAplicacionesPorCreador
 };

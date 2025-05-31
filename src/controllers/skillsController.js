@@ -1,4 +1,4 @@
-const { getSkillsByType, assignSkillToUser, getNTopSkills } = require('../services/skillsService');
+const { getSkillsByType, assignSkillToUser, getAllSkills, getNTopSkills } = require('../services/skillsService');
 
 const getHabilidadesPorTipo = async (req, res) => {
   try {

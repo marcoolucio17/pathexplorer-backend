@@ -4,7 +4,8 @@ const {
     getAppsByUserId,
     getUserAppInProject,
     patchAppStatus,
-    createApp
+    createApp,
+    getAplicacionesPorCreador
 } = require('../controllers/appsController');
 
 const router = express.Router();
@@ -25,6 +26,8 @@ router.patch('/apps/usuario/:userId/app/:appId', authMiddleware, patchAppStatus)
 // POST: Crear nueva aplicación     
 router.post('/apps', authMiddleware, createApp);
 
+// GET: Aplicaciones que se ha hecho a un proyecto de un manager
+router.get('/creador/:idusuario/aplicaciones', authMiddleware, getAplicacionesPorCreador);
 
 
 module.exports = router;

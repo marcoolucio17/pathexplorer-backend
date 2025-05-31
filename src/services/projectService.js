@@ -244,7 +244,7 @@ const fetchCreateProject = async (informacion) => {
     const { data: proyectData, error: proyectError } = await supabase
       .from("proyecto")
       .insert([proyect])
-      .select(`idproyecto`)
+      .select("idproyecto")
       .single();
 
     if (proyectError || !proyectData) {
@@ -342,7 +342,7 @@ const fetchCreateProject = async (informacion) => {
         );
       }
     }
-    return true;
+    return {idproyecto};
   } catch (error) {
     console.log("error", error);
     throw new ApiError(
@@ -423,6 +423,47 @@ const getRFPSignedUrl = async (projectId) => {
   return signedUrlData.signedUrl;
 };
 
+
+const obtenerProyectoPorRol = async (idProyecto, idRol) => {
+  const { data, error } = await supabase
+    .from('proyecto')
+    .select(`
+      *,
+      proyecto_roles!inner(
+        estado,
+        idrol,
+        roles (
+          idrol,
+          nombrerol,
+          nivelrol,
+          descripcionrol
+        )
+      )
+    `)
+    .eq('idproyecto', idProyecto)
+    .eq('proyecto_roles.idrol', idRol)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+
+const obtenerProyectoCompleto = async (idProyecto) => {
+  const { data: proyecto, error } = await supabase
+    .from('proyecto')
+    .select(`
+      *,
+      cliente(idcliente, clnombre, inversion, fotodecliente),
+      proyecto_roles(idrol, estado, roles(idrol, nombrerol, nivelrol, descripcionrol))
+    `)
+    .eq('idproyecto', idProyecto)
+    .single();
+
+  if (error) throw error;
+  return proyecto;
+};
+
 module.exports = {
   fetchProjects,
   fetchMyProjects,
@@ -433,4 +474,6 @@ module.exports = {
   uploadRFPToStorage,
   saveRFPPathToProject,
   getRFPSignedUrl,
+  obtenerProyectoPorRol,
+  obtenerProyectoCompleto
 };
