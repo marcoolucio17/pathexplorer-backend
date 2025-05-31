@@ -63,10 +63,10 @@ const fetchCreateGoal = async (goal) => {
  * @param {object} goal - Objeto con la información de la meta a actualizar
  * @returns true si la meta fue actualizada correctamente
  */
-const fetchUpdateGoal = async (id, goal) => {
+const fetchUpdateGoal = async (id, cambio) => {
     const { data, error } = await supabase
         .from("metas")
-        .update([goal])
+        .update(cambio)
         .eq('idmeta', id);
     if (error) {
         console.log("error", error);

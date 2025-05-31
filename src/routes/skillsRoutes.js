@@ -1,5 +1,5 @@
 const express = require('express');
-const { getHabilidadesPorTipo, assignSkill, getTodasHabilidades } = require('../controllers/skillsController');
+const { getHabilidadesPorTipo, assignSkill, getTodasHabilidades, getTopSkills } = require('../controllers/skillsController');
 const authMiddleware = require('../middlewares/verifyHashToken');
 const router = express.Router();
 
@@ -9,5 +9,6 @@ router.post('/asignar', authMiddleware, assignSkill);
 
 router.get('', authMiddleware, getTodasHabilidades);
 
-module.exports = router;
+router.get('/top/:count', authMiddleware, getTopSkills);
+
 module.exports = router;
