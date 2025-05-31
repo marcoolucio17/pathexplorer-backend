@@ -382,4 +382,34 @@ const guardarDatosCVExtraidos = async (userId, datosCV) => {
 };
 
 
-module.exports = { extractCVDataWithGemini, guardarDatosCVExtraidos };
+const mejorarTextoConGemini = async (textoOriginal) => {
+  try {
+    const prompt = `
+Mejora el siguiente texto para que sea más formal, técnico y profesional. Devuélvelo como texto plano sin comillas ni formato adicional:
+
+"${textoOriginal}"
+`;
+
+    const response = await axios.post(GEMINI_API_URL, {
+      contents: [
+        {
+          parts: [{ text: prompt }]
+        }
+      ]
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const result = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+    return result?.trim() || 'No se pudo mejorar el texto.';
+  } catch (error) {
+    console.error('Error al mejorar texto:', error.message);
+    throw new Error('Error al mejorar el texto.');
+  }
+};
+
+
+
+module.exports = { extractCVDataWithGemini, guardarDatosCVExtraidos, mejorarTextoConGemini };
