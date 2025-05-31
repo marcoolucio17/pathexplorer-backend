@@ -282,9 +282,11 @@ const getProyectoCompleto = async (req, res) => {
     const data = await obtenerProyectoCompleto(id);
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener el proyecto completo' });
+    console.error('[ERROR en obtenerProyectoCompleto]', error); // 👈
+    res.status(500).json({ error: error.message || 'Error al obtener el proyecto completo' });
   }
 };
+
 
 
 module.exports = {
