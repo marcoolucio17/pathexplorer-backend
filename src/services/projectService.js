@@ -244,7 +244,7 @@ const fetchCreateProject = async (informacion) => {
     const { data: proyectData, error: proyectError } = await supabase
       .from("proyecto")
       .insert([proyect])
-      .select(`idproyecto`)
+      .select("idproyecto")
       .single();
 
     if (proyectError || !proyectData) {
@@ -342,7 +342,7 @@ const fetchCreateProject = async (informacion) => {
         );
       }
     }
-    return true;
+    return {idproyecto};
   } catch (error) {
     console.log("error", error);
     throw new ApiError(
