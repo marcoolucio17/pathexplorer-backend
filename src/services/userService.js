@@ -45,7 +45,7 @@ const getUserById = async (id) => {
   // buscamos sus proyectos
   const { data: proyectos, error: proyectosError } = await supabase
     .from('utp')
-    .select('*')
+    .select('*, proyecto(pnombre)')
     .eq('idusuario', id);
 
   if (proyectosError) {

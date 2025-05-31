@@ -3,7 +3,9 @@ const {
     fetchGoalById,
     fetchCreateGoal,
     fetchUpdateGoal,
-    fetchDeleteGoal} = require('../services/goalService');
+    fetchDeleteGoal,
+    updateAllGoals
+} = require('../services/goalService');
 
 //Función para obtener todas las metas de un usuario
 const getGoals = async (req, res) => {
@@ -124,9 +126,25 @@ const deleteGoalById = async (req, res) => {
     }
 }
 
+const updateUserGoals = async (req, res) => {
+    try {
+        const { userid } = req.params;
+        const { goals } = req.body;
+        const result = await updateAllGoals(userid, goals);
+        if (result) {
+            res.status(200).json({ message: 'Goals updated successfully' });
+        } else {
+            res.status(404).json({ error: 'Error updating goals due to bad request format.' });
+        }
+    } catch (error) { 
+        res.status(500).json({ error: 'Error deleting goal' });
+    }
+}
+
 module.exports = { 
     getGoals, 
     createGoal,
     updateGoal,
-    deleteGoal
+    deleteGoal,
+    updateUserGoals
 };
