@@ -51,22 +51,6 @@ const fetchProjects = async () => {
   return dataProyectos;
 };
 
-const fetchMyProjects = async (id_usuario) => {
-  const { data, error } = await supabase
-    .from("proyecto")
-    .select(textToObtainInfoProject)
-    .eq("idusuario", id_usuario);
-  if (error) {
-    console.log("error", error);
-    throw new ApiError(
-      error.status || 400,
-      error.message || "There is an error fetching the projects."
-    );
-  }
-
-  return data;
-};
-
 /**
  */
 
@@ -546,7 +530,6 @@ const obtenerProyectoCompleto = async (idProyecto) => {
 
 module.exports = {
   fetchProjects,
-  fetchMyProjects,
   fetchProjectById,
   fetchProjectsByName,
   fetchCreateProject,
