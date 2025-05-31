@@ -3,7 +3,8 @@ const {
   generateCVSignedUrl,
   generateProfileSignedUrl,
   uploadCVToStorage,
-  uploadProfileToStorage
+  uploadProfileToStorage,
+  updateUsuarioParcial
 } = require('../services/userService');
 
 
@@ -79,10 +80,25 @@ const getUserProfileSignedUrl = async (req, res) => {
 };
 
 
+const patchUsuario = async (req, res) => {
+  const id = req.params.id;
+  const campos = req.body;
+
+  try {
+    const updated = await updateUsuarioParcial(id, campos);
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error('Error al actualizar el usuario:', error.message);
+    res.status(500).json({ message: 'Error al actualizar el usuario', error: error.message });
+  }
+};
+
+
 module.exports = {
   getUserById,
   uploadUserCV,
   uploadUserProfilePicture,
   getUserCVSignedUrl,
-  getUserProfileSignedUrl
+  getUserProfileSignedUrl,
+  patchUsuario
 };

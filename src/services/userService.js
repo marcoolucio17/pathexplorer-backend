@@ -180,11 +180,25 @@ const generateProfileSignedUrl = async (userId) => {
   return { url: urlData.signedUrl };
 };
 
+const updateUsuarioParcial = async (id, campos) => {
+  const { data, error } = await supabase
+    .from('usuario')
+    .update(campos)
+    .eq('idusuario', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return data;
+};
+
 
 module.exports = {
   getUserById,
   uploadCVToStorage,
   uploadProfileToStorage,
   generateCVSignedUrl,
-  generateProfileSignedUrl
+  generateProfileSignedUrl,
+  updateUsuarioParcial
 };
