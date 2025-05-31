@@ -423,6 +423,37 @@ const getRFPSignedUrl = async (projectId) => {
   return signedUrlData.signedUrl;
 };
 
+
+const obtenerProyectoPorRol = async (idProyecto, idRol) => {
+  const { data: proyecto, error } = await supabase
+    .from('proyecto')
+    .select(`
+      *,
+      proyecto_roles!inner(idrol, estado)
+    `)
+    .eq('idproyecto', idProyecto)
+    .eq('proyecto_roles.idrol', idRol)
+    .single();
+
+  if (error) throw error;
+  return proyecto;
+};
+
+const obtenerProyectoCompleto = async (idProyecto) => {
+  const { data: proyecto, error } = await supabase
+    .from('proyecto')
+    .select(`
+      *,
+      cliente(idcliente, clnombre, inversion, fotodecliente),
+      proyecto_roles(idrol, estado, roles(idrol, nombrerol, nivelrol, descripcionrol))
+    `)
+    .eq('idproyecto', idProyecto)
+    .single();
+
+  if (error) throw error;
+  return proyecto;
+};
+
 module.exports = {
   fetchProjects,
   fetchMyProjects,
@@ -433,4 +464,6 @@ module.exports = {
   uploadRFPToStorage,
   saveRFPPathToProject,
   getRFPSignedUrl,
+  obtenerProyectoPorRol,
+  obtenerProyectoCompleto
 };
