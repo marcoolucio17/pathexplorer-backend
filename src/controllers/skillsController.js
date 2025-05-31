@@ -1,4 +1,4 @@
-const { getSkillsByType, assignSkillToUser } = require('../services/skillsService');
+const { getSkillsByType, assignSkillToUser, getNTopSkills } = require('../services/skillsService');
 
 const getHabilidadesPorTipo = async (req, res) => {
   try {
@@ -37,10 +37,20 @@ const assignSkill = async (req, res) => {
   }
 };
 
+const getTopSkills = async (req, res) => {
+  const { count } = req.params;
 
+  try {
+    const result = await getNTopSkills(count);
+    res.status(200).json({ message: 'Habilidades conseguidas fácilmente', result });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
 
 module.exports = { 
     getHabilidadesPorTipo,
     assignSkill,
-    getTodasHabilidades
+    getTodasHabilidades,
+    getTopSkills
 };

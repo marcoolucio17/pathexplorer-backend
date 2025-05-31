@@ -81,6 +81,9 @@ const updateGoal = async (req, res) => {
     try {
         const { idmeta, cambio } = req.body || {};
 
+        // parchesote porque los del front tenían otro back en mente
+        
+
         const result = await fetchUpdateGoal(idmeta, cambio);
         if (result) {
             res.status(200).json({ message: 'Goal updated successfully' });
