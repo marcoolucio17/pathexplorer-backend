@@ -78,6 +78,18 @@ const getAplicacionesPorCreador = async (req, res) => {
   }
 };
 
+const { asignarAplicacion } = require('../services/projectService'); // o donde lo pongas
+
+const aceptarAplicacion = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await appService.asignarAplicacion(id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 module.exports = {
@@ -86,5 +98,6 @@ module.exports = {
     getUserAppInProject,
     patchAppStatus,
     createApp,
-    getAplicacionesPorCreador
+    getAplicacionesPorCreador,
+    aceptarAplicacion
 };

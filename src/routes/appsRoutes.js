@@ -5,7 +5,8 @@ const {
     getUserAppInProject,
     patchAppStatus,
     createApp,
-    getAplicacionesPorCreador
+    getAplicacionesPorCreador,
+    aceptarAplicacion
 } = require('../controllers/appsController');
 
 const router = express.Router();
@@ -28,6 +29,9 @@ router.post('/apps', authMiddleware, createApp);
 
 // GET: Aplicaciones que se ha hecho a un proyecto de un manager
 router.get('/creador/:idusuario/aplicaciones', authMiddleware, getAplicacionesPorCreador);
+
+// asignar proyecto
+router.post('/aplicacion/:id/aceptar', authMiddleware, aceptarAplicacion);
 
 
 module.exports = router;
