@@ -38,8 +38,8 @@ const patchAppStatus = async (req, res) => {
     const { userId, appId } = req.params;
     const { estatus } = req.body;
 
-    if (!estatus || !['Asignado', 'Pendiente', 'Revision', 'Rechazado'].includes(estatus)) {
-        return res.status(400).json({ message: "Estatus inválido. Debe ser 'Asignado', 'Revision', 'Rechazado' o 'Pendiente'." });
+    if (!estatus || !['Asignado', 'Pendiente', 'Revision', 'Rechazado', 'RolAsignado'].includes(estatus)) {
+        return res.status(400).json({ message: "Estatus inválido. Debe ser 'Asignado', 'Revision', 'Rechazado', 'RolAsignado' o 'Pendiente'." });
     }
 
     try {
