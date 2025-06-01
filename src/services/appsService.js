@@ -223,6 +223,50 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
   return aplicacionesEnriquecidas;
 };
 
+const asignarAplicacion = async (idAplicacion) => {
+  // 1. Obtener datos de la aplicación
+  const { data: aplicacion, error: appError } = await supabase
+    .from('aplicacion')
+    .select('idusuario, idrol')
+    .eq('idaplicacion', idAplicacion)
+    .single();
+  if (appError || !aplicacion) throw new Error('Aplicación no encontrada');
+
+  // 2. Obtener el ID del proyecto desde UTP
+  const { data: utp, error: utpError } = await supabase
+    .from('utp')
+    .select('idproyecto')
+    .eq('idaplicacion', idAplicacion)
+    .single();
+  if (utpError || !utp) throw new Error('Proyecto no encontrado para esta aplicación');
+
+  const { idusuario, idrol } = aplicacion;
+  const { idproyecto } = utp;
+
+  // 3. Cambiar el estado en proyecto_roles
+  const { error: updateRolError } = await supabase
+    .from('proyecto_roles')
+    .update({ estado: 'Ocupado' })
+    .eq('idproyecto', idproyecto)
+    .eq('idrol', idrol);
+  if (updateRolError) throw new Error('Error al actualizar el estado del rol');
+
+  // 4. Cambiar estado de la aplicación
+  const { error: updateAppError } = await supabase
+    .from('aplicacion')
+    .update({ estatus: 'Aceptada' })
+    .eq('idaplicacion', idAplicacion);
+  if (updateAppError) throw new Error('Error al actualizar la aplicación');
+
+  // 5. Cambiar estado del usuario
+  const { error: updateUserError } = await supabase
+    .from('usuario')
+    .update({ estaenproyecto: true })
+    .eq('idusuario', idusuario);
+  if (updateUserError) throw new Error('Error al actualizar el usuario');
+
+  return { message: 'Aplicación asignada exitosamente', idproyecto, idusuario, idrol };
+};
 
 
 module.exports = {
@@ -231,5 +275,6 @@ module.exports = {
     fetchUserAppInProject,
     updateAppStatus,
     createAppService,
-    obtenerAplicacionesPorCreador
+    obtenerAplicacionesPorCreador,
+    asignarAplicacion //asignar puesto a empleado
 };
