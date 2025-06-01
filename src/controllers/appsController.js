@@ -78,16 +78,18 @@ const getAplicacionesPorCreador = async (req, res) => {
   }
 };
 
-const { asignarAplicacion } = require('../services/projectService'); // o donde lo pongas
 
 const aceptarAplicacion = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const result = await appService.asignarAplicacion(id);
-    res.status(200).json(result);
+    const { id } = req.params;
+    const resultado = await appService.asignarAplicacion(id);
+    res.status(200).json({
+      message: 'Aplicación aceptada y usuario asignado al proyecto',
+      resultado
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error al aceptar aplicación:', error.message);
+    res.status(500).json({ error: 'Error al aceptar aplicación' });
   }
 };
 

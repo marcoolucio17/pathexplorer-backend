@@ -224,48 +224,76 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
 };
 
 const asignarAplicacion = async (idAplicacion) => {
-  // 1. Obtener datos de la aplicación
-  const { data: aplicacion, error: appError } = await supabase
+  // 1. Obtener la aplicación
+  const { data: aplicacion, error: errorApp } = await supabase
     .from('aplicacion')
     .select('idusuario, idrol')
     .eq('idaplicacion', idAplicacion)
     .single();
-  if (appError || !aplicacion) throw new Error('Aplicación no encontrada');
 
-  // 2. Obtener el ID del proyecto desde UTP
-  const { data: utp, error: utpError } = await supabase
-    .from('utp')
-    .select('idproyecto')
-    .eq('idaplicacion', idAplicacion)
-    .single();
-  if (utpError || !utp) throw new Error('Proyecto no encontrado para esta aplicación');
+  if (errorApp || !aplicacion) {
+    throw new Error('Aplicación no encontrada');
+  }
 
   const { idusuario, idrol } = aplicacion;
-  const { idproyecto } = utp;
 
-  // 3. Cambiar el estado en proyecto_roles
-  const { error: updateRolError } = await supabase
+  // 2. Obtener el ID del proyecto desde proyecto_roles
+  const { data: roles, error: errorRol } = await supabase
     .from('proyecto_roles')
-    .update({ estado: 'Ocupado' })
-    .eq('idproyecto', idproyecto)
+    .select('idproyecto')
     .eq('idrol', idrol);
-  if (updateRolError) throw new Error('Error al actualizar el estado del rol');
 
-  // 4. Cambiar estado de la aplicación
-  const { error: updateAppError } = await supabase
-    .from('aplicacion')
-    .update({ estatus: 'Aceptada' })
-    .eq('idaplicacion', idAplicacion);
-  if (updateAppError) throw new Error('Error al actualizar la aplicación');
+  if (errorRol) {
+    console.error("Error al consultar proyecto_roles:", errorRol.message);
+    throw errorRol;
+  }
 
-  // 5. Cambiar estado del usuario
-  const { error: updateUserError } = await supabase
+  if (!roles || roles.length === 0) {
+    throw new Error(`No se encontró proyecto_roles con idrol = ${idrol}`);
+  }
+
+  const idproyecto = roles[0].idproyecto;
+
+  // 3. Crear el UTP
+  const { data: utp, error: errorUTP } = await supabase
+    .from('utp')
+    .insert({
+      idusuario,
+      idproyecto,
+      idaplicacion: idAplicacion,
+      estado: 'Activo'
+    })
+    .select()
+    .single();
+
+  if (errorUTP) throw errorUTP;
+
+  // 4. Marcar al usuario como en proyecto
+  const { error: errorUser } = await supabase
     .from('usuario')
     .update({ estaenproyecto: true })
     .eq('idusuario', idusuario);
-  if (updateUserError) throw new Error('Error al actualizar el usuario');
 
-  return { message: 'Aplicación asignada exitosamente', idproyecto, idusuario, idrol };
+  if (errorUser) throw errorUser;
+
+  // 5. Actualizar estatus de la aplicación a 'RolAsignado'
+  const { error: errorUpdateApp } = await supabase
+    .from('aplicacion')
+    .update({ estatus: 'RolAsignado' })
+    .eq('idaplicacion', idAplicacion);
+
+  if (errorUpdateApp) throw errorUpdateApp;
+
+  // 6. Actualizar estado del proyecto_roles a 'Aceptado'
+  const { error: errorUpdateRol } = await supabase
+    .from('proyecto_roles')
+    .update({ estado: 'Aceptado' })
+    .eq('idrol', idrol)
+    .eq('idproyecto', idproyecto);
+
+  if (errorUpdateRol) throw errorUpdateRol;
+
+  return { utp, idusuario, idproyecto };
 };
 
 
