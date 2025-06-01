@@ -224,7 +224,7 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
 };
 
 const asignarAplicacion = async (idAplicacion) => {
-  // 1. Obtener la aplicación
+    // 1. Obtener la aplicación
   const { data: aplicacion, error: errorApp } = await supabase
     .from('aplicacion')
     .select('idusuario, idrol')
@@ -293,9 +293,16 @@ const asignarAplicacion = async (idAplicacion) => {
 
   if (errorUpdateRol) throw errorUpdateRol;
 
+  // 7. Marcar el rol como no disponible
+  const { error: errorRolDisponibilidad } = await supabase
+    .from('roles')
+    .update({ disponible: false })
+    .eq('idrol', idrol);
+
+  if (errorRolDisponibilidad) throw errorRolDisponibilidad;
+
   return { utp, idusuario, idproyecto };
 };
-
 
 module.exports = {
     fetchAppsByProjectId,
