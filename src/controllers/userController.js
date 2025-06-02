@@ -4,7 +4,9 @@ const {
   generateProfileSignedUrl,
   uploadCVToStorage,
   uploadProfileToStorage,
-  updateUsuarioParcial
+  updateUsuarioParcial,
+  obtenerUsuariosConProyectoYRol,
+  obtenerUsuariosPorProyecto
 } = require('../services/userService');
 
 
@@ -93,6 +95,27 @@ const patchUsuario = async (req, res) => {
   }
 };
 
+const getUsuariosConProyectoYRol = async (req, res) => {
+  try {
+    const data = await obtenerUsuariosConProyectoYRol();
+    res.json(data);
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error.message);
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+};
+
+const getUsuariosPorProyecto = async (req, res) => {
+  try {
+    const { idproyecto } = req.params;
+    const data = await obtenerUsuariosPorProyecto(idproyecto);
+    res.json(data);
+  } catch (error) {
+    console.error('Error al obtener usuarios por proyecto:', error.message);
+    res.status(500).json({ error: 'Error al obtener usuarios por proyecto' });
+  }
+};
+
 
 module.exports = {
   getUserById,
@@ -100,5 +123,7 @@ module.exports = {
   uploadUserProfilePicture,
   getUserCVSignedUrl,
   getUserProfileSignedUrl,
-  patchUsuario
+  patchUsuario,
+  getUsuariosConProyectoYRol,
+  getUsuariosPorProyecto
 };

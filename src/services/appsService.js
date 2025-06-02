@@ -230,7 +230,7 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
 };
 
 const asignarAplicacion = async (idAplicacion) => {
-    // 1. Obtener la aplicación
+// 1. Obtener la aplicación
   const { data: aplicacion, error: errorApp } = await supabase
     .from('aplicacion')
     .select('idusuario, idrol')
@@ -243,38 +243,60 @@ const asignarAplicacion = async (idAplicacion) => {
 
   const { idusuario, idrol } = aplicacion;
 
-  // 2. Obtener el ID del proyecto desde proyecto_roles
+  // 2. Verificar si el usuario ya tiene una UTP activa
+  const { data: utpExistente, error: errorCheckUTP } = await supabase
+    .from('utp')
+    .select('idutp')
+    .eq('idusuario', idusuario)
+    .eq('estado', 'Activo')
+    .maybeSingle();
+
+  if (errorCheckUTP) throw errorCheckUTP;
+  if (utpExistente) {
+    throw new Error('El usuario ya tiene una UTP activa');
+  }
+
+  // 3. Obtener ID del proyecto desde proyecto_roles
   const { data: roles, error: errorRol } = await supabase
     .from('proyecto_roles')
     .select('idproyecto')
     .eq('idrol', idrol);
 
-  if (errorRol) {
-    console.error("Error al consultar proyecto_roles:", errorRol.message);
-    throw errorRol;
-  }
-
+  if (errorRol) throw errorRol;
   if (!roles || roles.length === 0) {
     throw new Error(`No se encontró proyecto_roles con idrol = ${idrol}`);
   }
 
   const idproyecto = roles[0].idproyecto;
 
-  // 3. Crear el UTP
+  // 4. Obtener fechas del proyecto
+  const { data: proyecto, error: errorProyecto } = await supabase
+    .from('proyecto')
+    .select('fechainicio, fechafin')
+    .eq('idproyecto', idproyecto)
+    .single();
+
+  if (errorProyecto || !proyecto) {
+    throw new Error('Proyecto no encontrado');
+  }
+
+  // 5. Crear el UTP con fechas
   const { data: utp, error: errorUTP } = await supabase
     .from('utp')
     .insert({
       idusuario,
       idproyecto,
       idaplicacion: idAplicacion,
-      estado: 'Activo'
+      estado: 'Activo',
+      fechainicio: proyecto.fechainicio,
+      fechafin: proyecto.fechafin
     })
     .select()
     .single();
 
   if (errorUTP) throw errorUTP;
 
-  // 4. Marcar al usuario como en proyecto
+  // 6. Marcar al usuario como en proyecto
   const { error: errorUser } = await supabase
     .from('usuario')
     .update({ estaenproyecto: true })
@@ -282,15 +304,18 @@ const asignarAplicacion = async (idAplicacion) => {
 
   if (errorUser) throw errorUser;
 
-  // 5. Actualizar estatus de la aplicación a 'RolAsignado'
+  // 7. Actualizar estatus de la aplicación a 'RolAsignado'
   const { error: errorUpdateApp } = await supabase
     .from('aplicacion')
-    .update({ estatus: 'RolAsignado' })
+    .update({
+      estatus: 'RolAsignado',
+      fechaaplicacion: new Date().toISOString()
+    })
     .eq('idaplicacion', idAplicacion);
 
   if (errorUpdateApp) throw errorUpdateApp;
 
-  // 6. Actualizar estado del proyecto_roles a 'Aceptado'
+  // 8. Actualizar estado del proyecto_roles a 'Aceptado'
   const { error: errorUpdateRol } = await supabase
     .from('proyecto_roles')
     .update({ estado: 'Aceptado' })
@@ -299,7 +324,7 @@ const asignarAplicacion = async (idAplicacion) => {
 
   if (errorUpdateRol) throw errorUpdateRol;
 
-  // 7. Marcar el rol como no disponible
+  // 9. Marcar el rol como no disponible
   const { error: errorRolDisponibilidad } = await supabase
     .from('roles')
     .update({ disponible: false })
