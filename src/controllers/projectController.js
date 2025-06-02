@@ -2,7 +2,6 @@ const {
     fetchProjects, 
     fetchProjectById, 
     fetchProjectsByName,
-    fetchMyProjects,
     fetchCreateProject,
     fetchUpdateProject,
     uploadRFPToStorage, 
@@ -11,7 +10,8 @@ const {
     obtenerProyectoCompleto,
     obtenerProyectoPorRol,
     obtenerProyectosPorCreador,
-    actualizarProyectoYRoles  } = require('../services/projectService');
+    actualizarProyectoYRoles,
+    eliminarRelacionProyectoRol  } = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -306,6 +306,22 @@ const editarProyectoYRoles = async (req, res) => {
   }
 };
 
+const borrarRelacionProyectoRol = async (req, res) => {
+  const { idproyecto, idrol } = req.params;
+
+  try {
+    await eliminarRelacionProyectoRol(idproyecto, idrol);
+    res.status(200).json({ message: 'Rol desvinculado del proyecto correctamente' });
+  } catch (error) {
+    console.error('Error en borrarRelacionProyectoRol:', error.message);
+    res.status(500).json({
+      error: 'Error al desvincular el rol del proyecto',
+      detalle: error.message
+    });
+  }
+};
+
+
 module.exports = {
     getProjects,
     createProject,
@@ -315,6 +331,7 @@ module.exports = {
     getProyectoPorRol,
     getProyectoCompleto,
     getProyectosPorCreador,
-    editarProyectoYRoles
+    editarProyectoYRoles,
+    borrarRelacionProyectoRol
 };
 
