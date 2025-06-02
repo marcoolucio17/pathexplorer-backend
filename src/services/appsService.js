@@ -310,6 +310,32 @@ const asignarAplicacion = async (idAplicacion) => {
   return { utp, idusuario, idproyecto };
 };
 
+const obtenerAplicacionesPorEstatus = async (estatus) => {
+  const { data, error } = await supabase
+    .from('aplicacion')
+    .select(`
+      *,
+      usuario (
+        idusuario,
+        nombre,
+        correoelectronico,
+        fotodeperfil
+      ),
+      roles (
+        idrol,
+        nombrerol,
+        descripcionrol,
+        nivelrol
+      )
+    `)
+    .eq('estatus', estatus);
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
+
 module.exports = {
     fetchAppsByProjectId,
     fetchAppsByUserId,
@@ -317,5 +343,6 @@ module.exports = {
     updateAppStatus,
     createAppService,
     obtenerAplicacionesPorCreador,
-    asignarAplicacion //asignar puesto a empleado
+    asignarAplicacion, //asignar puesto a empleado
+    obtenerAplicacionesPorEstatus
 };

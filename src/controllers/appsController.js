@@ -93,6 +93,23 @@ const aceptarAplicacion = async (req, res) => {
   }
 };
 
+const getAppsByStatus = async (req, res) => {
+  const { estatus } = req.params;
+
+  const estatusValidos = ['Asignado', 'Pendiente', 'Revision', 'Rechazado', 'RolAsignado'];
+  if (!estatusValidos.includes(estatus)) {
+    return res.status(400).json({ error: 'Estatus no válido. Usa uno de: ' + estatusValidos.join(', ') });
+  }
+
+  try {
+    const aplicaciones = await appService.obtenerAplicacionesPorEstatus(estatus);
+    res.status(200).json({ aplicaciones });
+  } catch (error) {
+    console.error('Error en getAppsByStatus:', error.message);
+    res.status(500).json({ error: 'Error al obtener las aplicaciones' });
+  }
+};
+
 
 module.exports = {
     getAppsByProjectId,
@@ -101,5 +118,6 @@ module.exports = {
     patchAppStatus,
     createApp,
     getAplicacionesPorCreador,
-    aceptarAplicacion
+    aceptarAplicacion,
+    getAppsByStatus
 };
