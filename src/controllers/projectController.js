@@ -9,7 +9,9 @@ const {
     saveRFPPathToProject,
     getRFPSignedUrl,
     obtenerProyectoCompleto,
-    obtenerProyectoPorRol  } = require('../services/projectService');
+    obtenerProyectoPorRol,
+    obtenerProyectosPorCreador,
+    actualizarProyectoYRoles  } = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -290,6 +292,34 @@ const getProyectoCompleto = async (req, res) => {
 };
 
 
+const getProyectosPorCreador = async (req, res) => {
+  const { idusuario } = req.params;
+  try {
+    const proyectos = await obtenerProyectosPorCreador(idusuario);
+    res.status(200).json(proyectos);
+  } catch (error) {
+    console.error("Error en getProyectosPorCreador:", error.message);
+    res.status(500).json({ error: 'Error al obtener los proyectos del usuario' });
+  }
+};
+
+const editarProyectoYRoles = async (req, res) => {
+  const { idproyecto } = req.params;
+  const { pnombre, descripcion, fechainicio, fechafin, roles } = req.body;
+
+  try {
+    const resultado = await actualizarProyectoYRoles(idproyecto, {
+      pnombre,
+      descripcion,
+      fechainicio,
+      fechafin,
+      roles
+    });
+    res.status(200).json(resultado);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el proyecto y los roles', detalle: error.message });
+  }
+};
 
 module.exports = {
     getProjects,
@@ -298,5 +328,7 @@ module.exports = {
     uploadRFP,
     getRFPUrl,
     getProyectoPorRol,
-    getProyectoCompleto
+    getProyectoCompleto,
+    getProyectosPorCreador,
+    editarProyectoYRoles
 };
