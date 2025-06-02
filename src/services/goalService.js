@@ -92,10 +92,22 @@ const fetchDeleteGoal = async (id_goal) => {
     return true;
 }
 
+// suck nigga balls 
+const updateAllGoals = async (userid, goals) => {
+  const { data, error } = await supabase.from('metas').delete().eq('idusuario', userid);
+
+  goals.forEach(goal => {
+    fetchCreateGoal(goal);
+  });
+
+  return true
+}
+
 module.exports = {
     fetchGoal,
     fetchGoalById,
     fetchCreateGoal,
     fetchUpdateGoal,
-    fetchDeleteGoal
+    fetchDeleteGoal,
+    updateAllGoals
 };

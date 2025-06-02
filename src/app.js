@@ -18,7 +18,7 @@ const aiRoutes = require('./routes/aiRoutes');
 
 const corsOptions = {
   origin: function (origin, callback) {
-    const isLocalhost = origin === 'http://localhost:5173';
+    const isLocalhost = origin === 'http://localhost:5173' || origin === 'http://localhost:5174';
     const isVercel = /^https:\/\/.*\.vercel\.app$/.test(origin);
 
     if (!origin || isLocalhost || isVercel) {
