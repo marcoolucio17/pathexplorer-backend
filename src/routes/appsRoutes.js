@@ -6,7 +6,8 @@ const {
     patchAppStatus,
     createApp,
     getAplicacionesPorCreador,
-    aceptarAplicacion
+    aceptarAplicacion,
+    getAppsByStatus
 } = require('../controllers/appsController');
 
 const router = express.Router();
@@ -33,5 +34,7 @@ router.get('/creador/:idusuario/aplicaciones', authMiddleware, getAplicacionesPo
 // asignar proyecto
 router.post('/aplicacion/:id/aceptar', authMiddleware, aceptarAplicacion);
 
+//apps por estatus
+router.get('/apps/estatus/:estatus', authMiddleware, getAppsByStatus);
 
 module.exports = router;
