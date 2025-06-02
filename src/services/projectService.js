@@ -670,6 +670,22 @@ const actualizarProyectoYRoles = async (idproyecto, { pnombre, descripcion, fech
   return { message: 'Proyecto y roles actualizados correctamente' };
 };
 
+const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {
+  if (!idproyecto || !idrol) {
+    throw new Error("Faltan parámetros idproyecto o idrol");
+  }
+
+  const { error } = await supabase
+    .from('proyecto_roles')
+    .delete()
+    .match({ idproyecto: parseInt(idproyecto), idrol: parseInt(idrol) });
+
+  if (error) {
+    throw error;
+  }
+};
+
+
 
 module.exports = {
   fetchProjects,
@@ -683,5 +699,6 @@ module.exports = {
   obtenerProyectoPorRol,
   obtenerProyectoCompleto,
   obtenerProyectosPorCreador,
-  actualizarProyectoYRoles
+  actualizarProyectoYRoles,
+  eliminarRelacionProyectoRol
 };
