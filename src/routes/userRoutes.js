@@ -10,7 +10,9 @@ const {
   uploadUserProfilePicture,
   getUserCVSignedUrl,
   getUserProfileSignedUrl,
-  patchUsuario
+  patchUsuario,
+  getUsuariosConProyectoYRol,
+  getUsuariosPorProyecto
 } = require('../controllers/userController');
 
 router.get('/usuario/:ID', authMiddleware, userController.getUserById);
@@ -22,5 +24,7 @@ router.get('/cv-url/:id', authMiddleware, getUserCVSignedUrl);
 router.get('/profile-url/:id', authMiddleware, getUserProfileSignedUrl);
 router.patch('/usuario/:id', authMiddleware, patchUsuario);
 
+router.get('/usuarios/total', authMiddleware, getUsuariosConProyectoYRol);
+router.get('/usuarios/proyecto/:idproyecto', authMiddleware, getUsuariosPorProyecto);
 
 module.exports = router;    

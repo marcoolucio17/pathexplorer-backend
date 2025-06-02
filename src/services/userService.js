@@ -193,6 +193,94 @@ const updateUsuarioParcial = async (id, campos) => {
   return data;
 };
 
+const obtenerUsuariosConProyectoYRol = async () => {
+  const { data: usuarios, error } = await supabase
+    .from('usuario')
+    .select(`
+      *,
+      utp (
+        idutp,
+        estado,
+        proyecto (
+          idproyecto,
+          pnombre,
+          descripcion
+        ),
+        aplicacion (
+          idrol,
+          roles (
+            nombrerol,
+            descripcionrol
+          )
+        )
+      )
+    `);
+
+  if (error) throw error;
+
+  // Añadir URL firmada a la foto de perfil
+  const resultados = await Promise.all(
+    usuarios.map(async (usuario) => {
+      const url = await generateProfileSignedUrl(usuario.idusuario);
+      return {
+        ...usuario,
+        fotodeperfil_url: url?.url || null,
+        proyecto: usuario.utp?.proyecto || null,
+        rol: usuario.utp?.aplicacion?.roles || null
+      };
+    })
+  );
+
+  return resultados;
+};
+
+const obtenerUsuariosPorProyecto = async (idproyecto) => {
+  const { data: utps, error } = await supabase
+    .from('utp')
+    .select(`
+      *,
+      usuario (
+        idusuario,
+        nombre,
+        correoelectronico,
+        telefono,
+        github,
+        linkedin,
+        fotodeperfil
+      ),
+      proyecto (
+        idproyecto,
+        pnombre,
+        descripcion
+      ),
+      aplicacion (
+        idrol,
+        roles (
+          nombrerol,
+          descripcionrol
+        )
+      )
+    `)
+    .eq('idproyecto', idproyecto);
+
+  if (error) throw error;
+
+  const resultados = await Promise.all(
+    utps.map(async (utp) => {
+      const url = await generateProfileSignedUrl(utp.usuario.idusuario);
+      return {
+        ...utp,
+        usuario: {
+          ...utp.usuario,
+          fotodeperfil_url: url?.url || null
+        }
+      };
+    })
+  );
+
+  return resultados;
+};
+
 
 module.exports = {
   getUserById,
@@ -200,5 +288,7 @@ module.exports = {
   uploadProfileToStorage,
   generateCVSignedUrl,
   generateProfileSignedUrl,
-  updateUsuarioParcial
+  updateUsuarioParcial,
+  obtenerUsuariosConProyectoYRol,
+  obtenerUsuariosPorProyecto
 };
