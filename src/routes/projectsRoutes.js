@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { getProjects, createProject, updateProject, uploadRFP, getRFPUrl, getProyectoCompleto, getProyectoPorRol  } = require('../controllers/projectController');
+const { getProjects, createProject, updateProject, uploadRFP, getRFPUrl, getProyectoCompleto, getProyectoPorRol, getProyectosPorCreador, editarProyectoYRoles } = require('../controllers/projectController');
 const authMiddleware = require('../middlewares/verifyHashToken');
 const router = express.Router();
 const upload = require('../middlewares/uploadMiddleware');
@@ -18,5 +18,7 @@ router.get('/:id/rfp', getRFPUrl);
 router.get('/:id/por-rol/:idrol', authMiddleware, getProyectoPorRol); //proyecto completo por rol
 router.get('/:id/completo', authMiddleware, getProyectoCompleto); //proyecto completo
 
+router.get('/creador/:idusuario', authMiddleware, getProyectosPorCreador); //proyectos por creador
+router.patch('/editprojects/:idproyecto', authMiddleware, editarProyectoYRoles); //editar proyecto y roles
 
 module.exports = router;

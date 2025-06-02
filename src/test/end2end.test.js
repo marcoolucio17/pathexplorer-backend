@@ -212,7 +212,7 @@ test("should return applications with status 'RolAsignado' and status 200", asyn
     expect(app.usuario).toHaveProperty("fotodeperfil_url");
 
     expect(app).toHaveProperty("proyecto");
-    expect(app.proyecto).toHaveProperty("nombre"); // <- Ajuste clave
+    expect(app.proyecto).toHaveProperty("nombre"); 
   }
   });
 
