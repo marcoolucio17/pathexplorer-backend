@@ -311,7 +311,7 @@ const asignarAplicacion = async (idAplicacion) => {
 };
 
 const obtenerAplicacionesPorEstatus = async (estatus) => {
-  const { data, error } = await supabase
+  const { data: aplicaciones, error } = await supabase
     .from('aplicacion')
     .select(`
       *,
@@ -324,15 +324,63 @@ const obtenerAplicacionesPorEstatus = async (estatus) => {
       roles (
         idrol,
         nombrerol,
-        descripcionrol,
-        nivelrol
+        descripcionrol
       )
     `)
     .eq('estatus', estatus);
 
   if (error) throw new Error(error.message);
 
-  return data;
+  // Obtener proyecto y cliente usando los roles → proyecto_roles → proyecto
+  const rolesIds = aplicaciones.map(a => a.idrol);
+
+  const { data: rolesProyecto, error: errorRoles } = await supabase
+    .from('proyecto_roles')
+    .select(`idrol, idproyecto, proyecto (idproyecto, pnombre, idcliente, cliente (clnombre, fotodecliente))`)
+    .in('idrol', rolesIds);
+
+  if (errorRoles) throw new Error(errorRoles.message);
+
+  const rolProyectoMap = Object.fromEntries(
+    rolesProyecto.map(rp => [rp.idrol, rp])
+  );
+
+  const aplicacionesEnriquecidas = await Promise.all(aplicaciones.map(async (app) => {
+    const rolInfo = rolProyectoMap[app.idrol];
+    const proyecto = rolInfo?.proyecto || {};
+
+    let fotodeperfil_url = null;
+    if (app.usuario?.fotodeperfil) {
+      const result = await generateProfileSignedUrl(app.usuario.idusuario);
+      fotodeperfil_url = result?.url || null;
+    }
+
+    let fotodecliente_url = null;
+    if (proyecto?.cliente?.fotodecliente) {
+      const { data: signedUrl } = await supabase.storage
+        .from('clientes')
+        .createSignedUrl(proyecto.cliente.fotodecliente, 300);
+      fotodecliente_url = signedUrl?.signedUrl || null;
+    }
+
+    return {
+      ...app,
+      proyecto: {
+        idproyecto: proyecto.idproyecto,
+        nombre: proyecto.pnombre,
+        cliente: {
+          ...proyecto.cliente,
+          fotodecliente_url
+        }
+      },
+      usuario: {
+        ...app.usuario,
+        fotodeperfil_url
+      }
+    };
+  }));
+
+  return aplicacionesEnriquecidas;
 };
 
 
