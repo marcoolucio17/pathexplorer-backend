@@ -112,18 +112,24 @@ const fetchUserAppInProject = async (userId, appId) => {
 // Reemplazar 1 por el ID del usuario y 5 por el ID de la aplicación
 
 const updateAppStatus = async (userId, appId, estatus) => {
-    const { data, error } = await supabase
-        .from('aplicacion')
-        .update({ estatus })
-        .eq('idusuario', userId)
-        .eq('idaplicacion', appId)
-        .select()
-        .single();
+  const currentDate = new Date().toISOString().split('T')[0]; // formato YYYY-MM-DD
 
-    if (error) throw new Error(error.message);
+  const { data, error } = await supabase
+    .from('aplicacion')
+    .update({ 
+      estatus, 
+      fechaaplicacion: currentDate 
+    })
+    .eq('idusuario', userId)
+    .eq('idaplicacion', appId)
+    .select()
+    .single();
 
-    return data;
+  if (error) throw new Error(error.message);
+
+  return data;
 };
+
 
 // Crear una nueva aplicación
 const createAppService = async ({ idusuario, idrol, message }) => {
