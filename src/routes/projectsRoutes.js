@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { getProjects, createProject, updateProject, uploadRFP, getRFPUrl, getProyectoCompleto, getProyectoPorRol, getProyectosPorCreador, editarProyectoYRoles } = require('../controllers/projectController');
+const { getProjects, createProject, updateProject, uploadRFP, getRFPUrl, getProyectoCompleto, getProyectoPorRol, getProyectosPorCreador, editarProyectoYRoles, obtenerTop3Proyectos } = require('../controllers/projectController');
 const authMiddleware = require('../middlewares/verifyHashToken');
 const router = express.Router();
 const upload = require('../middlewares/uploadMiddleware');
@@ -20,5 +20,8 @@ router.get('/:id/completo', authMiddleware, getProyectoCompleto); //proyecto com
 
 router.get('/creador/:idusuario', authMiddleware, getProyectosPorCreador); //proyectos por creador
 router.patch('/editprojects/:idproyecto', authMiddleware, editarProyectoYRoles); //editar proyecto y roles
+
+// pa conseguir top3 proyectos
+router.get('/projects/top/:id', obtenerTop3Proyectos); 
 
 module.exports = router;

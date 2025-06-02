@@ -12,9 +12,10 @@ const tableRequerimientosRoles = `requerimientos_roles(${tableRequirement})`;
 const tableRoles = `roles(idrol,nombrerol,nivelrol,descripcionrol,disponible,${tableRequerimientosRoles})`;
 const tableProjectRoles = `proyecto_roles(${tableRoles})`;
 const textToObtainInfoProject = `${tableProject},${tableUser},${tableUtp},${tableClient},${tableProjectRoles}`;
-const { getClienteFotoUrl } = require('../services/clientesService');
-const { generateProfileSignedUrl } = require('../services/userService');
-
+const { getClienteFotoUrl } = require("../services/clientesService");
+const { generateProfileSignedUrl } = require("../services/userService");
+// const { fetchRolesName } = require("../services/rolesService");
+const { fetchCompatibility } = require("../services/compabilityService");
 
 //Consulta para llamar la info para el proyecto en la pantalla de Dashboard
 
@@ -329,7 +330,7 @@ const fetchCreateProject = async (informacion) => {
         );
       }
     }
-    return {idproyecto};
+    return { idproyecto };
   } catch (error) {
     console.log("error", error);
     throw new ApiError(
@@ -410,11 +411,11 @@ const getRFPSignedUrl = async (projectId) => {
   return signedUrlData.signedUrl;
 };
 
-
 const obtenerProyectoPorRol = async (idProyecto, idRol) => {
   const { data, error } = await supabase
-    .from('proyecto')
-    .select(`
+    .from("proyecto")
+    .select(
+      `
       *,
       usuario (
         idusuario,
@@ -456,9 +457,10 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
           linkedin
         )
       )
-    `)
-    .eq('idproyecto', idProyecto)
-    .eq('proyecto_roles.idrol', idRol)
+    `
+    )
+    .eq("idproyecto", idProyecto)
+    .eq("proyecto_roles.idrol", idRol)
     .single();
 
   if (error) throw error;
@@ -487,13 +489,11 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
   return data;
 };
 
-
-
-
 const obtenerProyectoCompleto = async (idProyecto) => {
   const { data: proyecto, error } = await supabase
-    .from('proyecto')
-    .select(`
+    .from("proyecto")
+    .select(
+      `
       *,
       cliente (
         idcliente,
@@ -546,8 +546,9 @@ const obtenerProyectoCompleto = async (idProyecto) => {
           linkedin
         )
       )
-    `)
-    .eq('idproyecto', idProyecto)
+    `
+    )
+    .eq("idproyecto", idProyecto)
     .single();
 
   if (error) throw error;
@@ -568,7 +569,9 @@ const obtenerProyectoCompleto = async (idProyecto) => {
 
   // Agregar URL de foto al creador del proyecto
   if (proyecto.usuario?.idusuario) {
-    const signedUrlObj = await generateProfileSignedUrl(proyecto.usuario.idusuario);
+    const signedUrlObj = await generateProfileSignedUrl(
+      proyecto.usuario.idusuario
+    );
     if (signedUrlObj?.url) {
       proyecto.usuario.fotodeperfil_url = signedUrlObj.url;
     }
@@ -591,9 +594,10 @@ const obtenerProyectoCompleto = async (idProyecto) => {
 };
 
 const obtenerProyectosPorCreador = async (idusuario) => {
-    const { data: proyectos, error } = await supabase
-    .from('proyecto')
-    .select(`
+  const { data: proyectos, error } = await supabase
+    .from("proyecto")
+    .select(
+      `
       *,
       cliente (
         clnombre,
@@ -607,52 +611,57 @@ const obtenerProyectosPorCreador = async (idusuario) => {
           disponible
         )
       )
-    `)
-    .eq('idusuario', idusuario);
+    `
+    )
+    .eq("idusuario", idusuario);
 
   if (error) throw error;
 
-  const proyectosConUrls = await Promise.all(proyectos.map(async proyecto => {
-    // URL firmada para el RFP
-    let rfpfile_url = null;
-    try {
-      if (proyecto.rfpfile) {
-        rfpfile_url = await getRFPSignedUrl(proyecto.idproyecto);
+  const proyectosConUrls = await Promise.all(
+    proyectos.map(async (proyecto) => {
+      // URL firmada para el RFP
+      let rfpfile_url = null;
+      try {
+        if (proyecto.rfpfile) {
+          rfpfile_url = await getRFPSignedUrl(proyecto.idproyecto);
+        }
+      } catch (e) {
+        rfpfile_url = null; // Si no hay archivo o falla, dejarlo como null
       }
-    } catch (e) {
-      rfpfile_url = null; // Si no hay archivo o falla, dejarlo como null
-    }
 
-    // URL firmada para la foto del cliente
-    let fotodecliente_url = null;
-    if (proyecto.cliente?.fotodecliente) {
-      const { data: signedFoto } = await supabase.storage
-        .from('fotos-clientes')
-        .createSignedUrl(proyecto.cliente.fotodecliente, 60 * 60);
-      if (signedFoto?.signedUrl) {
-        fotodecliente_url = signedFoto.signedUrl;
+      // URL firmada para la foto del cliente
+      let fotodecliente_url = null;
+      if (proyecto.cliente?.fotodecliente) {
+        const { data: signedFoto } = await supabase.storage
+          .from("fotos-clientes")
+          .createSignedUrl(proyecto.cliente.fotodecliente, 60 * 60);
+        if (signedFoto?.signedUrl) {
+          fotodecliente_url = signedFoto.signedUrl;
+        }
       }
-    }
 
-    return {
-      ...proyecto,
-      rfpfile_url,
-      cliente: {
-        ...proyecto.cliente,
-        fotodecliente_url,
-      }
-    };
-  }));
+      return {
+        ...proyecto,
+        rfpfile_url,
+        cliente: {
+          ...proyecto.cliente,
+          fotodecliente_url,
+        },
+      };
+    })
+  );
 
   return proyectosConUrls;
 };
 
-
-const actualizarProyectoYRoles = async (idproyecto, { pnombre, descripcion, fechainicio, fechafin, roles }) => {
+const actualizarProyectoYRoles = async (
+  idproyecto,
+  { pnombre, descripcion, fechainicio, fechafin, roles }
+) => {
   const { error: errorProyecto } = await supabase
-    .from('proyecto')
+    .from("proyecto")
     .update({ pnombre, descripcion, fechainicio, fechafin })
-    .eq('idproyecto', idproyecto);
+    .eq("idproyecto", idproyecto);
 
   if (errorProyecto) throw errorProyecto;
 
@@ -660,16 +669,45 @@ const actualizarProyectoYRoles = async (idproyecto, { pnombre, descripcion, fech
   for (const rol of roles) {
     const { idrol, nombrerol, descripcionrol, estado, disponible } = rol;
     const { error: errorRol } = await supabase
-      .from('roles')
+      .from("roles")
       .update({ nombrerol, descripcionrol, estado, disponible })
-      .eq('idrol', idrol);
+      .eq("idrol", idrol);
 
     if (errorRol) throw errorRol;
   }
 
-  return { message: 'Proyecto y roles actualizados correctamente' };
+  return { message: "Proyecto y roles actualizados correctamente" };
 };
 
+const obtenerTopProyectos = async (idusuario) => {
+  const { data: roles, error: errorRoles } = await supabase
+    .from("proyecto_roles")
+    .select("idrol, idproyecto");
+
+  if (errorRoles) throw errorRoles;
+
+  // Crea un arreglo de promesas y devuélvelo directamente
+  const promesas = roles.map(async ({ idrol, idproyecto }) => {
+    const res = await fetchCompatibility(idrol, idusuario);
+    return {
+      idrol,
+      idproyecto,
+      comp: res,
+    };
+  });
+
+  // Espera a que todas las promesas se resuelvan
+  const resultados = await Promise.all(promesas);
+  const ordenados = resultados.sort((a, b) => b.comp - a.comp);
+
+  // Toma los 3 primeros
+  const top3 = ordenados.slice(0, 3);
+
+  // ahora 
+
+  console.log(top3);
+  return top3; 
+};
 
 module.exports = {
   fetchProjects,
@@ -683,5 +721,6 @@ module.exports = {
   obtenerProyectoPorRol,
   obtenerProyectoCompleto,
   obtenerProyectosPorCreador,
-  actualizarProyectoYRoles
+  actualizarProyectoYRoles,
+  obtenerTopProyectos,
 };
