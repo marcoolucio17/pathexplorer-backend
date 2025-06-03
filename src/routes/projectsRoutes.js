@@ -36,6 +36,6 @@ router.patch('/editprojects/:idproyecto', authMiddleware, editarProyectoYRoles);
 router.delete('/delete-proyecto-rol/:idproyecto/:idrol', authMiddleware, borrarRelacionProyectoRol);
 
 // pa conseguir top3 proyectos
-router.get('/projects/top/:id', obtenerTop3Proyectos); 
+router.get('/projects/top/:id', authMiddleware, obtenerTop3Proyectos); 
 
 module.exports = router;
