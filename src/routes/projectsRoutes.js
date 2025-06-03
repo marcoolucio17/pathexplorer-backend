@@ -9,7 +9,7 @@ const { getProjects,
     getProyectoPorRol, 
     getProyectosPorCreador, 
     editarProyectoYRoles,
-    borrarRelacionProyectoRol } = require('../controllers/projectController');
+    borrarRelacionProyectoRol, obtenerTop3Proyectos } = require('../controllers/projectController');
 
 const authMiddleware = require('../middlewares/verifyHashToken');
 const router = express.Router();
@@ -34,5 +34,8 @@ router.get('/creador/:idusuario', authMiddleware, getProyectosPorCreador); //pro
 router.patch('/editprojects/:idproyecto', authMiddleware, editarProyectoYRoles); //editar proyecto y roles
 
 router.delete('/delete-proyecto-rol/:idproyecto/:idrol', authMiddleware, borrarRelacionProyectoRol);
+
+// pa conseguir top3 proyectos
+router.get('/projects/top/:id', authMiddleware, obtenerTop3Proyectos); 
 
 module.exports = router;

@@ -30,7 +30,7 @@ describe("End to end test", () => {
   // fetch de proyectos
   test("should return all projects with their roles and status 200", async () => {
     const response = await request(app)
-      .get("/api/projects")
+      .get("/api/projects?idCompatible=1")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -40,8 +40,7 @@ describe("End to end test", () => {
   // fetch de proyecto por id
   test("should return a project by id with status 200", async () => {
     const response = await request(app)
-      .get("/api/projects")
-      .send({ idproyecto: "1" })
+      .get("/api/projects?idproyecto=1")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
