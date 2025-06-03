@@ -91,7 +91,7 @@ const getProjectsByFilter = async (req, res, projects) => {
     const requiredSkills = Array.isArray(idSkills) ? idSkills : [];
 
     let projectsFiltered = projects;
-
+    const idCompatibleParsed = parseInt(idCompatible, 10);
     projectsFiltered = await filterProjectsByCreator(
       projectsFiltered,
       idusuario
@@ -127,12 +127,10 @@ const getProjectsByFilter = async (req, res, projects) => {
           rolesFiltrados.map(async (role) => {
             const datosRol = role.roles;
 
-            if (idCompatible) {
-              datosRol.compability = await fetchCompatibility(
-                datosRol.idrol,
-                idCompatible
-              );
-            }
+            datosRol.compability = await fetchCompatibility(
+              datosRol.idrol,
+              idCompatibleParsed
+            );
 
             return {
               ...datosRol,
