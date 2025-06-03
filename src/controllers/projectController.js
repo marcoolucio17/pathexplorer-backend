@@ -80,13 +80,13 @@ const getProjectsByFilter = async (req, res, projects) => {
   try {
     const { idSkills = null } = req.body || {};
 
+
     const {
       nombrerol = null,
       idcliente = null,
       idusuario = null,
       idCompatible = null,
     } = req.query;
-    console.log("idusuario:", idCompatible);
 
     const requiredSkills = Array.isArray(idSkills) ? idSkills : [];
 
@@ -197,7 +197,7 @@ const createProject = async (req, res) => {
       idusuario = null,
       idSkills = null,
     } = req.body || {};
-    console.log(informacion);
+
     if (informacion) {
       return createFullProject(informacion, res);
     } else if (
@@ -259,9 +259,6 @@ const updatingProject = async (idproyecto, proyect, res) => {
 };
 
 const uploadRFP = async (req, res) => {
-  console.log("Archivo recibido:", req.file);
-  console.log("Proyecto ID recibido:", req.body.projectId);
-
   try {
     const file = req.file;
     const { projectId } = req.body;
@@ -355,10 +352,12 @@ const editarProyectoYRoles = async (req, res) => {
     });
     res.status(200).json(resultado);
   } catch (error) {
-    res.status(500).json({
-      error: "Error al actualizar el proyecto y los roles",
-      detalle: error.message,
-    });
+    res
+      .status(500)
+      .json({
+        error: "Error al actualizar el proyecto y los roles",
+        detalle: error.message,
+      });
   }
 };
 
@@ -386,10 +385,12 @@ const obtenerTop3Proyectos = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.log(error);
-    res.status(500).json({
-      error: "Error al obtener los tres proyectos más compatibles",
-      detalle: error.message,
-    });
+    res
+      .status(500)
+      .json({
+        error: "Error al obtener los tres proyectos más compatibles",
+        detalle: error.message,
+      });
   }
 };
 
