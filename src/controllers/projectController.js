@@ -220,16 +220,29 @@ const createProject = async (req, res) => {
 
 const createFullProject = async (informacion, res) => {
   try {
+    if (
+      !informacion?.proyect ||
+      !informacion?.roles ||
+      !informacion.proyect.projectdeliverables
+    ) {
+      return res.status(400).json({
+        error: "Falta información: asegúrate de incluir 'proyect', 'roles' y 'projectdeliverables'.",
+      });
+    }
+
     const result = await fetchCreateProject(informacion);
+
     if (!result) {
-      return res.status(404).json({ error: "Project not found" });
+      return res.status(404).json({ error: "Proyecto no encontrado" });
     } else {
       return res.status(201).json(result);
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error creating project" });
+    console.error("Error en createFullProject:", error.message);
+    return res.status(500).json({ error: "Error al crear el proyecto" });
   }
 };
+
 
 const updateProject = async (req, res) => {
   try {
