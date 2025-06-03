@@ -1,19 +1,20 @@
-const { 
-    fetchProjects, 
-    fetchProjectById, 
-    fetchProjectsByName,
-    fetchCreateProject,
-    fetchUpdateProject,
-    uploadRFPToStorage, 
-    saveRFPPathToProject,
-    getRFPSignedUrl,
-    obtenerProyectoCompleto,
-    obtenerProyectoPorRol,
-    obtenerProyectosPorCreador,
-    actualizarProyectoYRoles,
-    eliminarRelacionProyectoRol,
-    obtenerTopProyectos
-  } = require('../services/projectService');
+const { fetchCompatibility } = require("../services/compabilityService");
+const {
+  fetchProjects,
+  fetchProjectById,
+  fetchProjectsByName,
+  fetchCreateProject,
+  fetchUpdateProject,
+  uploadRFPToStorage,
+  saveRFPPathToProject,
+  getRFPSignedUrl,
+  obtenerProyectoCompleto,
+  obtenerProyectoPorRol,
+  obtenerProyectosPorCreador,
+  actualizarProyectoYRoles,
+  eliminarRelacionProyectoRol,
+  obtenerTopProyectos,
+} = require("../services/projectService");
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -38,7 +39,7 @@ const getAllProjects = async (req, res) => {
   try {
     const projects = await fetchProjects();
     if (projects) {
-      getProjectsByFilter(req, res, projects);
+      return await getProjectsByFilter(req, res, projects);
     } else {
       res.status(404).json({ error: "No projects found" });
     }
@@ -52,7 +53,7 @@ const getProjectsByName = async (req, res) => {
     const { projectName = null } = req.query || {};
     const projects = await fetchProjectsByName(projectName);
     if (projects) {
-      return getProjectsByFilter(req, res, projects);
+      return await getProjectsByFilter(req, res, projects);
     } else {
       return res.status(404).json({ error: "Project not found" });
     }
@@ -79,27 +80,38 @@ const getProjectsByFilter = async (req, res, projects) => {
   try {
     const { idSkills = null } = req.body || {};
 
-    const { nombrerol = null, idcliente = null, idusuario = null } = req.query;
-    console.log("idusuario:", idusuario);
+    const {
+      nombrerol = null,
+      idcliente = null,
+      idusuario = null,
+      idCompatible = null,
+    } = req.query;
+    console.log("idusuario:", idCompatible);
 
-    const requiredSkills = new Set(idSkills) ?? [];
+    const requiredSkills = Array.isArray(idSkills) ? idSkills : [];
 
-    const projectsFiltered = projects
-      .filter((project) => {
-        return !idusuario || project.usuario?.idusuario === parseInt(idusuario);
-      })
-      .filter((project) => {
-        return !idcliente || project.cliente.idcliente === parseInt(idcliente);
-      })
-      .map((project) => {
-        const rolesFiltrados = project.proyecto_roles.filter((role) => {
+    let projectsFiltered = projects;
+    const idCompatibleParsed = parseInt(idCompatible, 10);
+    projectsFiltered = await filterProjectsByCreator(
+      projectsFiltered,
+      idusuario
+    );
+
+    projectsFiltered = await filterProjectsByClient(
+      projectsFiltered,
+      idcliente
+    );
+
+    const projectsWithRoles = await Promise.all(
+      projectsFiltered.map(async (project) => {
+        let rolesFiltrados = project.proyecto_roles.filter((role) => {
           const datosRol = role.roles;
 
           if (nombrerol && datosRol.nombrerol !== nombrerol) {
             return false;
           }
 
-          if (requiredSkills.length > 0) {
+          if (requiredSkills.size > 0) {
             const habilidades = datosRol.requerimientos_roles.map(
               (r) => r.requerimientos.habilidades.idhabilidad
             );
@@ -111,6 +123,21 @@ const getProjectsByFilter = async (req, res, projects) => {
           }
           return true;
         });
+        rolesFiltrados = await Promise.all(
+          rolesFiltrados.map(async (role) => {
+            const datosRol = role.roles;
+
+            datosRol.compability = await fetchCompatibility(
+              datosRol.idrol,
+              idCompatibleParsed
+            );
+
+            return {
+              ...datosRol,
+              compability: datosRol.compability,
+            };
+          })
+        );
         const getDuracionEnMeses = (inicio, fin) => {
           const anios = fin.getFullYear() - inicio.getFullYear();
           const meses = fin.getMonth() - inicio.getMonth();
@@ -132,14 +159,31 @@ const getProjectsByFilter = async (req, res, projects) => {
           proyecto_roles: rolesFiltrados,
         };
       })
-      .filter((project) => {
-        return project.proyecto_roles.length > 0;
-      });
+    );
 
-    return res.status(200).json(projectsFiltered);
+    const finalProjects = projectsWithRoles.filter((project) => {
+      return project.proyecto_roles.length > 0;
+    });
+    return res.status(200).json(finalProjects);
   } catch (error) {
     return res.status(500).json({ error: "Error fetching projects" });
   }
+};
+
+const filterProjectsByCreator = async (projects, idusuario) => {
+  if (!idusuario) return projects;
+  const idUsuario = parseInt(idusuario, 10);
+  return projects.filter(
+    (project) => project.usuario?.idusuario === idUsuario || !idusuario
+  );
+};
+
+const filterProjectsByClient = async (projects, idcliente) => {
+  if (!idcliente) return projects;
+  const idCliente = parseInt(idcliente, 10);
+  return projects.filter(
+    (project) => project.cliente?.idcliente === idCliente || !idcliente
+  );
 };
 
 const createProject = async (req, res) => {
@@ -270,14 +314,11 @@ const getProyectoCompleto = async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error("[ERROR en obtenerProyectoCompleto]", error); // 👈
-    res
-      .status(500)
-      .json({
-        error: error.message || "Error al obtener el proyecto completo",
-      });
+    res.status(500).json({
+      error: error.message || "Error al obtener el proyecto completo",
+    });
   }
 };
-
 
 const getProyectosPorCreador = async (req, res) => {
   const { idusuario } = req.params;
@@ -286,13 +327,22 @@ const getProyectosPorCreador = async (req, res) => {
     res.status(200).json(proyectos);
   } catch (error) {
     console.error("Error en getProyectosPorCreador:", error.message);
-    res.status(500).json({ error: 'Error al obtener los proyectos del usuario' });
+    res
+      .status(500)
+      .json({ error: "Error al obtener los proyectos del usuario" });
   }
 };
 
 const editarProyectoYRoles = async (req, res) => {
   const { idproyecto } = req.params;
-  const { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles } = req.body;
+  const {
+    pnombre,
+    descripcion,
+    fechainicio,
+    fechafin,
+    projectdeliverables,
+    roles,
+  } = req.body;
 
   try {
     const resultado = await actualizarProyectoYRoles(idproyecto, {
@@ -301,30 +351,33 @@ const editarProyectoYRoles = async (req, res) => {
       fechainicio,
       fechafin,
       projectdeliverables,
-      roles
+      roles,
     });
     res.status(200).json(resultado);
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar el proyecto y los roles', detalle: error.message });
+    res.status(500).json({
+      error: "Error al actualizar el proyecto y los roles",
+      detalle: error.message,
+    });
   }
 };
-
 
 const borrarRelacionProyectoRol = async (req, res) => {
   const { idproyecto, idrol } = req.params;
 
   try {
     await eliminarRelacionProyectoRol(idproyecto, idrol);
-    res.status(200).json({ message: 'Rol desvinculado del proyecto correctamente' });
+    res
+      .status(200)
+      .json({ message: "Rol desvinculado del proyecto correctamente" });
   } catch (error) {
-    console.error('Error en borrarRelacionProyectoRol:', error.message);
+    console.error("Error en borrarRelacionProyectoRol:", error.message);
     res.status(500).json({
-      error: 'Error al desvincular el rol del proyecto',
-      detalle: error.message
+      error: "Error al desvincular el rol del proyecto",
+      detalle: error.message,
     });
   }
 };
-
 
 const obtenerTop3Proyectos = async (req, res) => {
   const { id } = req.params;
@@ -332,22 +385,24 @@ const obtenerTop3Proyectos = async (req, res) => {
     let result = await obtenerTopProyectos(id);
     res.status(200).json(result);
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ error: 'Error al obtener los tres proyectos más compatibles', detalle: error.message });
+    console.log(error);
+    res.status(500).json({
+      error: "Error al obtener los tres proyectos más compatibles",
+      detalle: error.message,
+    });
   }
 };
 
 module.exports = {
-    getProjects,
-    createProject,
-    updateProject,
-    uploadRFP,
-    getRFPUrl,
-    getProyectoPorRol,
-    getProyectoCompleto,
-    getProyectosPorCreador,
-    editarProyectoYRoles,
-    borrarRelacionProyectoRol,
-    obtenerTop3Proyectos
+  getProjects,
+  createProject,
+  updateProject,
+  uploadRFP,
+  getRFPUrl,
+  getProyectoPorRol,
+  getProyectoCompleto,
+  getProyectosPorCreador,
+  editarProyectoYRoles,
+  borrarRelacionProyectoRol,
+  obtenerTop3Proyectos,
 };
-

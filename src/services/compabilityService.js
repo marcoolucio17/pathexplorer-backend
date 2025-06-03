@@ -3,6 +3,7 @@ const ApiError = require("../utils/errorHelper");
 
 const fetchCompatibility = async (id_rol, idusuario) => {
   try {
+
     const { data: dataUserHab, error: errorUserHab } = await supabase
       .from("usuario_habilidad")
       .select("idhabilidad")
@@ -70,7 +71,6 @@ const doCalculateCompatibility = (UserHab, RolHab) => {
       rolSkills.length > 0
         ? Math.round((compatibility / rolSkills.length) * 100)
         : 0;
-
     return compabilityTotal;
   } catch (error) {
     console.log("error", error);
