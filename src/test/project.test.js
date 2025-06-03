@@ -167,21 +167,16 @@ describe("api/projects/patch", () => {
   });
   //Paso
   test("Should update a project with status 200", async () => {
+    const idProyecto = 150;
     const updatedProject = {
-      idproyecto: 46,
       informacion: {
         proyect: {
           pnombre: "Aplicación web prueba",
-          descripcion:
-            "Realizar una aplicación web que permita gestionar la tienda Marcos Maximos",
-          fechainicio: "2025-05-12",
-          fechafin: "2027-01-04",
-          idcliente: 1,
         },
       },
     };
     const response = await request(app)
-      .patch("/api/projects")
+      .patch(`/api/projects?idproyecto=${idProyecto}`)
       .send(updatedProject)
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
