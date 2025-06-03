@@ -660,14 +660,15 @@ const obtenerProyectosPorCreador = async (idusuario) => {
   return proyectosConUrls;
 };
 
+
 const actualizarProyectoYRoles = async (
   idproyecto,
-  { pnombre, descripcion, fechainicio, fechafin, roles }
+  { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles }
 ) => {
   const { error: errorProyecto } = await supabase
-    .from("proyecto")
-    .update({ pnombre, descripcion, fechainicio, fechafin })
-    .eq("idproyecto", idproyecto);
+    .from('proyecto')
+    .update({ pnombre, descripcion, fechainicio, fechafin, projectdeliverables })
+    .eq('idproyecto', idproyecto);
 
   if (errorProyecto) throw errorProyecto;
 
@@ -682,8 +683,24 @@ const actualizarProyectoYRoles = async (
     if (errorRol) throw errorRol;
   }
 
-  return { message: "Proyecto y roles actualizados correctamente" };
+  return { message: 'Proyecto y roles actualizados correctamente' };
 };
+
+const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {
+  if (!idproyecto || !idrol) {
+    throw new Error("Faltan parámetros idproyecto o idrol");
+  }
+
+  const { error } = await supabase
+    .from('proyecto_roles')
+    .delete()
+    .match({ idproyecto: parseInt(idproyecto), idrol: parseInt(idrol) });
+
+  if (error) {
+    throw error;
+  }
+};
+
 
 const obtenerTopProyectos = async (idusuario) => {
   const { data: roles, error: errorRoles } = await supabase
@@ -722,11 +739,12 @@ module.exports = {
   fetchCreateProject,
   fetchUpdateProject,
   uploadRFPToStorage,
-  saveRFPPathToProject,
+  saveRFPPathToProject, 
   getRFPSignedUrl,
   obtenerProyectoPorRol,
   obtenerProyectoCompleto,
   obtenerProyectosPorCreador,
   actualizarProyectoYRoles,
+  eliminarRelacionProyectoRol,
   obtenerTopProyectos,
 };

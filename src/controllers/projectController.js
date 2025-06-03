@@ -2,7 +2,6 @@ const {
     fetchProjects, 
     fetchProjectById, 
     fetchProjectsByName,
-    fetchMyProjects,
     fetchCreateProject,
     fetchUpdateProject,
     uploadRFPToStorage, 
@@ -12,6 +11,7 @@ const {
     obtenerProyectoPorRol,
     obtenerProyectosPorCreador,
     actualizarProyectoYRoles,
+    eliminarRelacionProyectoRol,
     obtenerTopProyectos
   } = require('../services/projectService');
 
@@ -292,7 +292,7 @@ const getProyectosPorCreador = async (req, res) => {
 
 const editarProyectoYRoles = async (req, res) => {
   const { idproyecto } = req.params;
-  const { pnombre, descripcion, fechainicio, fechafin, roles } = req.body;
+  const { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles } = req.body;
 
   try {
     const resultado = await actualizarProyectoYRoles(idproyecto, {
@@ -300,6 +300,7 @@ const editarProyectoYRoles = async (req, res) => {
       descripcion,
       fechainicio,
       fechafin,
+      projectdeliverables,
       roles
     });
     res.status(200).json(resultado);
@@ -307,6 +308,23 @@ const editarProyectoYRoles = async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar el proyecto y los roles', detalle: error.message });
   }
 };
+
+
+const borrarRelacionProyectoRol = async (req, res) => {
+  const { idproyecto, idrol } = req.params;
+
+  try {
+    await eliminarRelacionProyectoRol(idproyecto, idrol);
+    res.status(200).json({ message: 'Rol desvinculado del proyecto correctamente' });
+  } catch (error) {
+    console.error('Error en borrarRelacionProyectoRol:', error.message);
+    res.status(500).json({
+      error: 'Error al desvincular el rol del proyecto',
+      detalle: error.message
+    });
+  }
+};
+
 
 const obtenerTop3Proyectos = async (req, res) => {
   const { id } = req.params;
@@ -329,6 +347,7 @@ module.exports = {
     getProyectoCompleto,
     getProyectosPorCreador,
     editarProyectoYRoles,
+    borrarRelacionProyectoRol,
     obtenerTop3Proyectos
 };
 
