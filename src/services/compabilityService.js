@@ -70,7 +70,6 @@ const doCalculateCompatibility = (UserHab, RolHab) => {
       rolSkills.length > 0
         ? Math.round((compatibility / rolSkills.length) * 100)
         : 0;
-
     return compabilityTotal;
   } catch (error) {
     console.log("error", error);

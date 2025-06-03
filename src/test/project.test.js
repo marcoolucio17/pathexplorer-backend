@@ -184,6 +184,7 @@ describe("api/projects/patch", () => {
       .patch("/api/projects")
       .send(updatedProject)
       .set("Authorization", `Bearer ${token}`);
+    console.log(response);
     expect(response.statusCode).toBe(200);
   });
 });
