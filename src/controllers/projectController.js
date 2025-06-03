@@ -11,7 +11,9 @@ const {
     obtenerProyectoPorRol,
     obtenerProyectosPorCreador,
     actualizarProyectoYRoles,
-    eliminarRelacionProyectoRol  } = require('../services/projectService');
+    eliminarRelacionProyectoRol,
+    obtenerTopProyectos
+  } = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -324,6 +326,17 @@ const borrarRelacionProyectoRol = async (req, res) => {
 };
 
 
+const obtenerTop3Proyectos = async (req, res) => {
+  const { id } = req.params;
+  try {
+    let result = await obtenerTopProyectos(id);
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Error al obtener los tres proyectos más compatibles', detalle: error.message });
+  }
+};
+
 module.exports = {
     getProjects,
     createProject,
@@ -334,6 +347,7 @@ module.exports = {
     getProyectoCompleto,
     getProyectosPorCreador,
     editarProyectoYRoles,
-    borrarRelacionProyectoRol
+    borrarRelacionProyectoRol,
+    obtenerTop3Proyectos
 };
 
