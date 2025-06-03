@@ -648,10 +648,13 @@ const obtenerProyectosPorCreador = async (idusuario) => {
 };
 
 
-const actualizarProyectoYRoles = async (idproyecto, { pnombre, descripcion, fechainicio, fechafin, roles }) => {
+const actualizarProyectoYRoles = async (
+  idproyecto,
+  { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles }
+) => {
   const { error: errorProyecto } = await supabase
     .from('proyecto')
-    .update({ pnombre, descripcion, fechainicio, fechafin })
+    .update({ pnombre, descripcion, fechainicio, fechafin, projectdeliverables })
     .eq('idproyecto', idproyecto);
 
   if (errorProyecto) throw errorProyecto;
@@ -694,7 +697,7 @@ module.exports = {
   fetchCreateProject,
   fetchUpdateProject,
   uploadRFPToStorage,
-  saveRFPPathToProject,
+  saveRFPPathToProject, 
   getRFPSignedUrl,
   obtenerProyectoPorRol,
   obtenerProyectoCompleto,
