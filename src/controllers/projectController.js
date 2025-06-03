@@ -80,7 +80,6 @@ const getProjectsByFilter = async (req, res, projects) => {
     const { idSkills = null } = req.body || {};
 
     const { nombrerol = null, idcliente = null, idusuario = null } = req.query;
-    console.log("idusuario:", idusuario);
 
     const requiredSkills = new Set(idSkills) ?? [];
 
@@ -153,7 +152,7 @@ const createProject = async (req, res) => {
       idusuario = null,
       idSkills = null,
     } = req.body || {};
-    console.log(informacion);
+
     if (informacion) {
       return createFullProject(informacion, res);
     } else if (
@@ -215,9 +214,6 @@ const updatingProject = async (idproyecto, proyect, res) => {
 };
 
 const uploadRFP = async (req, res) => {
-  console.log("Archivo recibido:", req.file);
-  console.log("Proyecto ID recibido:", req.body.projectId);
-
   try {
     const file = req.file;
     const { projectId } = req.body;
@@ -270,14 +266,11 @@ const getProyectoCompleto = async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error("[ERROR en obtenerProyectoCompleto]", error); // 👈
-    res
-      .status(500)
-      .json({
-        error: error.message || "Error al obtener el proyecto completo",
-      });
+    res.status(500).json({
+      error: error.message || "Error al obtener el proyecto completo",
+    });
   }
 };
-
 
 const getProyectosPorCreador = async (req, res) => {
   const { idusuario } = req.params;
@@ -286,13 +279,22 @@ const getProyectosPorCreador = async (req, res) => {
     res.status(200).json(proyectos);
   } catch (error) {
     console.error("Error en getProyectosPorCreador:", error.message);
-    res.status(500).json({ error: 'Error al obtener los proyectos del usuario' });
+    res
+      .status(500)
+      .json({ error: "Error al obtener los proyectos del usuario" });
   }
 };
 
 const editarProyectoYRoles = async (req, res) => {
   const { idproyecto } = req.params;
-  const { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles } = req.body;
+  const {
+    pnombre,
+    descripcion,
+    fechainicio,
+    fechafin,
+    projectdeliverables,
+    roles,
+  } = req.body;
 
   try {
     const resultado = await actualizarProyectoYRoles(idproyecto, {
@@ -301,30 +303,35 @@ const editarProyectoYRoles = async (req, res) => {
       fechainicio,
       fechafin,
       projectdeliverables,
-      roles
+      roles,
     });
     res.status(200).json(resultado);
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar el proyecto y los roles', detalle: error.message });
+    res
+      .status(500)
+      .json({
+        error: "Error al actualizar el proyecto y los roles",
+        detalle: error.message,
+      });
   }
 };
-
 
 const borrarRelacionProyectoRol = async (req, res) => {
   const { idproyecto, idrol } = req.params;
 
   try {
     await eliminarRelacionProyectoRol(idproyecto, idrol);
-    res.status(200).json({ message: 'Rol desvinculado del proyecto correctamente' });
+    res
+      .status(200)
+      .json({ message: "Rol desvinculado del proyecto correctamente" });
   } catch (error) {
-    console.error('Error en borrarRelacionProyectoRol:', error.message);
+    console.error("Error en borrarRelacionProyectoRol:", error.message);
     res.status(500).json({
-      error: 'Error al desvincular el rol del proyecto',
-      detalle: error.message
+      error: "Error al desvincular el rol del proyecto",
+      detalle: error.message,
     });
   }
 };
-
 
 const obtenerTop3Proyectos = async (req, res) => {
   const { id } = req.params;
@@ -332,8 +339,12 @@ const obtenerTop3Proyectos = async (req, res) => {
     let result = await obtenerTopProyectos(id);
     res.status(200).json(result);
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ error: 'Error al obtener los tres proyectos más compatibles', detalle: error.message });
+    res
+      .status(500)
+      .json({
+        error: "Error al obtener los tres proyectos más compatibles",
+        detalle: error.message,
+      });
   }
 };
 

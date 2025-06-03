@@ -21,7 +21,6 @@ const fetchCompatibility = async (id_rol, idusuario) => {
       .eq("idrol", id_rol);
 
     if (errorUserHab) {
-      console.log("error", errorUserHab);
       throw new ApiError(
         errorUserHab.status || 400,
         errorUserHab.message || "There is an error fetching the compatibility."
@@ -73,7 +72,6 @@ const doCalculateCompatibility = (UserHab, RolHab) => {
 
     return compabilityTotal;
   } catch (error) {
-    console.log("error", error);
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error calculating the compatibility."

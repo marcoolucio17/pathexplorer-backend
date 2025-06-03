@@ -34,19 +34,20 @@ describe("api/projects/get", () => {
     expect(response.body).toBeInstanceOf(Array);
   });
   //Paso
+
   test("Should return a projects or a bunch of projects by name with status 200", async () => {
+    const projectName = "Aplicación";
     const response = await request(app)
-      .get("/api/projects")
-      .send({ projectName: "Aplicación" })
+      .get(`/api/projects?projectName=${projectName}`)
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
   });
   //Paso
   test("Should return a project by id with status 200", async () => {
+    const projectId = 1;
     const response = await request(app)
-      .get("/api/projects")
-      .send({ idproyecto: "1" })
+      .get(`/api/projects?idproyecto=${projectId}`)
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Object);

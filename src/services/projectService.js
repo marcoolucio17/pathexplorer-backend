@@ -42,7 +42,6 @@ const fetchProjects = async () => {
     .select(textToObtainInfoProject)
     .eq("proyectoterminado", false);
   if (error) {
-    console.log("error", error);
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error fetching the projects."
@@ -86,7 +85,6 @@ const fetchProjectsByName = async (nombre_proyecto) => {
     .eq("proyectoterminado", false);
 
   if (error) {
-    console.log("error", error);
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error fetching the projects."
@@ -119,7 +117,6 @@ const fetchProjectById = async (id_proyecto) => {
     .eq("idproyecto", id_proyecto);
 
   if (error) {
-    console.log("error", error);
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error fetching the projects."
@@ -338,7 +335,6 @@ const fetchCreateProject = async (informacion) => {
     }
     return { idproyecto };
   } catch (error) {
-    console.log("error", error);
     throw new ApiError(
       error.status || 500,
       error.message || "There is an error creating the project."
@@ -355,7 +351,6 @@ const fetchUpdateProject = async (id_proyecto, informacion) => {
 
     return true;
   } catch (error) {
-    console.log("error", error);
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error updating the project."
@@ -384,12 +379,6 @@ const saveRFPPathToProject = async (projectId, filePath) => {
     .eq("idproyecto", projectId)
     .select();
 
-  console.log("Actualización de Proyecto:", {
-    projectId,
-    filePath,
-    data,
-    error,
-  });
 
   if (error || !data || data.length === 0) {
     throw new Error("No se pudo actualizar el proyecto o el ID es inválido");
