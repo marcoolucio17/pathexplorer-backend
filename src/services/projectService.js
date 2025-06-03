@@ -230,15 +230,16 @@ const fetchCreateProject = async (informacion) => {
 
     const { data: proyectData, error: proyectError } = await supabase
       .from("proyecto")
-      .insert([proyect])
+      .insert([
+        {
+          ...proyect, // debe contener projectdeliverables si lo tiene
+        },
+      ])
       .select("idproyecto")
       .single();
 
     if (proyectError || !proyectData) {
-      throw new ApiError(
-        500,
-        proyectError?.message || "Error al crear el proyecto."
-      );
+      throw new ApiError(500, proyectError?.message || "Error al crear el proyecto.");
     }
 
     const idproyecto = proyectData.idproyecto;
@@ -248,26 +249,26 @@ const fetchCreateProject = async (informacion) => {
         .from("roles")
         .insert([
           {
-            //Aquí afecta el rol
             nombrerol: rol.nombrerol,
             nivelrol: rol.nivelrol,
             descripcionrol: rol.descripcionrol,
             disponible: rol.disponible,
           },
         ])
-        .select(`idrol`)
+        .select("idrol")
         .single();
 
       if (rolError || !rolData) {
         throw new ApiError(500, rolError?.message || "Error al crear el rol.");
       }
+
       const idrol = rolData.idrol;
 
       for (const req of rol.requerimientos) {
         const { tiempoexperiencia, idhabilidad } = req;
         const { data: existeReq, error: existeError } = await supabase
           .from("requerimientos")
-          .select(`idrequerimiento`)
+          .select("idrequerimiento")
           .eq("tiempoexperiencia", tiempoexperiencia)
           .eq("idhabilidad", idhabilidad)
           .maybeSingle();
@@ -279,57 +280,36 @@ const fetchCreateProject = async (informacion) => {
         } else {
           const { data: reqData, error: reqError } = await supabase
             .from("requerimientos")
-            .insert([
-              {
-                tiempoexperiencia: tiempoexperiencia,
-                idhabilidad: idhabilidad,
-              },
-            ])
-            .select(`idrequerimiento`)
+            .insert([{ tiempoexperiencia, idhabilidad }])
+            .select("idrequerimiento")
             .single();
 
           if (!reqData || reqError) {
-            throw new ApiError(
-              500,
-              reqError?.message || "Error al crear el requerimiento."
-            );
+            throw new ApiError(500, reqError?.message || "Error al crear el requerimiento.");
           }
+
           idrequerimiento = reqData.idrequerimiento;
         }
 
         const { error: reqRolError } = await supabase
           .from("requerimientos_roles")
-          .insert([
-            {
-              idrol: idrol,
-              idrequerimiento: idrequerimiento,
-            },
-          ]);
+          .insert([{ idrol, idrequerimiento }]);
+
         if (reqRolError) {
-          throw new ApiError(
-            500,
-            reqRolError?.message || "Error al asignar requerimientos al rol."
-          );
+          throw new ApiError(500, reqRolError?.message || "Error al asignar requerimientos al rol.");
         }
       }
 
       const { error: proyectRolError } = await supabase
         .from("proyecto_roles")
-        .insert([
-          {
-            idproyecto: idproyecto,
-            idrol: idrol,
-          },
-        ]);
+        .insert([{ idproyecto, idrol }]);
 
       if (proyectRolError) {
-        throw new ApiError(
-          500,
-          proyectRolError?.message || "Error al asignar el rol al proyecto."
-        );
+        throw new ApiError(500, proyectRolError?.message || "Error al asignar el rol al proyecto.");
       }
     }
-    return {idproyecto};
+
+    return { idproyecto };
   } catch (error) {
     console.log("error", error);
     throw new ApiError(
@@ -338,6 +318,7 @@ const fetchCreateProject = async (informacion) => {
     );
   }
 };
+
 
 const fetchUpdateProject = async (id_proyecto, informacion) => {
   try {
