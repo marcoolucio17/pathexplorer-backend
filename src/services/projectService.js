@@ -126,7 +126,13 @@ const fetchProjectById = async (id_proyecto) => {
     );
   }
 
-  const url = await getRFPSignedUrl(id_proyecto);
+  let url;
+
+  try {
+    url = await getRFPSignedUrl(id_proyecto);
+  } catch (error) {
+    url = "";
+  }
   const dataProyectos = dataProjectsReorganized(data, url);
   return dataProyectos;
 };
@@ -470,7 +476,7 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
     const rfpUrl = await getRFPSignedUrl(idProyecto);
     data.rfpfile_url = rfpUrl;
   } catch (err) {
-    console.warn("No se pudo obtener URL del RFP:", err.message);
+    // console.warn("No se pudo obtener URL del RFP:", err.message);
   }
 
   // Añadir URL de la foto de perfil a cada usuario en UTP
@@ -686,7 +692,7 @@ const obtenerTopProyectos = async (idusuario) => {
 
   if (errorRoles) throw errorRoles;
 
-  // Crea un arreglo de promesas y devuélvelo directamente
+  // Paso 1: Calculamos compatibilidad para cada rol
   const promesas = roles.map(async ({ idrol, idproyecto }) => {
     const res = await fetchCompatibility(idrol, idusuario);
     return {
@@ -696,17 +702,17 @@ const obtenerTopProyectos = async (idusuario) => {
     };
   });
 
-  // Espera a que todas las promesas se resuelvan
   const resultados = await Promise.all(promesas);
-  const ordenados = resultados.sort((a, b) => b.comp - a.comp);
+  const top3 = resultados.sort((a, b) => b.comp - a.comp).slice(0, 3);
 
-  // Toma los 3 primeros
-  const top3 = ordenados.slice(0, 3);
+  const projectFetches = top3.map(async ({ idrol, idproyecto }) => {
+    const project = await obtenerProyectoPorRol(idproyecto, idrol);
+    return project;
+  });
 
-  // ahora 
+  const projects = await Promise.all(projectFetches);
 
-  console.log(top3);
-  return top3; 
+  return projects;
 };
 
 module.exports = {

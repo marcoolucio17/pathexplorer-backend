@@ -310,10 +310,9 @@ const editarProyectoYRoles = async (req, res) => {
 
 const obtenerTop3Proyectos = async (req, res) => {
   const { id } = req.params;
-  console.log("aqui");
   try {
-    let res = await obtenerTopProyectos(id);
-    res.status(200).json("bien jiji");
+    let result = await obtenerTopProyectos(id);
+    res.status(200).json(result);
   } catch (error) {
     console.log(error)
     res.status(500).json({ error: 'Error al obtener los tres proyectos más compatibles', detalle: error.message });
