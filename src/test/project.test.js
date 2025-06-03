@@ -28,7 +28,7 @@ describe("api/projects/get", () => {
   //Paso
   test("Should return all projects with their roles and status 200", async () => {
     const response = await request(app)
-      .get("/api/projects")
+      .get("/api/projects?idCompatible=1")
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
@@ -36,9 +36,8 @@ describe("api/projects/get", () => {
   //Paso
 
   test("Should return a projects or a bunch of projects by name with status 200", async () => {
-    const projectName = "Aplicación";
     const response = await request(app)
-      .get(`/api/projects?projectName=${projectName}`)
+      .get(`/api/projects?projectName=Aplicación&idCompatible=1`)
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);

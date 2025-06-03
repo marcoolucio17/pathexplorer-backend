@@ -3,7 +3,6 @@ const ApiError = require("../utils/errorHelper");
 
 const fetchCompatibility = async (id_rol, idusuario) => {
   try {
-
     const { data: dataUserHab, error: errorUserHab } = await supabase
       .from("usuario_habilidad")
       .select("idhabilidad")
@@ -32,7 +31,6 @@ const fetchCompatibility = async (id_rol, idusuario) => {
 
     return compability;
   } catch (error) {
-    console.log("error", error);
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error fetching the compatibility."
