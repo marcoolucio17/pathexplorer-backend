@@ -1,15 +1,19 @@
-const {
-  fetchProjects,
-  fetchProjectById,
-  fetchProjectsByName,
-  fetchCreateProject,
-  fetchUpdateProject,
-  uploadRFPToStorage,
-  saveRFPPathToProject,
-  getRFPSignedUrl,
-  obtenerProyectoCompleto,
-  obtenerProyectoPorRol,
-} = require("../services/projectService");
+const { 
+    fetchProjects, 
+    fetchProjectById, 
+    fetchProjectsByName,
+    fetchCreateProject,
+    fetchUpdateProject,
+    uploadRFPToStorage, 
+    saveRFPPathToProject,
+    getRFPSignedUrl,
+    obtenerProyectoCompleto,
+    obtenerProyectoPorRol,
+    obtenerProyectosPorCreador,
+    actualizarProyectoYRoles,
+    eliminarRelacionProyectoRol,
+    obtenerTopProyectos
+  } = require('../services/projectService');
 
 //Función para utilizar la consulta de llamar todos los proyectos
 const getProjects = async (req, res) => {
@@ -274,12 +278,76 @@ const getProyectoCompleto = async (req, res) => {
   }
 };
 
-module.exports = {
-  getProjects,
-  createProject,
-  updateProject,
-  uploadRFP,
-  getRFPUrl,
-  getProyectoPorRol,
-  getProyectoCompleto,
+
+const getProyectosPorCreador = async (req, res) => {
+  const { idusuario } = req.params;
+  try {
+    const proyectos = await obtenerProyectosPorCreador(idusuario);
+    res.status(200).json(proyectos);
+  } catch (error) {
+    console.error("Error en getProyectosPorCreador:", error.message);
+    res.status(500).json({ error: 'Error al obtener los proyectos del usuario' });
+  }
 };
+
+const editarProyectoYRoles = async (req, res) => {
+  const { idproyecto } = req.params;
+  const { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles } = req.body;
+
+  try {
+    const resultado = await actualizarProyectoYRoles(idproyecto, {
+      pnombre,
+      descripcion,
+      fechainicio,
+      fechafin,
+      projectdeliverables,
+      roles
+    });
+    res.status(200).json(resultado);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el proyecto y los roles', detalle: error.message });
+  }
+};
+
+
+const borrarRelacionProyectoRol = async (req, res) => {
+  const { idproyecto, idrol } = req.params;
+
+  try {
+    await eliminarRelacionProyectoRol(idproyecto, idrol);
+    res.status(200).json({ message: 'Rol desvinculado del proyecto correctamente' });
+  } catch (error) {
+    console.error('Error en borrarRelacionProyectoRol:', error.message);
+    res.status(500).json({
+      error: 'Error al desvincular el rol del proyecto',
+      detalle: error.message
+    });
+  }
+};
+
+
+const obtenerTop3Proyectos = async (req, res) => {
+  const { id } = req.params;
+  try {
+    let result = await obtenerTopProyectos(id);
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Error al obtener los tres proyectos más compatibles', detalle: error.message });
+  }
+};
+
+module.exports = {
+    getProjects,
+    createProject,
+    updateProject,
+    uploadRFP,
+    getRFPUrl,
+    getProyectoPorRol,
+    getProyectoCompleto,
+    getProyectosPorCreador,
+    editarProyectoYRoles,
+    borrarRelacionProyectoRol,
+    obtenerTop3Proyectos
+};
+

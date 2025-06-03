@@ -49,7 +49,7 @@ describe("End to end test", () => {
   });
 
   // fetch de todas las aplicaciones en cierto proyecto
-  test("should return applications of a certain project with status 200", async () => {
+  test("should return applications in a certain project with status 200", async () => {
     const response = await request(app)
       .get("/api/apps/proyecto/89")
       .set("Authorization", `Bearer ${token}`);
@@ -58,7 +58,7 @@ describe("End to end test", () => {
   });
 
   // fetch de todas las aplicaciones de cierto usuario
-  test("should return applications of a certain project with status 200", async () => {
+  test("should return applications of a certain user with status 200", async () => {
     const response = await request(app)
       .get("/api/apps/usuario/2")
       .set("Authorization", `Bearer ${token}`);
@@ -83,4 +83,138 @@ describe("End to end test", () => {
 
     expect(response.statusCode).toBe(200);
   });
+
+  test("should return all users with their project, role, and profile image", async () => {
+    const response = await request(app)
+      .get("/api/usuarios/total")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  test("should return feedbacks of a user with status 200", async () => {
+    const response = await request(app)
+      .get("/api/feedback/2")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("feedbacks");
+    expect(Array.isArray(response.body.feedbacks)).toBe(true);
+  });
+
+  test("should return full project information with status 200", async () => {
+    const response = await request(app)
+      .get("/api/89/completo")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toBeInstanceOf(Object);
+    expect(response.body).toHaveProperty("idproyecto");
+    expect(response.body).toHaveProperty("cliente");
+    expect(response.body).toHaveProperty("proyecto_roles");
+    expect(response.body).toHaveProperty("utp");
+  });
+
+  test("should return project information filtered by role with status 200", async () => {
+    const response = await request(app)
+      .get("/api/89/por-rol/130")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toBeInstanceOf(Object);
+    expect(response.body).toHaveProperty("idproyecto");
+    expect(response.body).toHaveProperty("proyecto_roles");
+    expect(Array.isArray(response.body.proyecto_roles)).toBe(true);
+  });
+
+  test("should return signed URL for client photo with status 200", async () => {
+  const response = await request(app)
+    .get("/api/clientes/1/foto")
+    .set("Authorization", `Bearer ${token}`);
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body).toHaveProperty("fotodecliente_url");
+  expect(typeof response.body.fotodecliente_url).toBe("string");
+  });
+
+  test("should return signed URL for certification image with status 200", async () => {
+    const response = await request(app)
+      .get("/api/certificaciones/image-url/1")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("url");
+    expect(typeof response.body.url).toBe("string");
+  });
+
+  test("should return signed URL for user profile photo with status 200", async () => {
+    const response = await request(app)
+      .get("/api/profile-url/1")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("url");
+    expect(typeof response.body.url).toBe("string");
+  });
+
+  test("should return signed URL for user CV with status 200", async () => {
+    const response = await request(app)
+      .get("/api/cv-url/6")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("url");
+    expect(typeof response.body.url).toBe("string");
+  });
+
+  test("should return signed URL for RFP document with status 200", async () => {
+    const response = await request(app)
+      .get("/api/1/rfp")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("url");
+    expect(typeof response.body.url).toBe("string");
+  });
+
+  test("should return all skills with status 200", async () => {
+  const response = await request(app)
+    .get("/api/habilidades")
+    .set("Authorization", `Bearer ${token}`);
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body).toBeInstanceOf(Array);
+  if (response.body.length > 0) {
+    expect(response.body[0]).toHaveProperty("idhabilidad");
+    expect(response.body[0]).toHaveProperty("nombre");
+    expect(response.body[0]).toHaveProperty("estecnica");
+  }
+  });
+
+test("should return applications with status 'RolAsignado' and status 200", async () => {
+  const response = await request(app)
+    .get("/api/apps/estatus/RolAsignado")
+    .set("Authorization", `Bearer ${token}`);
+
+  expect(response.statusCode).toBe(200);
+  expect(Array.isArray(response.body.aplicaciones)).toBe(true);
+
+  if (response.body.aplicaciones.length > 0) {
+    const app = response.body.aplicaciones[0];
+
+    expect(app).toHaveProperty("idaplicacion");
+    expect(app).toHaveProperty("estatus", "RolAsignado");
+
+    expect(app).toHaveProperty("usuario");
+    expect(app.usuario).toHaveProperty("idusuario");
+    expect(app.usuario).toHaveProperty("nombre");
+    expect(app.usuario).toHaveProperty("fotodeperfil_url");
+
+    expect(app).toHaveProperty("proyecto");
+    expect(app.proyecto).toHaveProperty("nombre"); 
+  }
+  });
+
+
 });

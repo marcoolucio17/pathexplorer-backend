@@ -112,18 +112,24 @@ const fetchUserAppInProject = async (userId, appId) => {
 // Reemplazar 1 por el ID del usuario y 5 por el ID de la aplicación
 
 const updateAppStatus = async (userId, appId, estatus) => {
-    const { data, error } = await supabase
-        .from('aplicacion')
-        .update({ estatus })
-        .eq('idusuario', userId)
-        .eq('idaplicacion', appId)
-        .select()
-        .single();
+  const currentDate = new Date().toISOString().split('T')[0]; // formato YYYY-MM-DD
 
-    if (error) throw new Error(error.message);
+  const { data, error } = await supabase
+    .from('aplicacion')
+    .update({ 
+      estatus, 
+      fechaaplicacion: currentDate 
+    })
+    .eq('idusuario', userId)
+    .eq('idaplicacion', appId)
+    .select()
+    .single();
 
-    return data;
+  if (error) throw new Error(error.message);
+
+  return data;
 };
+
 
 // Crear una nueva aplicación
 const createAppService = async ({ idusuario, idrol, message }) => {
@@ -223,6 +229,184 @@ const obtenerAplicacionesPorCreador = async (idusuario) => {
   return aplicacionesEnriquecidas;
 };
 
+const asignarAplicacion = async (idAplicacion) => {
+// 1. Obtener la aplicación
+  const { data: aplicacion, error: errorApp } = await supabase
+    .from('aplicacion')
+    .select('idusuario, idrol')
+    .eq('idaplicacion', idAplicacion)
+    .single();
+
+  if (errorApp || !aplicacion) {
+    throw new Error('Aplicación no encontrada');
+  }
+
+  const { idusuario, idrol } = aplicacion;
+
+  // 2. Verificar si el usuario ya tiene una UTP activa
+  const { data: utpExistente, error: errorCheckUTP } = await supabase
+    .from('utp')
+    .select('idutp')
+    .eq('idusuario', idusuario)
+    .eq('estado', 'Activo')
+    .maybeSingle();
+
+  if (errorCheckUTP) throw errorCheckUTP;
+  if (utpExistente) {
+    throw new Error('El usuario ya tiene una UTP activa');
+  }
+
+  // 3. Obtener ID del proyecto desde proyecto_roles
+  const { data: roles, error: errorRol } = await supabase
+    .from('proyecto_roles')
+    .select('idproyecto')
+    .eq('idrol', idrol);
+
+  if (errorRol) throw errorRol;
+  if (!roles || roles.length === 0) {
+    throw new Error(`No se encontró proyecto_roles con idrol = ${idrol}`);
+  }
+
+  const idproyecto = roles[0].idproyecto;
+
+  // 4. Obtener fechas del proyecto
+  const { data: proyecto, error: errorProyecto } = await supabase
+    .from('proyecto')
+    .select('fechainicio, fechafin')
+    .eq('idproyecto', idproyecto)
+    .single();
+
+  if (errorProyecto || !proyecto) {
+    throw new Error('Proyecto no encontrado');
+  }
+
+  // 5. Crear el UTP con fechas
+  const { data: utp, error: errorUTP } = await supabase
+    .from('utp')
+    .insert({
+      idusuario,
+      idproyecto,
+      idaplicacion: idAplicacion,
+      estado: 'Activo',
+      fechainicio: proyecto.fechainicio,
+      fechafin: proyecto.fechafin
+    })
+    .select()
+    .single();
+
+  if (errorUTP) throw errorUTP;
+
+  // 6. Marcar al usuario como en proyecto
+  const { error: errorUser } = await supabase
+    .from('usuario')
+    .update({ estaenproyecto: true })
+    .eq('idusuario', idusuario);
+
+  if (errorUser) throw errorUser;
+
+  // 7. Actualizar estatus de la aplicación a 'RolAsignado'
+  const { error: errorUpdateApp } = await supabase
+    .from('aplicacion')
+    .update({
+      estatus: 'RolAsignado',
+      fechaaplicacion: new Date().toISOString()
+    })
+    .eq('idaplicacion', idAplicacion);
+
+  if (errorUpdateApp) throw errorUpdateApp;
+
+  // 8. Actualizar estado del proyecto_roles a 'Aceptado'
+  const { error: errorUpdateRol } = await supabase
+    .from('proyecto_roles')
+    .update({ estado: 'Aceptado' })
+    .eq('idrol', idrol)
+    .eq('idproyecto', idproyecto);
+
+  if (errorUpdateRol) throw errorUpdateRol;
+
+  // 9. Marcar el rol como no disponible
+  const { error: errorRolDisponibilidad } = await supabase
+    .from('roles')
+    .update({ disponible: false })
+    .eq('idrol', idrol);
+
+  if (errorRolDisponibilidad) throw errorRolDisponibilidad;
+
+  return { utp, idusuario, idproyecto };
+};
+
+const obtenerAplicacionesPorEstatus = async (estatus) => {
+  const { data: aplicaciones, error } = await supabase
+    .from('aplicacion')
+    .select(`
+      *,
+      usuario (
+        idusuario,
+        nombre,
+        correoelectronico,
+        fotodeperfil
+      ),
+      roles (
+        idrol,
+        nombrerol,
+        descripcionrol
+      )
+    `)
+    .eq('estatus', estatus);
+
+  if (error) throw new Error(error.message);
+
+  // Obtener proyecto y cliente usando los roles → proyecto_roles → proyecto
+  const rolesIds = aplicaciones.map(a => a.idrol);
+
+  const { data: rolesProyecto, error: errorRoles } = await supabase
+    .from('proyecto_roles')
+    .select(`idrol, idproyecto, proyecto (idproyecto, pnombre, idcliente, cliente (clnombre, fotodecliente))`)
+    .in('idrol', rolesIds);
+
+  if (errorRoles) throw new Error(errorRoles.message);
+
+  const rolProyectoMap = Object.fromEntries(
+    rolesProyecto.map(rp => [rp.idrol, rp])
+  );
+
+  const aplicacionesEnriquecidas = await Promise.all(aplicaciones.map(async (app) => {
+    const rolInfo = rolProyectoMap[app.idrol];
+    const proyecto = rolInfo?.proyecto || {};
+
+    let fotodeperfil_url = null;
+    if (app.usuario?.fotodeperfil) {
+      const result = await generateProfileSignedUrl(app.usuario.idusuario);
+      fotodeperfil_url = result?.url || null;
+    }
+
+    let fotodecliente_url = null;
+    if (proyecto?.cliente?.fotodecliente) {
+      const { data: signedUrl } = await supabase.storage
+        .from('clientes')
+        .createSignedUrl(proyecto.cliente.fotodecliente, 300);
+      fotodecliente_url = signedUrl?.signedUrl || null;
+    }
+
+    return {
+      ...app,
+      proyecto: {
+        idproyecto: proyecto.idproyecto,
+        nombre: proyecto.pnombre,
+        cliente: {
+          ...proyecto.cliente,
+          fotodecliente_url
+        }
+      },
+      usuario: {
+        ...app.usuario,
+        fotodeperfil_url
+      }
+    };
+  }));
+
+  return aplicacionesEnriquecidas;
+};
 
 
 module.exports = {
@@ -231,5 +415,7 @@ module.exports = {
     fetchUserAppInProject,
     updateAppStatus,
     createAppService,
-    obtenerAplicacionesPorCreador
+    obtenerAplicacionesPorCreador,
+    asignarAplicacion, //asignar puesto a empleado
+    obtenerAplicacionesPorEstatus
 };

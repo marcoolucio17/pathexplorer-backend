@@ -20,6 +20,35 @@ const obtenerFeedbackPorUsuario = async (idUsuarioObjetivo) => {
   return data;
 };
 
+const crearFeedback = async ({ idusuario, idproyecto, idutp, feedback, rating }) => {
+  const { data, error } = await supabase
+    .from('feedback')
+    .insert([{
+      idusuario,
+      idproyecto,
+      idutp,
+      feedback,
+      rating
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+const crearRelacionUTPFeedback = async (idutp, idfeedback) => {
+  const { data, error } = await supabase
+    .from('utp_feedback')
+    .insert([{ idutp, idfeedback }]);
+
+  if (error) throw error;
+  return data;
+};
+
+
 module.exports = {
   obtenerFeedbackPorUsuario,
+  crearFeedback,
+  crearRelacionUTPFeedback
 };

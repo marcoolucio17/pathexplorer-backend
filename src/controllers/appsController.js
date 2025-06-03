@@ -38,8 +38,8 @@ const patchAppStatus = async (req, res) => {
     const { userId, appId } = req.params;
     const { estatus } = req.body;
 
-    if (!estatus || !['Asignado', 'Pendiente', 'Revision', 'Rechazado'].includes(estatus)) {
-        return res.status(400).json({ message: "Estatus inválido. Debe ser 'Asignado', 'Revision', 'Rechazado' o 'Pendiente'." });
+    if (!estatus || !['Asignado', 'Pendiente', 'Revision', 'Rechazado', 'RolAsignado'].includes(estatus)) {
+        return res.status(400).json({ message: "Estatus inválido. Debe ser 'Asignado', 'Revision', 'Rechazado', 'RolAsignado' o 'Pendiente'." });
     }
 
     try {
@@ -79,6 +79,37 @@ const getAplicacionesPorCreador = async (req, res) => {
 };
 
 
+const aceptarAplicacion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resultado = await appService.asignarAplicacion(id);
+    res.status(200).json({
+      message: 'Aplicación aceptada y usuario asignado al proyecto',
+      resultado
+    });
+  } catch (error) {
+    console.error('Error al aceptar aplicación:', error.message);
+    res.status(500).json({ error: 'Error al aceptar aplicación' });
+  }
+};
+
+const getAppsByStatus = async (req, res) => {
+  const { estatus } = req.params;
+
+  const estatusValidos = ['Asignado', 'Pendiente', 'Revision', 'Rechazado', 'RolAsignado'];
+  if (!estatusValidos.includes(estatus)) {
+    return res.status(400).json({ error: 'Estatus no válido. Usa uno de: ' + estatusValidos.join(', ') });
+  }
+
+  try {
+    const aplicaciones = await appService.obtenerAplicacionesPorEstatus(estatus);
+    res.status(200).json({ aplicaciones });
+  } catch (error) {
+    console.error('Error en getAppsByStatus:', error.message);
+    res.status(500).json({ error: 'Error al obtener las aplicaciones' });
+  }
+};
+
 
 module.exports = {
     getAppsByProjectId,
@@ -86,5 +117,7 @@ module.exports = {
     getUserAppInProject,
     patchAppStatus,
     createApp,
-    getAplicacionesPorCreador
+    getAplicacionesPorCreador,
+    aceptarAplicacion,
+    getAppsByStatus
 };
