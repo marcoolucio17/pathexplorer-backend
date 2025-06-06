@@ -749,9 +749,9 @@ const obtenerTopProyectos = async (idusuario) => {
   const resultados = promesas;
   const top3 = resultados.sort((a, b) => b.comp - a.comp).slice(0, 3);
 
-  const projectFetches = top3.map(async ({ idrol, idproyecto }) => {
+  const projectFetches = top3.map(async ({ idrol, idproyecto, comp }) => {
     const project = await obtenerProyectoPorRol(idproyecto, idrol);
-    return project;
+    return { ...project, compatibility: comp };
   });
 
   const projects = await Promise.all(projectFetches);
