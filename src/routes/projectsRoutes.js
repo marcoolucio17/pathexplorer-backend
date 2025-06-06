@@ -21,7 +21,7 @@ router.post('/projects', authMiddleware, createProject);
 
 router.patch('/projects', authMiddleware, updateProject);
 
-router.post('/upload-rfp', authMiddleware, upload.single('file'), uploadRFP);
+router.patch('/upload-rfp', authMiddleware, upload.single('file'), uploadRFP);
 
 router.get('/:id/rfp', getRFPUrl);
 
