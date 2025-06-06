@@ -691,7 +691,7 @@ const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {
 };
 
 const obtenerTopProyectos = async (idusuario) => {
-  console.log("id", idusuario);
+
   const { data: roles, error: errorRoles } = await supabase
     .from("proyecto_roles")
     .select("idrol, idproyecto");
@@ -731,7 +731,23 @@ const obtenerTopProyectos = async (idusuario) => {
 
   const projectFetches = top3.map(async ({ idrol, idproyecto, comp }) => {
     const project = await obtenerProyectoPorRol(idproyecto, idrol);
-    return { ...project, compatibility: comp };
+    
+    const getDuracionEnMeses = (inicio, fin) => {
+      const anios = fin.getFullYear() - inicio.getFullYear();
+      const meses = fin.getMonth() - inicio.getMonth();
+      const totalMeses = anios * 12 + meses;
+
+      // Ajustar si el día de fin es menor que el de inicio
+      if (fin.getDate() < inicio.getDate()) {
+        return totalMeses - 1;
+      }
+      return totalMeses;
+    };
+
+    const fechaInicio = new Date(project.fechainicio);
+    const fechaFin = new Date(project.fechafin);
+    const duracionMes = getDuracionEnMeses(fechaInicio, fechaFin);
+    return { ...project, compatibility: comp, duracionMes: duracionMes };
   });
 
   const projects = await Promise.all(projectFetches);
