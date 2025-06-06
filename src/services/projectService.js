@@ -35,20 +35,58 @@ const { fetchCompatibility } = require("../services/compabilityService");
  *                  Nombre de habilidad,
  *                  esTecnica (booleano)
  */
+const fetchAllUserSkills = async (idusuario) => {
+  const { data: dataUserHab, error: errorUserHab } = await supabase
+    .from("usuario_habilidad")
+    .select("idhabilidad")
+    .eq("idusuario", idusuario);
+  if (errorUserHab) {
+    throw new Error("Error fetching user skills: " + errorUserHab.message);
+  }
+  return dataUserHab;
+};
 
-const fetchProjects = async () => {
-  const { data, error } = await supabase
+const fetchAllRolesSkills = async () => {
+  const { data: dataRolHab, error: errorRolHab } = await supabase.from("roles")
+    .select(`idrol,
+              requerimientos_roles(
+                      requerimientos(
+                          habilidades(idhabilidad)
+                      )
+                  )`);
+  if (errorRolHab) {
+    throw new Error(`Error fetching roles skills: ${errorRolHab.message}`);
+  }
+  return dataRolHab;
+};
+
+const fetchProjects = async (req, res) => {
+  const { idcliente = null, idusuario = null } = req.query;
+
+  let query = supabase
     .from("proyecto")
     .select(textToObtainInfoProject)
-    .eq("proyectoterminado", false);
+    .eq("proyectoterminado", false)
+    .order("idproyecto", { ascending: true });
+
+  if (idcliente !== null && idcliente !== undefined) {
+    query = query.eq("idcliente", idcliente);
+  }
+
+  if (idusuario !== null && idusuario !== undefined) {
+    query = query.eq("idusuario", idusuario);
+  }
+
+  const { data, error } = await query;
+
   if (error) {
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error fetching the projects."
     );
   }
-  const dataProyectos = selectProyectosRolesDisponibles(data);
-  return dataProyectos;
+
+  return data;
 };
 
 /**
@@ -77,21 +115,33 @@ const fetchProjects = async () => {
  * @returns
  */
 //Case insensitive search
-const fetchProjectsByName = async (nombre_proyecto) => {
-  const { data, error } = await supabase
+const fetchProjectsByName = async (req, res) => {
+  const { idcliente = null, idusuario = null, projectName = null } = req.query;
+
+  let query = supabase
     .from("proyecto")
     .select(textToObtainInfoProject)
-    .ilike("pnombre", `%${nombre_proyecto}%`)
+    .ilike("pnombre", `%${projectName}%`)
+    .order("idproyecto", { ascending: true })
     .eq("proyectoterminado", false);
 
+  if (idcliente !== null && idcliente !== undefined) {
+    query = query.eq("idcliente", idcliente);
+  }
+
+  if (idusuario !== null && idusuario !== undefined) {
+    query = query.eq("idusuario", idusuario);
+  }
+
+  const { data, error } = await query;
   if (error) {
     throw new ApiError(
       error.status || 400,
       error.message || "There is an error fetching the projects."
     );
   }
-  const dataProyectos = selectProyectosRolesDisponibles(data);
-  return dataProyectos;
+
+  return data;
 };
 
 /**
@@ -173,19 +223,6 @@ const dataProjectsReorganized = (data, url) => {
   };
 
   return informationProjects;
-};
-
-const selectProyectosRolesDisponibles = (data) => {
-  const proyectosConRolesDisponibles = data
-    .map((proyecto) => ({
-      ...proyecto,
-      proyecto_roles: Array.isArray(proyecto.proyecto_roles)
-        ? proyecto.proyecto_roles.filter((pr) => pr.roles?.disponible === true)
-        : [],
-    }))
-    .filter((proyecto) => proyecto.proyecto_roles.length > 0);
-
-  return proyectosConRolesDisponibles;
 };
 
 /**
@@ -359,7 +396,6 @@ const saveRFPPathToProject = async (projectId, filePath) => {
     .eq("idproyecto", projectId)
     .select();
 
-
   if (error || !data || data.length === 0) {
     throw new Error("No se pudo actualizar el proyecto o el ID es inválido");
   }
@@ -439,27 +475,6 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
     .single();
 
   if (error) throw error;
-
-  // Añadir URL firmada del RFP
-  try {
-    const rfpUrl = await getRFPSignedUrl(idProyecto);
-    data.rfpfile_url = rfpUrl;
-  } catch (err) {
-    // console.warn("No se pudo obtener URL del RFP:", err.message);
-  }
-
-  // Añadir URL de la foto de perfil a cada usuario en UTP
-  if (Array.isArray(data.utp)) {
-    for (const miembro of data.utp) {
-      const userId = miembro?.usuario?.idusuario;
-      if (userId) {
-        const signedUrlObj = await generateProfileSignedUrl(userId);
-        if (signedUrlObj?.url) {
-          miembro.usuario.fotodeperfil_url = signedUrlObj.url;
-        }
-      }
-    }
-  }
 
   return data;
 };
@@ -629,15 +644,20 @@ const obtenerProyectosPorCreador = async (idusuario) => {
   return proyectosConUrls;
 };
 
-
 const actualizarProyectoYRoles = async (
   idproyecto,
   { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles }
 ) => {
   const { error: errorProyecto } = await supabase
-    .from('proyecto')
-    .update({ pnombre, descripcion, fechainicio, fechafin, projectdeliverables })
-    .eq('idproyecto', idproyecto);
+    .from("proyecto")
+    .update({
+      pnombre,
+      descripcion,
+      fechainicio,
+      fechafin,
+      projectdeliverables,
+    })
+    .eq("idproyecto", idproyecto);
 
   if (errorProyecto) throw errorProyecto;
 
@@ -652,7 +672,7 @@ const actualizarProyectoYRoles = async (
     if (errorRol) throw errorRol;
   }
 
-  return { message: 'Proyecto y roles actualizados correctamente' };
+  return { message: "Proyecto y roles actualizados correctamente" };
 };
 
 const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {
@@ -661,7 +681,7 @@ const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {
   }
 
   const { error } = await supabase
-    .from('proyecto_roles')
+    .from("proyecto_roles")
     .delete()
     .match({ idproyecto: parseInt(idproyecto), idrol: parseInt(idrol) });
 
@@ -670,25 +690,43 @@ const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {
   }
 };
 
-
 const obtenerTopProyectos = async (idusuario) => {
+  console.log("id", idusuario);
   const { data: roles, error: errorRoles } = await supabase
     .from("proyecto_roles")
     .select("idrol, idproyecto");
 
+  const userResult = await fetchAllUserSkills(idusuario);
+
+  const userSkills = new Set(
+    userResult.flatMap((habilidad) => habilidad.idhabilidad)
+  );
+
+  const rolesResult = await fetchAllRolesSkills();
+
+  const rolesSkills = {};
+
+  rolesResult.forEach((rol) => {
+    const skills = rol.requerimientos_roles.flatMap((req) => {
+      return req.requerimientos.habilidades.idhabilidad || [];
+    });
+    const uniqueSkills = [...new Set(skills)];
+    rolesSkills[rol.idrol] = uniqueSkills;
+  });
+
   if (errorRoles) throw errorRoles;
 
   // Paso 1: Calculamos compatibilidad para cada rol
-  const promesas = roles.map(async ({ idrol, idproyecto }) => {
-    const res = await fetchCompatibility(idrol, idusuario);
+  const promesas = roles.map(({ idrol, idproyecto }) => {
+    const res = fetchCompatibility(rolesSkills[idrol], userSkills);
     return {
       idrol,
       idproyecto,
       comp: res,
     };
   });
-
-  const resultados = await Promise.all(promesas);
+  
+  const resultados = promesas;
   const top3 = resultados.sort((a, b) => b.comp - a.comp).slice(0, 3);
 
   const projectFetches = top3.map(async ({ idrol, idproyecto }) => {
@@ -708,7 +746,7 @@ module.exports = {
   fetchCreateProject,
   fetchUpdateProject,
   uploadRFPToStorage,
-  saveRFPPathToProject, 
+  saveRFPPathToProject,
   getRFPSignedUrl,
   obtenerProyectoPorRol,
   obtenerProyectoCompleto,
@@ -716,4 +754,6 @@ module.exports = {
   actualizarProyectoYRoles,
   eliminarRelacionProyectoRol,
   obtenerTopProyectos,
+  fetchAllUserSkills,
+  fetchAllRolesSkills,
 };

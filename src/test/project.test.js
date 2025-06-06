@@ -37,7 +37,7 @@ describe("api/projects/get", () => {
 
   test("Should return a projects or a bunch of projects by name with status 200", async () => {
     const response = await request(app)
-      .get(`/api/projects?projectName=Aplicación&idCompatible=1`)
+      .get(`/api/projects?projectName=App&idCompatible=1`)
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
@@ -179,7 +179,7 @@ describe("api/projects/patch", () => {
       .patch(`/api/projects?idproyecto=${idProyecto}`)
       .send(updatedProject)
       .set("Authorization", `Bearer ${token}`);
-    console.log(response);
+
     expect(response.statusCode).toBe(200);
   });
 });
