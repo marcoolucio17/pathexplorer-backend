@@ -14,6 +14,8 @@ const {
   actualizarProyectoYRoles,
   eliminarRelacionProyectoRol,
   obtenerTopProyectos,
+  fetchAllUserSkills,
+  fetchAllRolesSkills,
 } = require("../services/projectService");
 
 //Función para utilizar la consulta de llamar todos los proyectos
@@ -37,7 +39,8 @@ const getProjects = async (req, res) => {
 
 const getAllProjects = async (req, res) => {
   try {
-    const projects = await fetchProjects();
+    const projects = await fetchProjects(req, res);
+
     if (projects) {
       return await getProjectsByFilter(req, res, projects);
     } else {
@@ -50,8 +53,7 @@ const getAllProjects = async (req, res) => {
 
 const getProjectsByName = async (req, res) => {
   try {
-    const { projectName = null } = req.query || {};
-    const projects = await fetchProjectsByName(projectName);
+    const projects = await fetchProjectsByName(req, res);
     if (projects) {
       return await getProjectsByFilter(req, res, projects);
     } else {
@@ -78,113 +80,99 @@ const getProjectById = async (idproyecto, res) => {
 
 const getProjectsByFilter = async (req, res, projects) => {
   try {
-    const { idSkills = null } = req.body || {};
-
-
     const {
       nombrerol = null,
-      idcliente = null,
-      idusuario = null,
       idCompatible = null,
-    } = req.query;
+      index = 0,
+    } = req.query || {};
 
-    const requiredSkills = Array.isArray(idSkills) ? idSkills : [];
+    if (!idCompatible) {
+      return res.status(400).json({ error: "idCompatible is required" });
+    }
 
-    let projectsFiltered = projects;
     const idCompatibleParsed = parseInt(idCompatible, 10);
-    projectsFiltered = await filterProjectsByCreator(
-      projectsFiltered,
-      idusuario
+
+    const userResult = await fetchAllUserSkills(idCompatibleParsed);
+
+    const userSkills = new Set(
+      userResult.flatMap((habilidad) => habilidad.idhabilidad)
     );
 
-    projectsFiltered = await filterProjectsByClient(
-      projectsFiltered,
-      idcliente
-    );
+    const rolesResult = await fetchAllRolesSkills();
 
-    const projectsWithRoles = await Promise.all(
-      projectsFiltered.map(async (project) => {
-        let rolesFiltrados = project.proyecto_roles.filter((role) => {
-          const datosRol = role.roles;
+    const rolesSkills = {};
 
-          if (nombrerol && datosRol.nombrerol !== nombrerol) {
-            return false;
-          }
+    rolesResult.forEach((rol) => {
+      const skills = rol.requerimientos_roles.flatMap((req) => {
+        return req.requerimientos.habilidades.idhabilidad || [];
+      });
+      const uniqueSkills = [...new Set(skills)];
+      rolesSkills[rol.idrol] = uniqueSkills;
+    });
 
-          if (requiredSkills.size > 0) {
-            const habilidades = datosRol.requerimientos_roles.map(
-              (r) => r.requerimientos.habilidades.idhabilidad
-            );
-            const cumpleTodas = requiredSkills.every((idSkill) =>
-              habilidades.includes(idSkill)
-            );
+    const inicio = parseInt(index, 10) || 0;
+    const fin = inicio + 5;
+    let projectsFiltered = projects;
 
-            if (!cumpleTodas) return false;
-          }
-          return true;
-        });
-        rolesFiltrados = await Promise.all(
-          rolesFiltrados.map(async (role) => {
-            const datosRol = role.roles;
+    const projectsWithRoles = projectsFiltered.map((project) => {
+      let rolesFiltrados = project.proyecto_roles.filter((role) => {
+        const datosRol = role.roles;
+        if (nombrerol && datosRol.nombrerol !== nombrerol) {
+          return false;
+        }
+        return true;
+      });
 
-            datosRol.compability = await fetchCompatibility(
-              datosRol.idrol,
-              idCompatibleParsed
-            );
+      rolesFiltrados = rolesFiltrados.filter((role) => {
+        const datosRol = role.roles;
 
-            return {
-              ...datosRol,
-              compability: datosRol.compability,
-            };
-          })
+        datosRol.compability = fetchCompatibility(
+          rolesSkills[datosRol.idrol],
+          userSkills
         );
-        const getDuracionEnMeses = (inicio, fin) => {
-          const anios = fin.getFullYear() - inicio.getFullYear();
-          const meses = fin.getMonth() - inicio.getMonth();
-          const totalMeses = anios * 12 + meses;
 
-          // Ajustar si el día de fin es menor que el de inicio
-          if (fin.getDate() < inicio.getDate()) {
-            return totalMeses - 1;
-          }
-          return totalMeses;
-        };
-
-        const fechaInicio = new Date(project.fechainicio);
-        const fechaFin = new Date(project.fechafin);
-        const duracionMes = getDuracionEnMeses(fechaInicio, fechaFin);
         return {
-          ...project,
-          duracionMes,
-          proyecto_roles: rolesFiltrados,
+          ...datosRol,
+          compability: datosRol.compability,
         };
-      })
-    );
+      });
+
+      const getDuracionEnMeses = (inicio, fin) => {
+        const anios = fin.getFullYear() - inicio.getFullYear();
+        const meses = fin.getMonth() - inicio.getMonth();
+        const totalMeses = anios * 12 + meses;
+
+        // Ajustar si el día de fin es menor que el de inicio
+        if (fin.getDate() < inicio.getDate()) {
+          return totalMeses - 1;
+        }
+        return totalMeses;
+      };
+
+      const fechaInicio = new Date(project.fechainicio);
+      const fechaFin = new Date(project.fechafin);
+      const duracionMes = getDuracionEnMeses(fechaInicio, fechaFin);
+      return {
+        ...project,
+        duracionMes,
+        proyecto_roles: rolesFiltrados,
+      };
+    });
 
     const finalProjects = projectsWithRoles.filter((project) => {
       return project.proyecto_roles.length > 0;
     });
+    const paginatedProjects = finalProjects.slice(inicio, fin);
+    const information = {
+      total: Math.floor(finalProjects.length / 5),
+      projects: paginatedProjects,
+    };
     return res.status(200).json(finalProjects);
   } catch (error) {
     return res.status(500).json({ error: "Error fetching projects" });
   }
 };
 
-const filterProjectsByCreator = async (projects, idusuario) => {
-  if (!idusuario) return projects;
-  const idUsuario = parseInt(idusuario, 10);
-  return projects.filter(
-    (project) => project.usuario?.idusuario === idUsuario || !idusuario
-  );
-};
-
-const filterProjectsByClient = async (projects, idcliente) => {
-  if (!idcliente) return projects;
-  const idCliente = parseInt(idcliente, 10);
-  return projects.filter(
-    (project) => project.cliente?.idcliente === idCliente || !idcliente
-  );
-};
 
 const createProject = async (req, res) => {
   try {
