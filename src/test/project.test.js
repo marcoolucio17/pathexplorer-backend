@@ -28,25 +28,25 @@ describe("api/projects/get", () => {
   //Paso
   test("Should return all projects with their roles and status 200", async () => {
     const response = await request(app)
-      .get("/api/projects")
+      .get("/api/projects?idCompatible=1")
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
   });
   //Paso
+
   test("Should return a projects or a bunch of projects by name with status 200", async () => {
     const response = await request(app)
-      .get("/api/projects")
-      .send({ projectName: "Aplicación" })
+      .get(`/api/projects?projectName=Aplicación&idCompatible=1`)
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
   });
   //Paso
   test("Should return a project by id with status 200", async () => {
+    const projectId = 1;
     const response = await request(app)
-      .get("/api/projects")
-      .send({ idproyecto: "1" })
+      .get(`/api/projects?idproyecto=${projectId}`)
       .set("Authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeInstanceOf(Object);
@@ -167,23 +167,19 @@ describe("api/projects/patch", () => {
   });
   //Paso
   test("Should update a project with status 200", async () => {
+    const idProyecto = 150;
     const updatedProject = {
-      idproyecto: 46,
       informacion: {
         proyect: {
           pnombre: "Aplicación web prueba",
-          descripcion:
-            "Realizar una aplicación web que permita gestionar la tienda Marcos Maximos",
-          fechainicio: "2025-05-12",
-          fechafin: "2027-01-04",
-          idcliente: 1,
         },
       },
     };
     const response = await request(app)
-      .patch("/api/projects")
+      .patch(`/api/projects?idproyecto=${idProyecto}`)
       .send(updatedProject)
       .set("Authorization", `Bearer ${token}`);
+    console.log(response);
     expect(response.statusCode).toBe(200);
   });
 });
