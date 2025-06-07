@@ -14,7 +14,7 @@ describe("End to end test", () => {
   // autenticación
   test("should return 200 and a token on successful login", async () => {
     const userCredentials = {
-      providerid: "antonio.sosa",
+      providerid: "axel.grande",
       password: "hola123",
     };
     const res = await request(app)
@@ -30,7 +30,7 @@ describe("End to end test", () => {
   // fetch de proyectos
   test("should return all projects with their roles and status 200", async () => {
     const response = await request(app)
-      .get("/api/projects?idCompatible=1")
+      .get("/api/projects?idCompatible=2")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -50,7 +50,7 @@ describe("End to end test", () => {
   // fetch de todas las aplicaciones en cierto proyecto
   test("should return applications in a certain project with status 200", async () => {
     const response = await request(app)
-      .get("/api/apps/proyecto/89")
+      .get("/api/apps/proyecto/2")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -104,7 +104,7 @@ describe("End to end test", () => {
 
   test("should return full project information with status 200", async () => {
     const response = await request(app)
-      .get("/api/89/completo")
+      .get("/api/1/completo")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -117,7 +117,7 @@ describe("End to end test", () => {
 
   test("should return project information filtered by role with status 200", async () => {
     const response = await request(app)
-      .get("/api/89/por-rol/130")
+      .get("/api/1/por-rol/1")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -139,7 +139,7 @@ describe("End to end test", () => {
 
   test("should return signed URL for certification image with status 200", async () => {
     const response = await request(app)
-      .get("/api/certificaciones/image-url/1")
+      .get("/api/certificaciones/image-url/2")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -149,7 +149,7 @@ describe("End to end test", () => {
 
   test("should return signed URL for user profile photo with status 200", async () => {
     const response = await request(app)
-      .get("/api/profile-url/1")
+      .get("/api/profile-url/2")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
@@ -159,7 +159,7 @@ describe("End to end test", () => {
 
   test("should return signed URL for user CV with status 200", async () => {
     const response = await request(app)
-      .get("/api/cv-url/6")
+      .get("/api/cv-url/1")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
