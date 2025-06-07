@@ -1,23 +1,26 @@
 const supabase = require('../config/supabaseClient');
 const { generateProfileSignedUrl } = require('../services/userService');
+const { fetchAllUserSkills } = require("../services/projectService");
+const { fetchCompatibility } = require("./compabilityService");
 
 // Obtener todas las aplicaciones de un proyecto
 const fetchAppsByProjectId = async (projectId) => {
-    // Primero obtenemos los roles asociados al proyecto
-    const { data: roles, error: rolesError } = await supabase
-        .from('proyecto_roles')
-        .select('idrol')
-        .eq('idproyecto', projectId);
+  // Primero obtenemos los roles asociados al proyecto
+  const { data: roles, error: rolesError } = await supabase
+    .from("proyecto_roles")
+    .select("idrol")
+    .eq("idproyecto", projectId);
 
-    if (rolesError) throw new Error(rolesError.message);
-    const roleIds = roles.map(r => r.idrol);
+  if (rolesError) throw new Error(rolesError.message);
+  const roleIds = roles.map((r) => r.idrol);
 
-    if (roleIds.length === 0) return [];
+  if (roleIds.length === 0) return [];
 
-    // Luego obtenemos las aplicaciones asociadas a esos roles
-    const { data: apps, error: appsError } = await supabase
-        .from('aplicacion')
-        .select(`
+  // Luego obtenemos las aplicaciones asociadas a esos roles
+  const { data: apps, error: appsError } = await supabase
+    .from("aplicacion")
+    .select(
+      `
             idaplicacion,
             idusuario,
             idrol,
@@ -26,19 +29,21 @@ const fetchAppsByProjectId = async (projectId) => {
             message,
             usuario(nombre, correoelectronico),
             roles(nombrerol)
-        `)
-        .in('idrol', roleIds);
+        `
+    )
+    .in("idrol", roleIds);
 
-    if (appsError) throw new Error(appsError.message);
+  if (appsError) throw new Error(appsError.message);
 
-    return apps;
+  return apps;
 };
 
 // Obtener todas las aplicaciones de un usuario
 const fetchAppsByUserId = async (userId) => {
   const { data: apps, error } = await supabase
-    .from('aplicacion')
-    .select(`
+    .from("aplicacion")
+    .select(
+      `
       idaplicacion,
       estatus,
       fechaaplicacion,
@@ -46,40 +51,94 @@ const fetchAppsByUserId = async (userId) => {
       idrol,
       roles (
         idrol,
-        nombrerol
-      )
-    `)
-    .eq('idusuario', userId);
+        nombrerol,
+        requerimientos_roles (
+          requerimientos (
+            habilidades(idhabilidad)
+          )
+        )
+      )    `
+    )
+    .eq("idusuario", userId);
 
   if (error) {
-    console.error('Error al obtener aplicaciones:', error);
-    throw new Error('Error al obtener las aplicaciones del usuario.');
+    console.error("Error al obtener aplicaciones:", error);
+    throw new Error("Error al obtener las aplicaciones del usuario.");
   }
 
-  const aplicacionesConProyecto = await Promise.all(apps.map(async (app) => {
-    const { data: proyectoRol, error: errorPR } = await supabase
-      .from('proyecto_roles')
-      .select(`
+  const userResult = await fetchAllUserSkills(userId);
+
+  const userSkills = new Set(
+    userResult.flatMap((habilidad) => habilidad.idhabilidad)
+  );
+  const rolesSkills = {};
+  apps.forEach((app) => {
+    const idRol = app.roles.idrol;
+    const skills = app.roles.requerimientos_roles.flatMap(
+      (req) => req.requerimientos.habilidades.idhabilidad
+    );
+    rolesSkills[idRol] = skills;
+  });
+
+  let compability;
+
+  const aplicacionesConProyecto = await Promise.all(
+    apps.map(async (app) => {
+      const { data: proyectoRol, error: errorPR } = await supabase
+        .from("proyecto_roles")
+        .select(
+          `
         idproyecto,
         proyecto (
           idproyecto,
-          pnombre
+          pnombre,
+          cliente (
+            idcliente,
+            clnombre,
+            fotodecliente
+          )
+        )`
         )
-      `)
-      .eq('idrol', app.idrol)
-      .limit(1)
-      .single();
+        .eq("idrol", app.idrol)
+        .limit(1)
+        .single();
+      compability = fetchCompatibility(rolesSkills[app.idrol], userSkills);
 
-    if (errorPR) {
-      console.warn('No se encontró proyecto para el rol', app.idrol);
-      return { ...app, proyecto: null };
-    }
-
-    return {
-      ...app,
-      proyecto: proyectoRol.proyecto,
-    };
-  }));
+      const { data: signedUrlData, error: signedUrlError } =
+        await supabase.storage
+          .from("fotos-clientes")
+          .createSignedUrl(proyectoRol.proyecto.cliente.fotodecliente, 3600);
+      
+      if (errorPR || signedUrlError) {
+        console.warn("No se encontró proyecto para el rol", app.idrol);
+        return { ...app, proyecto: null };
+      }
+ 
+      return {
+        ...app,
+        idaplicacion: app.idaplicacion,
+        estatus: app.estatus,
+        fechaaplicacion: app.fechaaplicacion,
+        message: app.message,
+        idrol: app.idrol,
+        roles: {
+          idrol: app.roles.idrol,
+          nombrerol: app.roles.nombrerol,
+        },
+        nombrerol: app.roles.nombrerol,
+        compability: compability,
+        fotodecliente_url: signedUrlData.signedUrl,
+        proyecto: {
+          idproyecto: proyectoRol.proyecto.idproyecto,
+          nombre: proyectoRol.proyecto.pnombre,
+          cliente: {
+            idcliente: proyectoRol.proyecto.cliente.idcliente,
+            nombre: proyectoRol.proyecto.cliente.clnombre,
+          },
+        },
+      };
+    })
+  );
 
   return aplicacionesConProyecto;
 };

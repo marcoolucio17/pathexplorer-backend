@@ -142,9 +142,6 @@ const updateRole = async (id_rol, rol) => {
  */
 
 const addRequirement = async (idrol, requerimiento) => {
-  console.log("idrol", idrol);
-  console.log("requerimiento", requerimiento.idhabilidad);
-  console.log("tiempoexperiencia", requerimiento.tiempoexperiencia);
   const { data: resultReq0, error: resultError0 } = await supabase
     .from("requerimientos")
     .select("idrequerimiento")
