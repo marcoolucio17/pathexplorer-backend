@@ -411,8 +411,6 @@ const guardarDatosCVExtraidos = async (userId, datosCV) => {
   return true; // éxito
 };
 
-
-
 const mejorarTextoConGemini = async (textoOriginal) => {
   try {
     const prompt = `
