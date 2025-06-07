@@ -385,7 +385,7 @@ const guardarDatosCVExtraidos = async (userId, datosCV) => {
 const mejorarTextoConGemini = async (textoOriginal) => {
   try {
     const prompt = `
-Mejora el siguiente texto para que sea más formal, técnico y profesional. Devuélvelo como texto plano sin comillas ni formato adicional:
+Mejora el siguiente texto para que sea más formal, técnico y profesional. Devuélvelo como texto plano sin comillas ni formato adicional en ingles:
 
 "${textoOriginal}"
 `;
