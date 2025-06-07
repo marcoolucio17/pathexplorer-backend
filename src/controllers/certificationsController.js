@@ -144,6 +144,7 @@ const removeCertification = async (req, res) => {
 };
 
 
+
 module.exports = {
   createCertificate,
   assignCertificateToEmployee,

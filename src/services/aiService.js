@@ -289,7 +289,7 @@ ${pdfData.text}
 
     const raw = response.data.candidates[0].content.parts[0].text;
 
-    // 🧹 Limpiar el bloque markdown ```json ... ```
+    // Limpiar el bloque markdown ```json ... ```
     const cleaned = raw.replace(/```json|```/g, '').trim();
 
     // ✅ Parsear JSON limpio
@@ -303,19 +303,25 @@ ${pdfData.text}
     };
   }
 };
-const guardarDatosCVExtraidos = async (userId, datosCV) => {
-  const { habilidades_tecnicas, habilidades_blandas, certificaciones } = datosCV;
 
-  // Guardar habilidades técnicas y blandas
+// aiService.js
+const guardarDatosCVExtraidos = async (userId, datosCV) => {
+  const {
+    habilidades_tecnicas = [],
+    habilidades_blandas = [],
+    certificaciones = []
+  } = datosCV;
+
+  /* ---------- 1. HABILIDADES ---------- */
   const guardarHabilidad = async (nombre, esTecnica) => {
-    // Buscar si ya existe
-    let { data: habilidad, error } = await supabase
+    // 1.a ¿Existe la habilidad?
+    let { data: habilidad } = await supabase
       .from('habilidades')
       .select('idhabilidad')
       .eq('nombre', nombre)
       .maybeSingle();
 
-    // Si no existe, insertarla
+    // 1.b Insertar si no existe
     if (!habilidad) {
       const insert = await supabase
         .from('habilidades')
@@ -325,67 +331,86 @@ const guardarDatosCVExtraidos = async (userId, datosCV) => {
       habilidad = insert.data;
     }
 
-    // Asociar al usuario (si no existe ya)
-    const yaAsociada = await supabase
+    // 1.c Vincular al usuario (solo si aún no la tiene)
+    const { data: yaAsociada } = await supabase
       .from('usuario_habilidad')
-      .select('*')
+      .select('idusuario')
       .eq('idusuario', userId)
       .eq('idhabilidad', habilidad.idhabilidad)
       .maybeSingle();
 
-    if (!yaAsociada.data) {
+    if (!yaAsociada) {
       await supabase
         .from('usuario_habilidad')
         .insert([{ idusuario: userId, idhabilidad: habilidad.idhabilidad }]);
     }
   };
 
-  for (const h of habilidades_tecnicas) {
-    await guardarHabilidad(h, true);
-  }
+  // guarda técnicas → true, blandas → false
+  for (const h of habilidades_tecnicas) await guardarHabilidad(h, true);
+  for (const h of habilidades_blandas)  await guardarHabilidad(h, false);
 
-  for (const h of habilidades_blandas) {
-    await guardarHabilidad(h, false);
-  }
-
-  // Guardar certificaciones
+  /* ---------- 2. CERTIFICACIONES ---------- */
   for (const cert of certificaciones) {
-    const { nombre, entidad } = cert;
+    const {
+      nombre,
+      entidad,
+      fecha_inicio: fechaInicioDoc = null,
+      fecha_fin:   fechaFinDoc   = null
+    } = cert;
 
-    // Buscar si ya existe la certificación
-    let { data: certExistente, error } = await supabase
+    // 2.a Fechas por defecto
+    const hoy = new Date();
+    const isoHoy = hoy.toISOString().split('T')[0];
+
+    const finDefault = new Date(hoy);
+    finDefault.setFullYear(hoy.getFullYear() + 2);
+    const isoFinDefault = finDefault.toISOString().split('T')[0];
+
+    const fechaObtenido   = fechaInicioDoc || isoHoy;
+    const fechaExpiracion = fechaFinDoc   || isoFinDefault;
+
+    // 2.b ¿Existe ya la certificación?
+    let { data: certExistente } = await supabase
       .from('certificaciones')
       .select('idcertificaciones')
       .eq('cnombre', nombre)
+      .eq('emitidopor', entidad)
       .maybeSingle();
 
-    // Insertar si no existe
+    // 2.c Insertar si no existe
     if (!certExistente) {
       const insert = await supabase
         .from('certificaciones')
-        .insert([{ cnombre: nombre, emitidopor: entidad }])
+        .insert([{
+          cnombre: nombre,
+          emitidopor: entidad,
+          fechaobtenido: fechaObtenido,
+          fechaexpiracion: fechaExpiracion
+        }])
         .select()
         .single();
       certExistente = insert.data;
     }
 
-    // Asociar al usuario
-    const yaTiene = await supabase
+    // 2.d Vincular al usuario si aún no la tiene
+    const { data: yaTiene } = await supabase
       .from('usuario_certificado')
       .select('*')
       .eq('idusuario', userId)
-      .eq('cnombre', nombre)
+      .eq('idcertificaciones', certExistente.idcertificaciones)
       .maybeSingle();
 
-    if (!yaTiene.data) {
+    if (!yaTiene) {
       await supabase
-      .from('usuario_certificado')
-      .insert([{ idusuario: userId, idcertificaciones: certExistente.idcertificaciones }]);
+        .from('usuario_certificado')
+        .insert([{ idusuario: userId, idcertificaciones: certExistente.idcertificaciones }]);
     }
   }
 
-  return true;
+  return true; // éxito
 };
+
 
 
 const mejorarTextoConGemini = async (textoOriginal) => {
