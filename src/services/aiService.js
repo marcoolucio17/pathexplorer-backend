@@ -10,251 +10,252 @@ const extractCVDataWithGemini = async (fileBuffer) => {
     const pdfData = await pdfParse(fileBuffer);
     const prompt = `
 Analiza este currículum y extrae las habilidades técnicas, habilidades blandas y certificaciones en formato JSON. Las habilidades tienen que concordar con alguna de las siguientes categorías:
-.NET MAUI (cross-platform UI) - Técnica
-.NET microservices with Dapr - Técnica
-ABAP OO - Técnica
-AI code review - Técnica
-ASP.NET Core - Técnica
-AWS API Gateway - Técnica
-AWS CDK (Cloud Development Kit) - Técnica
-AWS CloudFormation - Técnica
-AWS DynamoDB - Técnica
+Algorithms - Técnica
+Data Structures - Técnica
+Complexity - Técnica
+Memory - Técnica
+Python - Técnica
+Rust - Técnica
+Go - Técnica
+Typescript/JS - Técnica
+Java/Kotlin - Técnica
+C/C++ - Técnica
+Swift - Técnica
+OOP - Suave
+Functional - Suave
+DDD - Suave
+Micro-/Event-Driven Services - Suave
+AWS/Azure/GCP - Técnica
+Kubernetes - Técnica
+Docker - Técnica
+Iac - Técnica
+CI/CD - Técnica
+Model Lifecycle - Técnica
+Vector Dbs - Técnica
+Fine-Tuning - Técnica
+Mlops - Técnica
+Responsible AI - Técnica
+ETL/ELT - Técnica
+Spark/Flink - Técnica
+Data Lakes - Técnica
+Airflow - Técnica
+SQL + Nosql Tuning - Técnica
+Concurrency - Técnica
+Embedded/Iot - Técnica
+Rust Safety - Técnica
+C/C++ Optimization - Técnica
+Ebpf - Técnica
+React/Next.Js - Técnica
+Vue - Técnica
+Svelte - Técnica
+Webassembly - Técnica
+PWA Patterns - Técnica
+Kotlin + Jetpack Compose - Técnica
+Swiftui - Técnica
+Flutter - Técnica
+React Native - Técnica
+REST - Técnica
+Graphql - Técnica
+Grpc - Técnica
+Openapi - Técnica
+Event Streaming Kafka/Pulsar - Técnica
+TDD/BDD - Técnica
+Property Tests - Técnica
+Playwright/Cypress - Técnica
+Contract Testing - Técnica
+Chaos Engineering - Técnica
+OWASP - Técnica
+Threat Modeling - Técnica
+SAST/DAST - Técnica
+IAM - Técnica
+SBOM - Técnica
+Zero-Trust - Técnica
+Prometheus - Técnica
+Opentelemetry - Técnica
+Tracing - Técnica
+SLO/SLA - Técnica
+Incident Command - Técnica
+Load-Balancing - Técnica
+Caching - Técnica
+Async/Reactive Patterns - Técnica
+Prompt Engineering - Técnica
+AI Code Review - Técnica
+Workflow Orchestration - Técnica
+Appian - Técnica
+Mendix - Técnica
+Power Platform - Técnica
+Uipath - Técnica
+Solidity - Técnica
+Hardhat/Foundry - Técnica
+Security Audits - Técnica
+Unity - Técnica
+Unreal - Técnica
+Webxr - Técnica
+Shader Programming - Técnica
+Qiskit - Técnica
+Q# - Técnica
+Edge Orchestration - Técnica
+Git Mastery - Técnica
+Agile Practices - Técnica
+Code Reviews - Técnica
+Architectural Writing - Técnica
+Communication - Técnica
+Spring Framework - Técnica
+Spring Boot - Técnica
+Jakarta EE - Técnica
+Hibernate / JPA - Técnica
+Quarkus - Técnica
+Micronaut - Técnica
+Apache Kafka (Java Client) - Técnica
+Maven - Técnica
+Gradle - Técnica
+Junit & Mockito Testing - Técnica
+Reactive Streams (Reactor / Rxjava) - Técnica
+Microprofile - Técnica
+Graalvm Native Image - Técnica
+Java Flight Recorder - Técnica
+JVM GC Tuning & Performance - Técnica
+AWS Lambda - Técnica
+Amazon EC2 - Técnica
+Amazon S3 - Técnica
+Amazon RDS - Técnica
+AWS Dynamodb - Técnica
 AWS ECS - Técnica
 AWS EKS - Técnica
-AWS Elastic Beanstalk - Técnica
 AWS Fargate - Técnica
-AWS Glue - Técnica
-AWS IAM (Identity & Access Management) - Técnica
-AWS Lambda - Técnica
+AWS Cloudformation - Técnica
+AWS CDK (Cloud Development Kit) - Técnica
+AWS API Gateway - Técnica
 AWS Step Functions - Técnica
-AWS VPC design - Técnica
-AWS/Azure/GCP - Técnica
-Accessibility (WCAG 2.2) - Técnica
-Accountability - Suave
-Active Listening - Suave
-Adaptability - Suave
-Adobe XD - Técnica
-Airflow - Técnica
-Amazon CloudWatch - Técnica
-Amazon EC2 - Técnica
-Amazon Kinesis - Técnica
-Amazon RDS - Técnica
-Amazon Redshift - Técnica
-Amazon S3 - Técnica
 Amazon SNS - Técnica
 Amazon SQS - Técnica
-Android Jetpack Compose - Técnica
-Android Studio - Técnica
+Amazon Cloudwatch - Técnica
+AWS IAM (Identity & Access Management) - Técnica
+AWS VPC Design - Técnica
+Amazon Kinesis - Técnica
+AWS Glue - Técnica
+AWS Elastic Beanstalk - Técnica
+C# 12 Language Features - Técnica
+ASP.NET Core - Técnica
+Entity Framework Core - Técnica
+Blazor Webassembly - Técnica
+.NET MAUI (Cross-Platform UI) - Técnica
+Signalr - Técnica
+LINQ Mastery - Técnica
+Task-Based Async Programming - Técnica
+Dapper Micro-ORM - Técnica
+Dependency Injection (Built-In Container) - Técnica
+Azure Devops Pipelines - Técnica
+Nuget Package Management - Técnica
+.NET Microservices With Dapr - Técnica
+Grpc For .NET - Técnica
+Roslyn Analyzers & Source Generators - Técnica
+Performance Profiling (Dottrace) - Técnica
+WPF / Winui 3 Desktop Apps - Técnica
+Unity / Prism MVVM Frameworks - Técnica
+Xunit / Nunit Testing - Técnica
+Power BI - Técnica
+Tableau - Técnica
+Looker / Looker Studio - Técnica
+Snowflake - Técnica
+Google Bigquery - Técnica
+Amazon Redshift - Técnica
+Azure Synapse Analytics - Técnica
+Dbt (Core & Cloud) - Técnica
+Apache Superset - Técnica
+Informatica Powercenter - Técnica
+Talend Open Studio - Técnica
+Microsoft SQL Server - Técnica
+Postgresql - Técnica
+Mysql / Mariadb - Técnica
+Oracle Database - Técnica
+Sqlite - Técnica
+Mongodb - Técnica
+Redis - Técnica
+Cassandra - Técnica
+Neo4j - Técnica
+Influxdb (Time-Series) - Técnica
+Figma - Técnica
+Adobe XD - Técnica
+Sketch - Técnica
+Design Systems (Storybook, Material 3) - Técnica
+Responsive & Mobile-First Design - Técnica
+Accessibility (WCAG 2.2) - Técnica
+Usability Testing - Técnica
+Interaction & Motion Design - Técnica
+Jenkins - Técnica
+Github Actions - Técnica
+Gitlab CI/CD - Técnica
+Argo CD - Técnica
+Spinnaker - Técnica
+Helm Charts - Técnica
+Ansible - Técnica
+Packer - Técnica
+Terraform Modules & Workspaces - Técnica
+Site Reliability Engineering (SRE) - Técnica
 Angular - Técnica
 Angular Material - Técnica
-Ansible - Técnica
-Apache Kafka (Java client) - Técnica
-Apache Superset - Técnica
-Appian - Técnica
-Argo CD - Técnica
-Azure DevOps pipelines - Técnica
-Azure Synapse Analytics - Técnica
-Blazor WebAssembly - Técnica
-C# 12 language features - Técnica
-C/C++ - Técnica
-C/C++ optimization - Técnica
-CI/CD - Técnica
-Cassandra - Técnica
-Collaboration - Suave
+React 18 - Técnica
+Next.Js - Técnica
+Typescript - Técnica
+Redux Toolkit / Ngrx - Técnica
+Webpack & Vite - Técnica
+Tailwind CSS - Técnica
+Android Studio - Técnica
+Android Jetpack Compose - Técnica
+Hilt & Room - Técnica
+Ios Swiftui - Técnica
 Combine & Async/Await - Técnica
-Conflict Resolution - Suave
-Confluence Knowledge Bases - Técnica
+Objective-C Legacy - Técnica
 Core Data - Técnica
-Creativity & Innovation - Suave
-Critical Thinking - Suave
-Cross-platform Kotlin Multiplatform - Técnica
-Cultural Awareness - Suave
-DDD - Técnica
-Dapper micro-ORM - Técnica
-Decision-Making - Suave
-Dependency Injection (built-in container) - Técnica
-Design Systems (Storybook, Material 3) - Técnica
-Docker - Técnica
-ETL/ELT - Técnica
+Cross-Platform Kotlin Multiplatform - Técnica
+ABAP OO - Técnica
+SAP HANA Modelling - Técnica
+SAP Fiori UX - Técnica
+SAP UI5 - Técnica
+SAP BTP (Business Technology Platform) - Técnica
+SAP S/4HANA Extensibility - Técnica
+SAP Integration Suite / PI-PO - Técnica
+SAP Successfactors - Técnica
+Scrum Mastery - Técnica
+Kanban Flow - Técnica
+Safe 5.0 - Técnica
+Jira Administration - Técnica
+Confluence Knowledge Bases - Técnica
+PMI / PMP Framework - Técnica
+PRINCE2 - Técnica
+OKR Road-Mapping - Técnica
+Risk & Issue Management - Técnica
+Communication - Suave
+Technical Writing - Suave
+Active Listening - Suave
+Public Speaking - Suave
+Presentation Skills - Suave
+Stakeholder Management - Suave
+Negotiation - Suave
+Conflict Resolution - Suave
+Teamwork - Suave
+Collaboration - Suave
+Leadership - Suave
+Mentoring & Coaching - Suave
 Emotional Intelligence - Suave
 Empathy - Suave
-Entity Framework Core - Técnica
-Facilitation - Suave
-Figma - Técnica
-Flexibility - Suave
-Flutter - Técnica
-Git mastery - Técnica
-GitHub Actions - Técnica
-GitLab CI/CD - Técnica
-Go - Técnica
-Google BigQuery - Técnica
-GraalVM Native Image - Técnica
-Gradle - Técnica
-GraphQL - Técnica
-Growth Mindset - Suave
-Hardhat/Foundry - Técnica
-Helm Charts - Técnica
-Hibernate / JPA - Técnica
-Hilt & Room - Técnica
-IAM - Técnica
-IaC - Técnica
-InfluxDB (time-series) - Técnica
-Informatica PowerCenter - Técnica
-Interaction & Motion Design - Técnica
-JUnit & Mockito testing - Técnica
-JVM GC tuning & performance - Técnica
-Jakarta EE - Técnica
-Java Flight Recorder - Técnica
-Java/Kotlin - Técnica
-Jenkins - Técnica
-Jira Administration - Técnica
-Kanban Flow - Técnica
-Kotlin + Jetpack Compose - Técnica
-Kubernetes - Técnica
-LINQ mastery - Técnica
-Leadership - Suave
-Looker / Looker Studio - Técnica
-MLOps - Técnica
-Maven - Técnica
-Mendix - Técnica
-Mentoring & Coaching - Suave
-MicroProfile - Técnica
-Micronaut - Técnica
-Microsoft SQL Server - Técnica
-MongoDB - Técnica
-MySQL / MariaDB - Técnica
-Negotiation - Suave
-Neo4j - Técnica
-Networking - Suave
-Next.js - Técnica
-NuGet package management - Técnica
-OKR Road-mapping - Técnica
-OOP - Técnica
-OWASP - Técnica
-Objective-C legacy - Técnica
-OpenAPI - Técnica
-OpenTelemetry - Técnica
-Oracle Database - Técnica
-PMI / PMP framework - Técnica
-PRINCE2 - Técnica
-PWA patterns - Técnica
-Packer - Técnica
-Performance profiling (dotTrace) - Técnica
-Playwright/Cypress - Técnica
-PostgreSQL - Técnica
-Power BI - Técnica
-Power Platform - Técnica
-Presentation Skills - Suave
-Prioritization - Suave
 Problem-Solving - Suave
-Prometheus - Técnica
-Public Speaking - Suave
-Python - Técnica
-Q# - Técnica
-Qiskit - Técnica
-Quarkus - Técnica
-REST - Técnica
-React 18 - Técnica
-React Native - Técnica
-React/Next.js - Técnica
-Reactive Streams (Reactor / RxJava) - Técnica
-Redis - Técnica
-Redux Toolkit / NgRx - Técnica
+Critical Thinking - Suave
+Creativity & Innovation - Suave
+Adaptability - Suave
 Resilience - Suave
-Responsive & Mobile-first Design - Técnica
-Risk & Issue Management - Técnica
-Roslyn analyzers & source generators - Técnica
-Rust - Técnica
-Rust safety - Técnica
-SAFe 5.0 - Técnica
-SAP BTP (Business Technology Platform) - Técnica
-SAP Fiori UX - Técnica
-SAP HANA modelling - Técnica
-SAP Integration Suite / PI-PO - Técnica
-SAP S/4HANA Extensibility - Técnica
-SAP SuccessFactors - Técnica
-SAP UI5 - Técnica
-SAST/DAST - Técnica
-SBOM - Técnica
-SLO/SLA - Técnica
-SQL + NoSQL tuning - Técnica
-SQLite - Técnica
-Scrum Mastery - Técnica
-Self-Motivation - Suave
-SignalR - Técnica
-Site Reliability Engineering (SRE) - Técnica
-Sketch - Técnica
-Snowflake - Técnica
-Solidity - Técnica
-Spark/Flink - Técnica
-Spinnaker - Técnica
-Spring Boot - Técnica
-Spring Framework - Técnica
-Stakeholder Management - Suave
-Stress Management - Suave
-Svelte - Técnica
-Swift - Técnica
-SwiftUI - Técnica
-TDD/BDD - Técnica
-Tableau - Técnica
-Tailwind CSS - Técnica
-Talend Open Studio - Técnica
-Task-based async programming - Técnica
-Teamwork - Suave
-Technical Writing - Suave
-Terraform Modules & Workspaces - Técnica
+Flexibility - Suave
 Time Management - Suave
-TypeScript - Técnica
-TypeScript/JS - Técnica
-UiPath - Técnica
-Unity - Técnica
-Unity / Prism MVVM frameworks - Técnica
-Unreal - Técnica
-Usability Testing - Técnica
-Vue - Técnica
-WPF / WinUI 3 desktop apps - Técnica
-WebAssembly - Técnica
-WebXR - Técnica
-Webpack & Vite - Técnica
-agile practices - Técnica
-algorithms - Técnica
-architectural writing - Técnica
-async/reactive patterns - Técnica
-caching - Técnica
-chaos engineering - Técnica
-code reviews - Técnica
-communication - Técnica
-complexity - Técnica
-concurrency - Técnica
-contract testing - Técnica
-data lakes - Técnica
-data structures - Técnica
-dbt (Core & Cloud) - Técnica
-eBPF - Técnica
-edge orchestration - Técnica
-embedded/IoT - Técnica
-event streaming Kafka/Pulsar - Técnica
-fine-tuning - Técnica
-functional - Técnica
-gRPC - Técnica
-gRPC for .NET - Técnica
-iOS SwiftUI - Técnica
-incident command - Técnica
-load-balancing - Técnica
-memory - Técnica
-micro-/event-driven services - Técnica
-model lifecycle - Técnica
-prompt engineering - Técnica
-property tests - Técnica
-responsible AI - Técnica
-security audits - Técnica
-shader programming - Técnica
-threat modeling - Técnica
-tracing - Técnica
-vector DBs - Técnica
-workflow orchestration - Técnica
-xUnit / NUnit testing - Técnica
-zero-trust - Técnica
+Prioritization - Suave
+Decision-Making - Suave
+Accountability - Suave
+Growth Mindset - Suave
+Self-Motivation - Suave
+Stress Management - Suave
+Facilitation - Suave
+Networking - Suave
+Cultural Awareness - Suave
 
 Formato:
 {
@@ -285,7 +286,7 @@ ${pdfData.text}
     // Limpiar el bloque markdown ```json ... ```
     const cleaned = raw.replace(/```json|```/g, '').trim();
 
-    // ✅ Parsear JSON limpio
+    // Parsear JSON limpio
     const parsed = JSON.parse(cleaned);
     return parsed;
   } catch (error) {
@@ -314,6 +315,11 @@ const guardarDatosCVExtraidos = async (userId, datosCV) => {
       .eq('nombre', nombre)
       .maybeSingle();
 
+  // ⬇️  Si no existe, la ignoramos y registramos en log
+    if (!habilidad) {
+      console.log(`Skill no encontrada, se omite: ${nombre}`);
+      return;
+    }
 
     // 1.c Vincular al usuario (solo si aún no la tiene)
     const { data: yaAsociada } = await supabase
