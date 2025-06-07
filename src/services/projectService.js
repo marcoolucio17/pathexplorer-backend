@@ -1,5 +1,6 @@
 const supabase = require("../config/supabaseClient");
 const ApiError = require("../utils/errorHelper");
+const { slugify } = require('../utils/filename');
 
 const tableProject = `idproyecto,pnombre,descripcion,fechainicio,fechafin,proyectoterminado,projectdeliverables`;
 const tableUser = `usuario(idusuario,nombre)`;
@@ -390,7 +391,9 @@ const fetchUpdateProject = async (id_proyecto, informacion) => {
 };
 
 const uploadRFPToStorage = async (file) => {
-  const fileName = `rfp-${Date.now()}-${file.originalname}`;
+  const ext      = file.originalname.split('.').pop();
+  const baseName = file.originalname.replace(/\.[^/.]+$/, '');
+  const fileName = `rfp-${Date.now()}-${slugify(baseName)}.${ext}`;
 
   const { data, error } = await supabase.storage
     .from("rfpproyecto")

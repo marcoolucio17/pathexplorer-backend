@@ -1,4 +1,5 @@
 const supabase = require('../config/supabaseClient');
+const { slugify } = require("../utils/filename");
 
 const getUserById = async (id) => {
 
@@ -103,7 +104,12 @@ const getUserById = async (id) => {
 };
 
 const uploadCVToStorage = async (userId, file) => {
-  const filePath = `cv-${Date.now()}-${file.originalname}`;
+   // 1. nombre base sin extensión
+  const ext = file.originalname.split('.').pop();
+  const baseName = file.originalname.replace(/\.[^/.]+$/, '');
+
+  // 2. nombre totalmente seguro
+  const filePath = `cv-${Date.now()}-${slugify(baseName)}.${ext}`;
   const { data, error } = await supabase.storage
     .from('cvs')
     .upload(filePath, file.buffer, {
@@ -124,7 +130,10 @@ const uploadCVToStorage = async (userId, file) => {
 };
 
 const uploadProfileToStorage = async (userId, file) => {
-  const filePath = `foto-${Date.now()}-${file.originalname}`;
+  const ext      = file.originalname.split('.').pop();
+  const baseName = file.originalname.replace(/\.[^/.]+$/, '');
+  const filePath = `foto-${Date.now()}-${slugify(baseName)}.${ext}`;
+
   const { data, error } = await supabase.storage
     .from('fotos-perfil')
     .upload(filePath, file.buffer, {

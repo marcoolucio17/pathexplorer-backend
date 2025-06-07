@@ -1,5 +1,6 @@
 const supabase = require('../config/supabaseClient');
 const { v4: uuidv4 } = require('uuid');
+const { slugify } = require('../utils/filename');
 
 const bucket = 'fotos-clientes';
 
@@ -50,8 +51,9 @@ const modificarCliente = async (id, { clnombre, inversion, fotodecliente }) => {
 
 // Sube imagen y guarda el nombre del archivo
 const uploadClienteFoto = async (idcliente, file) => {
-  const ext = file.originalname.split('.').pop();
-  const filename = `${uuidv4()}.${ext}`;
+  const ext      = file.originalname.split('.').pop();
+  const baseName = file.originalname.replace(/\.[^/.]+$/, '');
+  const filename = `foto-${Date.now()}-${slugify(baseName)}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from('fotos-clientes')
