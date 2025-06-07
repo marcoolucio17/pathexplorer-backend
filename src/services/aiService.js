@@ -315,6 +315,11 @@ const guardarDatosCVExtraidos = async (userId, datosCV) => {
       .eq('nombre', nombre)
       .maybeSingle();
 
+  // ⬇️  Si no existe, la ignoramos y registramos en log
+    if (!habilidad) {
+      console.log(`Skill no encontrada, se omite: ${nombre}`);
+      return;
+    }
 
     // 1.c Vincular al usuario (solo si aún no la tiene)
     const { data: yaAsociada } = await supabase
