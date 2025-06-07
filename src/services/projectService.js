@@ -60,6 +60,8 @@ const fetchAllRolesSkills = async () => {
   return dataRolHab;
 };
 
+
+
 const fetchProjects = async (req, res) => {
   const { idcliente = null, idusuario = null } = req.query;
 
@@ -786,4 +788,5 @@ module.exports = {
   obtenerTopProyectos,
   fetchAllUserSkills,
   fetchAllRolesSkills,
+
 };
