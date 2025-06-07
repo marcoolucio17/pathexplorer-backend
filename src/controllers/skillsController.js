@@ -77,10 +77,45 @@ const getUserSkillsNames = async (req, res) => {
   }
 };
 
+// DELETE /api/habilidades/:id
+const removeSkill = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleted = await deleteSkillById(id);
+    if (!deleted)
+      return res.status(404).json({ message: "Habilidad no encontrada" });
+
+    res
+      .status(200)
+      .json({ message: "Habilidad eliminada correctamente", deleted });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar la habilidad", detail: error.message });
+  }
+};
+
+const removeSkillFromUser = async (req, res) => {
+  const { idusuario, idhabilidad } = req.params;
+
+  try {
+    const deleted = await deleteUserSkill(idusuario, idhabilidad);
+    if (!deleted)
+      return res.status(404).json({ message: 'La habilidad no está asociada al usuario' });
+
+    res.status(200).json({
+      message: 'Habilidad desvinculada del usuario',
+      deleted
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al desvincular habilidad', detail: err.message });
+  }
+};
+
 module.exports = {
   getHabilidadesPorTipo,
   assignSkill,
   getTodasHabilidades,
   getTopSkills,
   getUserSkillsNames,
+  removeSkill,
+  removeSkillFromUser
 };

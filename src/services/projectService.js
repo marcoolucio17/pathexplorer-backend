@@ -662,31 +662,108 @@ const actualizarProyectoYRoles = async (
   idproyecto,
   { pnombre, descripcion, fechainicio, fechafin, projectdeliverables, roles }
 ) => {
+  /* Proyecto ---------------------------------------------------- */
   const { error: errorProyecto } = await supabase
-    .from("proyecto")
-    .update({
-      pnombre,
-      descripcion,
-      fechainicio,
-      fechafin,
-      projectdeliverables,
-    })
-    .eq("idproyecto", idproyecto);
+    .from('proyecto')
+    .update({ pnombre, descripcion, fechainicio, fechafin, projectdeliverables })
+    .eq('idproyecto', idproyecto);
 
   if (errorProyecto) throw errorProyecto;
 
-  // Actualizar roles (asumiendo que vienen con idrol y los nuevos campos)
+  /* 2️Procesar cada rol ------------------------------------------ */
   for (const rol of roles) {
-    const { idrol, nombrerol, descripcionrol, estado, disponible } = rol;
-    const { error: errorRol } = await supabase
-      .from("roles")
-      .update({ nombrerol, descripcionrol, estado, disponible })
-      .eq("idrol", idrol);
+    const {
+      idrol = null,
+      nombrerol,
+      nivelrol,
+      descripcionrol,
+      disponible,
+      requerimientos = [],
+    } = rol;
 
-    if (errorRol) throw errorRol;
+    let rolId = idrol;
+
+    /* ── a) INSERT / UPDATE del rol ──────────────────────────────── */
+    if (rolId) {
+      const { error: errorRol } = await supabase
+        .from('roles')
+        .update({ nombrerol, nivelrol, descripcionrol, disponible })
+        .eq('idrol', rolId);
+      if (errorRol) throw errorRol;
+    } else {
+      const { data: rolData, error: errorRolIns } = await supabase
+        .from('roles')
+        .insert([{ nombrerol, nivelrol, descripcionrol, disponible }])
+        .select('idrol')
+        .single();
+      if (errorRolIns) throw errorRolIns;
+      rolId = rolData.idrol;
+
+      /* Vincula rol nuevo al proyecto */
+      const { error: errLink } = await supabase
+        .from('proyecto_roles')
+        .insert([{ idproyecto, idrol: rolId }]);
+      if (errLink) throw errLink;
+    }
+
+    /* ── b) Sincronizar requerimientos del rol ───────────────────── */
+    // 1. Obtener los req actuales del rol
+    const { data: reqActuales } = await supabase
+      .from('requerimientos_roles')
+      .select('idrequerimiento')
+      .eq('idrol', rolId);
+
+    const idsActuales = new Set(reqActuales.map((r) => r.idrequerimiento));
+    const idsDeseados = new Set();
+
+    for (const req of requerimientos) {
+      const { tiempoexperiencia, idhabilidad } = req;
+
+      // ¿Existe ya este requerimiento con (tiempo, habilidad)?
+      const { data: reqExist } = await supabase
+        .from('requerimientos')
+        .select('idrequerimiento')
+        .eq('tiempoexperiencia', tiempoexperiencia)
+        .eq('idhabilidad', idhabilidad)
+        .maybeSingle();
+
+      let idreq = reqExist?.idrequerimiento;
+
+      // Si no existe ⇒ crear
+      if (!idreq) {
+        const { data: reqNew, error: reqErr } = await supabase
+          .from('requerimientos')
+          .insert([{ tiempoexperiencia, idhabilidad }])
+          .select('idrequerimiento')
+          .single();
+        if (reqErr) throw reqErr;
+        idreq = reqNew.idrequerimiento;
+      }
+
+      idsDeseados.add(idreq);
+
+      // Asegurar vínculo rol-req
+      if (!idsActuales.has(idreq)) {
+        const { error: linkErr } = await supabase
+          .from('requerimientos_roles')
+          .insert([{ idrol: rolId, idrequerimiento: idreq }]);
+        if (linkErr && linkErr.code !== '23505') throw linkErr; // ignora duplicado único
+      }
+    }
+
+    // 2. Eliminar vínculos que ya no se desean
+    for (const idreq of idsActuales) {
+      if (!idsDeseados.has(idreq)) {
+        const { error: delErr } = await supabase
+          .from('requerimientos_roles')
+          .delete()
+          .match({ idrol: rolId, idrequerimiento: idreq });
+        if (delErr) throw delErr;
+      }
+    }
   }
 
-  return { message: "Proyecto y roles actualizados correctamente" };
+  return { message: 'Proyecto y roles actualizados correctamente' };
 };
 
 const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {

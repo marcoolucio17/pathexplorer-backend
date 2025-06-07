@@ -120,10 +120,38 @@ const getNTopSkills = async (count) => {
   return topK;
 };
 
+// Eliminar una habilidad por ID
+const deleteSkillById = async (id) => {
+  const { data, error } = await supabase
+    .from('habilidades')
+    .delete()
+    .eq('idhabilidad', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+const deleteUserSkill = async (idusuario, idhabilidad) => {
+  const { data, error } = await supabase
+    .from('usuario_habilidad')
+    .delete()
+    .match({ idusuario, idhabilidad })
+    .select()
+    .single();          // ← si no existe, data será null
+
+  if (error) throw error;
+  return data;          // fila eliminada o null
+};
+
+
 module.exports = {
   getSkillsByType,
   assignSkillToUser,
   getAllSkills,
   getNTopSkills,
   getAllUserSkills,
+  deleteSkillById,
+  deleteUserSkill
 };

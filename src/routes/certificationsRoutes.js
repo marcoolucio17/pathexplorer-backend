@@ -21,4 +21,7 @@ router.put('/certificados/:id', certificationsController.updateCertificateContro
 
 router.delete('/certificaciones/:id', authMiddleware, certificationsController.removeCertification);
 
+router.delete('/certificaciones/usuario/:idusuario/:idcertificaciones', authMiddleware, certificationsController.removeCertificationFromUser);
+
+
 module.exports = router;

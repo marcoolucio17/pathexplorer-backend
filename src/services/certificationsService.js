@@ -144,6 +144,18 @@ const deleteCertificationById = async (id) => {
   return data;
 };
 
+const deleteUserCertification = async (idusuario, idcertificaciones) => {
+  const { data, error } = await supabase
+    .from('usuario_certificado')
+    .delete()
+    .match({ idusuario, idcertificaciones })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 
 module.exports = {
   createCertificate,
@@ -152,5 +164,6 @@ module.exports = {
   uploadCertificateToStorage,
   generateCertificateSignedUrl,
   updateCertificate,
-  deleteCertificationById
+  deleteCertificationById,
+  deleteUserCertification
 };
