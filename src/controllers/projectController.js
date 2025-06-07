@@ -176,6 +176,9 @@ const getProjectsByFilter = async (req, res, projects) => {
 
 const createProject = async (req, res) => {
   try {
+    if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
+      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    }
     const {
       informacion = null,
       projectName = null,
@@ -208,19 +211,35 @@ const createProject = async (req, res) => {
 
 const createFullProject = async (informacion, res) => {
   try {
+    if (
+      !informacion?.proyect ||
+      !informacion?.roles ||
+      !informacion.proyect.projectdeliverables
+    ) {
+      return res.status(400).json({
+        error: "Falta información: asegúrate de incluir 'proyect', 'roles' y 'projectdeliverables'.",
+      });
+    }
+
     const result = await fetchCreateProject(informacion);
+
     if (!result) {
-      return res.status(404).json({ error: "Project not found" });
+      return res.status(404).json({ error: "Proyecto no encontrado" });
     } else {
       return res.status(201).json(result);
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error creating project" });
+    console.error("Error en createFullProject:", error.message);
+    return res.status(500).json({ error: "Error al crear el proyecto" });
   }
 };
 
+
 const updateProject = async (req, res) => {
   try {
+    if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
+      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    }
     const { idproyecto = null } = req.query || {};
     const { proyect = null } = req.body.informacion || {};
     if (idproyecto && proyect) {
@@ -319,6 +338,9 @@ const getProyectosPorCreador = async (req, res) => {
 };
 
 const editarProyectoYRoles = async (req, res) => {
+  if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
+      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    }
   const { idproyecto } = req.params;
   const {
     pnombre,
