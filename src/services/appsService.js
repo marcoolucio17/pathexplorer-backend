@@ -108,11 +108,12 @@ const fetchAppsByUserId = async (userId) => {
         await supabase.storage
           .from("fotos-clientes")
           .createSignedUrl(proyectoRol.proyecto.cliente.fotodecliente, 3600);
+      
       if (errorPR || signedUrlError) {
         console.warn("No se encontró proyecto para el rol", app.idrol);
         return { ...app, proyecto: null };
       }
-
+ 
       return {
         ...app,
         idaplicacion: app.idaplicacion,
