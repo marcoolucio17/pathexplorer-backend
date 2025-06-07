@@ -1,10 +1,22 @@
-const { obtenerFeedbackPorUsuario, 
+// controllers/feedbackController.js
+const {
+  obtenerFeedbackPorUsuario,
   crearFeedback,
-  crearRelacionUTPFeedback 
+  crearRelacionUTPFeedback
 } = require('../services/feedbackService');
 
+const supabase = require('../config/supabaseClient');
+
+/**
+ * Devuelve los feedbacks de un usuario solo si el solicitante es manager.
+ * Requiere: req.user.role === 'manager'
+ */
 const getFeedbackIfManager = async (req, res) => {
   try {
+    if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
+      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    }
+
     const { idUsuarioObjetivo } = req.params;
     const feedbacks = await obtenerFeedbackPorUsuario(idUsuarioObjetivo);
 
@@ -15,8 +27,10 @@ const getFeedbackIfManager = async (req, res) => {
   }
 };
 
-const supabase = require('../config/supabaseClient');
-
+/**
+ * Crea feedback sobre un usuario-proyecto (solo autenticado; la lógica
+ * de roles aquí puede mantenerse igual o endurecerse de forma similar).
+ */
 const asignarFeedback = async (req, res) => {
   try {
     const { idusuario, idproyecto, feedback, rating } = req.body;
@@ -25,7 +39,7 @@ const asignarFeedback = async (req, res) => {
       return res.status(400).json({ error: 'Datos incompletos para asignar feedback' });
     }
 
-    // Obtener IDUTP desde la tabla UTP
+    // Obtener IDUTP desde la tabla utp
     const { data: utpData, error: utpError } = await supabase
       .from('utp')
       .select('idutp')
@@ -48,6 +62,7 @@ const asignarFeedback = async (req, res) => {
       rating
     });
 
+    // Enlazar feedback <-> utp
     await crearRelacionUTPFeedback(idutp, feedbackInsertado.idfeedback);
 
     res.status(201).json({

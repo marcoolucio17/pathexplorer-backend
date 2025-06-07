@@ -20,7 +20,7 @@ function authMiddleware(req, res, next) {
 
   try {
     const data = decryptToken(token);
-
+    //console.log('TOKEN PAYLOAD', data);   
     // this checks expiration altough i'm not sure if we'll fully implement it
     if (Date.now() > data.expiresAt) {
       return res.status(401).json({ error: 'Token expired' });
