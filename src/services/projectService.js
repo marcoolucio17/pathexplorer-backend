@@ -4,7 +4,7 @@ const ApiError = require("../utils/errorHelper");
 const tableProject = `idproyecto,pnombre,descripcion,fechainicio,fechafin,proyectoterminado,projectdeliverables`;
 const tableUser = `usuario(idusuario,nombre)`;
 const tableUtp = `utp(usuario(idusuario,nombre))`;
-const tableClient = `cliente(idcliente,clnombre)`;
+const tableClient = `cliente(idcliente,clnombre,fotodecliente)`;
 const tableSkill = `habilidades(idhabilidad,nombre,estecnica)`;
 const tableRequirement = `requerimientos(idrequerimiento,tiempoexperiencia,${tableSkill})`;
 const tableRequerimientosRoles = `requerimientos_roles(${tableRequirement})`;
@@ -86,7 +86,21 @@ const fetchProjects = async (req, res) => {
     );
   }
 
-  return data;
+  const proyectosConUrl = await Promise.all(
+    data.map(async (proy) => {
+      if (proy.cliente?.idcliente) {
+        try {
+          const clienteUrlObj = await getClienteFotoUrl(proy.cliente.idcliente);
+          proy.cliente = { ...proy.cliente, ...clienteUrlObj }; // agrega fotodecliente_url
+        } catch (e) {
+          // Si falla la URL, ignóralo para no romper la respuesta
+        }
+      }
+      return proy;
+    })
+  );
+
+  return proyectosConUrl;
 };
 
 /**

@@ -176,6 +176,9 @@ const getProjectsByFilter = async (req, res, projects) => {
 
 const createProject = async (req, res) => {
   try {
+    if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
+      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    }
     const {
       informacion = null,
       projectName = null,
@@ -234,6 +237,9 @@ const createFullProject = async (informacion, res) => {
 
 const updateProject = async (req, res) => {
   try {
+    if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
+      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    }
     const { idproyecto = null } = req.query || {};
     const { proyect = null } = req.body.informacion || {};
     if (idproyecto && proyect) {
@@ -332,6 +338,9 @@ const getProyectosPorCreador = async (req, res) => {
 };
 
 const editarProyectoYRoles = async (req, res) => {
+  if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
+      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    }
   const { idproyecto } = req.params;
   const {
     pnombre,
