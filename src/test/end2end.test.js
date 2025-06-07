@@ -139,7 +139,7 @@ describe("End to end test", () => {
 
   test("should return signed URL for certification image with status 200", async () => {
     const response = await request(app)
-      .get("/api/certificaciones/image-url/2")
+      .get("/api/certificaciones/image-url/1")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
