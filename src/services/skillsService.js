@@ -15,6 +15,20 @@ const getSkillsByType = async (isTechnical) => {
   return data;
 };
 
+const getAllUserSkills = async (idusuario) => {
+  console.log("Fetching skills for user ID:", idusuario);
+  const { data, error } = await supabase
+    .from("usuario_habilidad")
+    .select("idhabilidad, habilidades(nombre)")
+    .eq("idusuario", idusuario);
+
+  if (error) throw error;
+
+  const userSkill = data.map((row) => row.habilidades?.nombre);
+
+  return { data: userSkill, error: error };
+};
+
 const getAllSkills = async () => {
   const { data, error } = await supabase.from("habilidades").select("*");
 
@@ -100,16 +114,16 @@ const getNTopSkills = async (count) => {
     .map(([id, { count, name }]) => ({
       id,
       name,
-      percentage: ((count / totalCount) * 100).toFixed(2) 
+      percentage: ((count / totalCount) * 100).toFixed(2),
     }));
 
   return topK;
 };
 
-
 module.exports = {
   getSkillsByType,
   assignSkillToUser,
   getAllSkills,
-  getNTopSkills
+  getNTopSkills,
+  getAllUserSkills,
 };
