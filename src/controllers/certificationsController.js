@@ -143,6 +143,23 @@ const removeCertification = async (req, res) => {
   }
 };
 
+const removeCertificationFromUser = async (req, res) => {
+  const { idusuario, idcertificaciones } = req.params;
+
+  try {
+    const deleted = await deleteUserCertification(idusuario, idcertificaciones);
+    if (!deleted)
+      return res.status(404).json({ message: 'La certificación no está asociada al usuario' });
+
+    res.status(200).json({
+      message: 'Certificación desvinculada del usuario',
+      deleted
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al desvincular certificación', detail: err.message });
+  }
+};
+
 
 
 module.exports = {
@@ -152,5 +169,6 @@ module.exports = {
   uploadCertificateImage,
   getCertificateImageSignedUrl,
   updateCertificateController,
-  removeCertification  
+  removeCertification,
+  removeCertificationFromUser
 };

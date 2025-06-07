@@ -133,6 +133,18 @@ const deleteSkillById = async (id) => {
   return data;
 };
 
+const deleteUserSkill = async (idusuario, idhabilidad) => {
+  const { data, error } = await supabase
+    .from('usuario_habilidad')
+    .delete()
+    .match({ idusuario, idhabilidad })
+    .select()
+    .single();          // ← si no existe, data será null
+
+  if (error) throw error;
+  return data;          // fila eliminada o null
+};
+
 
 module.exports = {
   getSkillsByType,
@@ -140,5 +152,6 @@ module.exports = {
   getAllSkills,
   getNTopSkills,
   getAllUserSkills,
-  deleteSkillById
+  deleteSkillById,
+  deleteUserSkill
 };

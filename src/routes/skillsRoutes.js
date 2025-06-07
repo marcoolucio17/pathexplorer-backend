@@ -5,7 +5,8 @@ const {
   getTodasHabilidades,
   getTopSkills,
   getUserSkillsNames,
-  removeSkill
+  removeSkill,
+  removeSkillFromUser
 } = require("../controllers/skillsController");
 const authMiddleware = require("../middlewares/verifyHashToken");
 const router = express.Router();
@@ -21,5 +22,6 @@ router.get("/top/:count", authMiddleware, getTopSkills);
 router.get("/usuario/:idusuario", authMiddleware, getUserSkillsNames);
 
 router.delete("/:id", authMiddleware, removeSkill);
+router.delete('/usuario/:idusuario/:idhabilidad', authMiddleware, removeSkillFromUser);
 
 module.exports = router;
