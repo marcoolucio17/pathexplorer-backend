@@ -4,6 +4,7 @@ const {
   getAllSkills,
   getNTopSkills,
   getAllUserSkills,
+  deleteUserSkill
 } = require("../services/skillsService");
 
 const getHabilidadesPorTipo = async (req, res) => {
