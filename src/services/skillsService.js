@@ -5,9 +5,9 @@ const getSkillsByType = async (isTechnical) => {
     throw new Error("El parámetro debe ser booleano");
   }
 
-  const { data, error } = await supabase
+    const { data, error } = await supabase
     .from("habilidades")
-    .select("*")
+    .select("idhabilidad, nombre, estecnica, idcategoria, categoria:categoria_habilidaeds(cnombre)")
     .eq("estecnica", isTechnical);
 
   if (error) throw error;
@@ -19,18 +19,26 @@ const getAllUserSkills = async (idusuario) => {
   console.log("Fetching skills for user ID:", idusuario);
   const { data, error } = await supabase
     .from("usuario_habilidad")
-    .select("idhabilidad, habilidades(nombre)")
+    .select("idhabilidad, habilidades(nombre, idcategoria, categoria:categoria_habilidaeds(cnombre))")
     .eq("idusuario", idusuario);
 
   if (error) throw error;
 
-  const userSkill = data.map((row) => row.habilidades?.nombre);
+  const userSkill = data.map((row) => ({
+      idhabilidad : row.idhabilidad,
+      nombre      : row.habilidades?.nombre,
+      idcategoria : row.habilidades?.idcategoria,
+      categoria   : row.habilidades?.categoria?.cnombre
+    }));
+
 
   return { data: userSkill, error: error };
 };
 
 const getAllSkills = async () => {
-  const { data, error } = await supabase.from("habilidades").select("*");
+    const { data, error } = await supabase
+    .from("habilidades")
+    .select("idhabilidad, nombre, estecnica, idcategoria, categoria:categoria_habilidaeds(cnombre)");
 
   if (error) throw error;
 
