@@ -83,7 +83,7 @@ const getProjectsByFilter = async (req, res, projects) => {
     const {
       nombrerol = null,
       idCompatible = null,
-      index = 0,
+      type = null,
     } = req.query || {};
 
     if (!idCompatible) {
@@ -110,8 +110,6 @@ const getProjectsByFilter = async (req, res, projects) => {
       rolesSkills[rol.idrol] = uniqueSkills;
     });
 
-    const inicio = parseInt(index, 10) || 0;
-    const fin = inicio + 5;
     let projectsFiltered = projects;
 
     const projectsWithRoles = projectsFiltered.map((project) => {
@@ -162,11 +160,37 @@ const getProjectsByFilter = async (req, res, projects) => {
     const finalProjects = projectsWithRoles.filter((project) => {
       return project.proyecto_roles.length > 0;
     });
-    const paginatedProjects = finalProjects.slice(inicio, fin);
-    const information = {
-      total: Math.floor(finalProjects.length / 5),
-      projects: paginatedProjects,
-    };
+
+    if (type) {
+      const finalProjectsReoganized = finalProjects.flatMap((project) => {
+        const roles = project.proyecto_roles.map((role) => {
+          return {
+            idproyecto: project.idproyecto,
+            pnombre: project.pnombre,
+            descripcion: project.descripcion,
+            fechainicio: project.fechainicio,
+            fechafin: project.fechafin,
+            cliente: {
+              idcliente: project.cliente.idcliente,
+              clnombre: project.cliente.clnombre,
+              fotodecliente_url: project.cliente.fotodecliente_url,
+            },
+            duracionMes: project.duracionMes,
+            idrol: role.roles.idrol,
+            nivelrol: role.roles.nivelrol,
+            nombrerol: role.roles.nombrerol,
+            descripcionrol: role.roles.descripcionrol,
+            compability: role.roles.compability,
+            requerimientos_roles: role.roles.requerimientos_roles,
+            cantidadRoles: project.proyecto_roles.length,
+          };
+        });
+        return roles;
+      });
+      return res.status(200).json(finalProjectsReoganized);
+    }
+    
+
     return res.status(200).json(finalProjects);
   } catch (error) {
     return res.status(500).json({ error: "Error fetching projects" });

@@ -70,6 +70,7 @@ const fetchProjects = async (req, res) => {
     .from("proyecto")
     .select(textToObtainInfoProject)
     .eq("proyectoterminado", false)
+    .eq("proyecto_roles.estado", "Pendiente")
     .order("idproyecto", { ascending: true });
 
   if (idcliente !== null && idcliente !== undefined) {
@@ -297,7 +298,10 @@ const fetchCreateProject = async (informacion) => {
       .single();
 
     if (proyectError || !proyectData) {
-      throw new ApiError(500, proyectError?.message || "Error al crear el proyecto.");
+      throw new ApiError(
+        500,
+        proyectError?.message || "Error al crear el proyecto."
+      );
     }
 
     const idproyecto = proyectData.idproyecto;
@@ -343,7 +347,10 @@ const fetchCreateProject = async (informacion) => {
             .single();
 
           if (!reqData || reqError) {
-            throw new ApiError(500, reqError?.message || "Error al crear el requerimiento.");
+            throw new ApiError(
+              500,
+              reqError?.message || "Error al crear el requerimiento."
+            );
           }
 
           idrequerimiento = reqData.idrequerimiento;
@@ -354,7 +361,10 @@ const fetchCreateProject = async (informacion) => {
           .insert([{ idrol, idrequerimiento }]);
 
         if (reqRolError) {
-          throw new ApiError(500, reqRolError?.message || "Error al asignar requerimientos al rol.");
+          throw new ApiError(
+            500,
+            reqRolError?.message || "Error al asignar requerimientos al rol."
+          );
         }
       }
 
@@ -363,7 +373,10 @@ const fetchCreateProject = async (informacion) => {
         .insert([{ idproyecto, idrol }]);
 
       if (proyectRolError) {
-        throw new ApiError(500, proyectRolError?.message || "Error al asignar el rol al proyecto.");
+        throw new ApiError(
+          500,
+          proyectRolError?.message || "Error al asignar el rol al proyecto."
+        );
       }
     }
     return { idproyecto };
@@ -374,7 +387,6 @@ const fetchCreateProject = async (informacion) => {
     );
   }
 };
-
 
 const fetchUpdateProject = async (id_proyecto, informacion) => {
   try {
@@ -447,13 +459,6 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
     .select(
       `
       *,
-      usuario (
-        idusuario,
-        nombre,
-        correoelectronico,
-        tipo,
-        nivelusuario
-      ),
       proyecto_roles!inner (
         estado,
         idrol,
@@ -461,32 +466,23 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
           idrol,
           nombrerol,
           nivelrol,
-          descripcionrol
+          descripcionrol,
+          requerimientos_roles (
+            requerimientos (
+              habilidades(idhabilidad,nombre,estecnica),
+              idrequerimiento,
+              tiempoexperiencia
+            ))
+              
         )
       ),
-      miembro (
-        idmiembro,
-        usuario (
-          idusuario,
-          nombre,
-          correoelectronico,
-          tipo,
-          nivelusuario
-        )
-      ),
-      utp (
-        idusuario,
-        estado,
-        usuario (
-          idusuario,
-          nombre,
-          correoelectronico,
-          telefono,
-          fotodeperfil,
-          github,
-          linkedin
-        )
+      cliente (
+        idcliente,
+        clnombre,
+        inversion,
+        fotodecliente
       )
+
     `
     )
     .eq("idproyecto", idProyecto)
@@ -494,6 +490,14 @@ const obtenerProyectoPorRol = async (idProyecto, idRol) => {
     .single();
 
   if (error) throw error;
+
+  // Agregar cliente con URL firmada (foto)
+  if (data.cliente?.idcliente) {
+    const clienteConUrl = await getClienteFotoUrl(data.cliente.idcliente);
+    data.cliente = {
+      ...clienteConUrl,
+    };
+  }
 
   return data;
 };
@@ -787,10 +791,10 @@ const eliminarRelacionProyectoRol = async (idproyecto, idrol) => {
 };
 
 const obtenerTopProyectos = async (idusuario) => {
-
   const { data: roles, error: errorRoles } = await supabase
     .from("proyecto_roles")
-    .select("idrol, idproyecto");
+    .select("idrol, idproyecto")
+    .eq("estado", "Pendiente");
 
   const userResult = await fetchAllUserSkills(idusuario);
 
@@ -821,13 +825,13 @@ const obtenerTopProyectos = async (idusuario) => {
       comp: res,
     };
   });
-  
+
   const resultados = promesas;
   const top3 = resultados.sort((a, b) => b.comp - a.comp).slice(0, 3);
 
   const projectFetches = top3.map(async ({ idrol, idproyecto, comp }) => {
     const project = await obtenerProyectoPorRol(idproyecto, idrol);
-    
+
     const getDuracionEnMeses = (inicio, fin) => {
       const anios = fin.getFullYear() - inicio.getFullYear();
       const meses = fin.getMonth() - inicio.getMonth();
@@ -843,7 +847,28 @@ const obtenerTopProyectos = async (idusuario) => {
     const fechaInicio = new Date(project.fechainicio);
     const fechaFin = new Date(project.fechafin);
     const duracionMes = getDuracionEnMeses(fechaInicio, fechaFin);
-    return { ...project, compatibility: comp, duracionMes: duracionMes };
+
+    return {
+      idproyecto: project.idproyecto,
+      pnombre: project.pnombre,
+      descripcion: project.descripcion,
+      fechainicio: project.fechainicio,
+      fechafin: project.fechafin,
+      cliente: {
+        idcliente: project.cliente?.idcliente || null,
+        clnombre: project.cliente?.clnombre || null,
+        fotodecliente_url: project.cliente?.fotodecliente_url || null,
+      },
+      duracionMes: project.duracionMes,
+      idrol: project.proyecto_roles[0]?.roles?.idrol || null,
+      nivelrol: project.proyecto_roles[0]?.roles?.nivelrol || null,
+      nombrerol: project.proyecto_roles[0]?.roles?.nombrerol || null,
+      descripcionrol: project.proyecto_roles[0]?.roles?.descripcionrol || null,
+      requerimientos_roles:
+        project.proyecto_roles[0]?.roles?.requerimientos_roles || [],
+      compatibility: comp,
+      duracionMes: duracionMes,
+    };
   });
 
   const projects = await Promise.all(projectFetches);
