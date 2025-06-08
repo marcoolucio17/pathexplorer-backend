@@ -141,6 +141,7 @@ const fetchProjectsByName = async (req, res) => {
     .select(textToObtainInfoProject)
     .ilike("pnombre", `%${projectName}%`)
     .order("idproyecto", { ascending: true })
+    .eq("proyecto_roles.estado", "Pendiente")
     .eq("proyectoterminado", false);
 
   if (idcliente !== null && idcliente !== undefined) {
