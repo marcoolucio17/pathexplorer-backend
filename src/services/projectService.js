@@ -159,7 +159,20 @@ const fetchProjectsByName = async (req, res) => {
     );
   }
 
-  return data;
+  const proyectosConUrl = await Promise.all(
+    data.map(async (proy) => {
+      if (proy.cliente?.idcliente) {
+        try {
+          const clienteUrlObj = await getClienteFotoUrl(proy.cliente.idcliente);
+          proy.cliente = { ...proy.cliente, ...clienteUrlObj }; // agrega fotodecliente_url
+        } catch (e) {
+          // Si falla la URL, ignóralo para no romper la respuesta
+        }
+      }
+      return proy;
+    })
+  );
+  return proyectosConUrl;
 };
 
 /**
