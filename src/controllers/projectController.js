@@ -87,7 +87,7 @@ const getProjectsByFilter = async (req, res, projects) => {
     } = req.query || {};
 
     if (!idCompatible) {
-      return res.status(400).json({ error: "idCompatible is required" });
+      return res.status(400).json({ error: "Id User is required" });
     }
 
     const idCompatibleParsed = parseInt(idCompatible, 10);
@@ -189,19 +189,21 @@ const getProjectsByFilter = async (req, res, projects) => {
       });
       return res.status(200).json(finalProjectsReoganized);
     }
-    
 
     return res.status(200).json(finalProjects);
   } catch (error) {
-    return res.status(500).json({ error: "Error fetching projects. " + error.message });
+    return res
+      .status(500)
+      .json({ error: "Error fetching projects. " + error.message });
   }
 };
 
-
 const createProject = async (req, res) => {
   try {
-    if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
-      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    if (!req.user || String(req.user.authz).toLowerCase() !== "manager") {
+      return res
+        .status(403)
+        .json({ error: "No tienes los permisos necesarios" });
     }
     const {
       informacion = null,
@@ -229,7 +231,9 @@ const createProject = async (req, res) => {
       return res.status(400).json({ error: "No project information provided" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error creating project. " + error.message });
+    return res
+      .status(500)
+      .json({ error: "Error creating project. " + error.message });
   }
 };
 
@@ -241,7 +245,8 @@ const createFullProject = async (informacion, res) => {
       !informacion.proyect.projectdeliverables
     ) {
       return res.status(400).json({
-        error: "Falta información: asegúrate de incluir 'proyect', 'roles' y 'projectdeliverables'.",
+        error:
+          "Falta información: asegúrate de incluir 'proyect', 'roles' y 'projectdeliverables'.",
       });
     }
 
@@ -254,15 +259,18 @@ const createFullProject = async (informacion, res) => {
     }
   } catch (error) {
     console.error("Error en createFullProject:", error.message);
-    return res.status(500).json({ error: "Error al crear el proyecto. " + error.message });
+    return res
+      .status(500)
+      .json({ error: "Error al crear el proyecto. " + error.message });
   }
 };
 
-
 const updateProject = async (req, res) => {
   try {
-    if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
-      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
+    if (!req.user || String(req.user.authz).toLowerCase() !== "manager") {
+      return res
+        .status(403)
+        .json({ error: "No tienes los permisos necesarios" });
     }
     const { idproyecto = null } = req.query || {};
     const { proyect = null } = req.body.informacion || {};
@@ -272,7 +280,9 @@ const updateProject = async (req, res) => {
       return res.status(400).json({ error: "No project information provided" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error updating project. " + error.message });
+    return res
+      .status(500)
+      .json({ error: "Error updating project. " + error.message });
   }
 };
 
@@ -285,7 +295,9 @@ const updatingProject = async (idproyecto, proyect, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error updating project. " + error.message });
+    return res
+      .status(500)
+      .json({ error: "Error updating project. " + error.message });
   }
 };
 
@@ -310,7 +322,9 @@ const uploadRFP = async (req, res) => {
       .json({ message: "Archivo RFP subido correctamente", path: storagePath });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al subir el archivo RFP. " + error.message });
+    res
+      .status(500)
+      .json({ error: "Error al subir el archivo RFP. " + error.message });
   }
 };
 
@@ -331,7 +345,9 @@ const getProyectoPorRol = async (req, res) => {
     const data = await obtenerProyectoPorRol(id, idrol);
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener el proyecto por rol. " + error.message });
+    res.status(500).json({
+      error: "Error al obtener el proyecto por rol. " + error.message,
+    });
   }
 };
 
@@ -341,7 +357,7 @@ const getProyectoCompleto = async (req, res) => {
     const data = await obtenerProyectoCompleto(id);
     res.json(data);
   } catch (error) {
-    console.error("[ERROR en obtenerProyectoCompleto]", error); 
+    console.error("[ERROR en obtenerProyectoCompleto]", error);
     res.status(500).json({
       error: error.message || "Error al obtener el proyecto completo",
     });
@@ -355,16 +371,16 @@ const getProyectosPorCreador = async (req, res) => {
     res.status(200).json(proyectos);
   } catch (error) {
     console.error("Error en getProyectosPorCreador:", error.message);
-    res
-      .status(500)
-      .json({ error: "Error al obtener los proyectos del usuario. " + error.message });
+    res.status(500).json({
+      error: "Error al obtener los proyectos del usuario. " + error.message,
+    });
   }
 };
 
 const editarProyectoYRoles = async (req, res) => {
-  if (!req.user || String(req.user.authz).toLowerCase() !== 'manager') {
-      return res.status(403).json({ error: 'No tienes los permisos necesarios' });
-    }
+  if (!req.user || String(req.user.authz).toLowerCase() !== "manager") {
+    return res.status(403).json({ error: "No tienes los permisos necesarios" });
+  }
   const { idproyecto } = req.params;
   const {
     pnombre,
@@ -386,12 +402,10 @@ const editarProyectoYRoles = async (req, res) => {
     });
     res.status(200).json(resultado);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: "Error al actualizar el proyecto y los roles",
-        detalle: error.message,
-      });
+    res.status(500).json({
+      error: "Error al actualizar el proyecto y los roles",
+      detalle: error.message,
+    });
   }
 };
 
@@ -419,12 +433,10 @@ const obtenerTop3Proyectos = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({
-        error: "Error al obtener los tres proyectos más compatibles",
-        detalle: error.message,
-      });
+    res.status(500).json({
+      error: "Error getting the three most compatible roles.",
+      detalle: error.message,
+    });
   }
 };
 

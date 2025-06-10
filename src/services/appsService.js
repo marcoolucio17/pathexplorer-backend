@@ -92,6 +92,8 @@ const fetchAppsByUserId = async (userId) => {
         proyecto (
           idproyecto,
           pnombre,
+          fechainicio,
+          fechafin,
           cliente (
             idcliente,
             clnombre,
@@ -108,12 +110,25 @@ const fetchAppsByUserId = async (userId) => {
         await supabase.storage
           .from("fotos-clientes")
           .createSignedUrl(proyectoRol.proyecto.cliente.fotodecliente, 3600);
-      
+
       if (errorPR || signedUrlError) {
         console.warn("No se encontró proyecto para el rol", app.idrol);
         return { ...app, proyecto: null };
       }
- 
+      const getDuracionEnMeses = (inicio, fin) => {
+        const anios = fin.getFullYear() - inicio.getFullYear();
+        const meses = fin.getMonth() - inicio.getMonth();
+        const totalMeses = anios * 12 + meses;
+
+        // Ajustar si el día de fin es menor que el de inicio
+        if (fin.getDate() < inicio.getDate()) {
+          return totalMeses - 1;
+        }
+        return totalMeses;
+      };
+      const fechaInicio = new Date(proyectoRol.proyecto.fechainicio);
+      const fechaFin = new Date(proyectoRol.proyecto.fechafin);
+      const duracionMes = getDuracionEnMeses(fechaInicio, fechaFin);
       return {
         ...app,
         idaplicacion: app.idaplicacion,
@@ -128,6 +143,7 @@ const fetchAppsByUserId = async (userId) => {
         nombrerol: app.roles.nombrerol,
         compability: compability,
         fotodecliente_url: signedUrlData.signedUrl,
+        duracionMes: duracionMes,
         proyecto: {
           idproyecto: proyectoRol.proyecto.idproyecto,
           nombre: proyectoRol.proyecto.pnombre,

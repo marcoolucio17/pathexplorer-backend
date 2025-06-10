@@ -14,12 +14,18 @@ const getAppsByProjectId = async (req, res) => {
 // GET: Todas las apps de un usuario
 const getAppsByUserId = async (req, res) => {
     const { userId } = req.params;
-    try {
-        const apps = await appService.fetchAppsByUserId(userId);
-        res.status(200).json(apps);
-    } catch (error) {
-        res.status(500).json({ message: "Error al obtener las aplicaciones del usuario.", error: error.message });
+  try {
+    if (!userId) {
+      return res.status(400).json({ message: "ID user is required." });
     }
+    const apps = await appService.fetchAppsByUserId(userId);
+    res.status(200).json(apps);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching user applications.",
+      error: error.message,
+    });
+  }
 };
 
 // GET: Aplicación específica

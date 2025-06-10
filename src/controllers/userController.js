@@ -13,18 +13,18 @@ const {
 
 const getUserById = async (req, res) => {
   const { ID } = req.params;
-
+  
   try {
     const user = await userService.getUserById(ID);
 
     if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return res.status(404).json({ error: "User no found." });
     }
 
     res.status(200).json(user);
   } catch (error) {
-    console.error('Error al obtener usuario:', error.message);
-    res.status(500).json({ error: 'Error interno del servidor. ' + error.message });
+    console.error("Error al obtener usuario:", error.message);
+    res.status(500).json({ error: "Internal server error. " + error.message });
   }
 };
 
