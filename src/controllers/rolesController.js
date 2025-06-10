@@ -18,7 +18,7 @@ const getRolesFunctions = async (req, res) => {
       getRoles(req, res);
     }
   } catch (error) {
-    res.status(500).json({ error: "Error fetching roles" });
+    res.status(500).json({ error: "Error fetching roles. " + error.message });
   }
 };
 
@@ -33,7 +33,7 @@ const getRoles = async (req, res) => {
       res.status(200).json(roles);
     }
   } catch (error) {
-    res.status(500).json({ error: "Error fetching roles" });
+    res.status(500).json({ error: "Error fetching roles. " + error.message });
   }
 };
 
@@ -49,7 +49,7 @@ const getRoleById = async (req, res) => {
       res.status(200).json(role);
     }
   } catch (error) {
-    res.status(500).json({ error: "Error fetching role" });
+    res.status(500).json({ error: "Error fetching role. " + error.message });
   }
 };
 
@@ -65,7 +65,7 @@ const addInfoRoles = async (req, res) => {
       addNewRequirement(req, res);
     }
   } catch (error) {
-    res.status(500).json({ error: "Error adding role" });
+    res.status(500).json({ error: "Error adding role. " + error.message });
   }
 };
 
@@ -82,7 +82,7 @@ const addNewRole = async (req, res) => {
       res.status(201).json({ message: "Role added successfully" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error adding role" });
+    res.status(500).json({ error: "Error adding role. " + error.message });
   }
 };
 
@@ -98,7 +98,7 @@ const addNewRequirement = async (req, res) => {
       res.status(201).json({ message: "Requirement added successfully" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error adding requirement" });
+    res.status(500).json({ error: "Error adding requirement. " + error.message });
   }
 };
 
@@ -111,7 +111,7 @@ const updatesRole = async (req, res) => {
       res.status(400).json({ error: "Role ID and data are required" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error updating the  role" });
+    res.status(500).json({ error: "Error updating the  role. " + error.message });
   }
 };
 
@@ -125,7 +125,7 @@ const updateRoleById = async (req, res) => {
       return res.status(200).json({ message: "Role updated successfully" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error updating role" });
+    res.status(500).json({ error: "Error updating role. " + error.message });
   }
 };
 
@@ -149,7 +149,7 @@ const deleteFunctionsReq = async (req, res) => {
         .json({ error: "Role ID, Requirement ID or Project ID are required" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error deleting requirement" });
+    res.status(500).json({ error: "Error deleting requirement. " + error.message });
   }
 };
 
@@ -167,7 +167,7 @@ const deleteOldRequirement = async (req, res) => {
       return res.status(404).json({ error: "Requirement not found" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error deleting requirement" });
+    res.status(500).json({ error: "Error deleting requirement. " + error.message });
   }
 };
 
@@ -186,7 +186,7 @@ const deleteARoleProject = async (req, res) => {
       res.status(404).json({ error: "Role not found" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error deleting role" });
+    res.status(500).json({ error: "Error deleting role. " + error.message });
   }
 };
 

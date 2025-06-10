@@ -20,7 +20,7 @@ const getGoals = async (req, res) => {
       getGoalById(req, res);
     }
   } catch (error) {
-    res.status(500).json({ error: "Error fetching goals" });
+    res.status(500).json({ error: "Error fetching goals. " + error.message });
   }
 };
 
@@ -35,7 +35,7 @@ const getGoalsUser = async (req, res) => {
     }
     res.status(200).json(goals);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching goals" });
+    res.status(500).json({ error: "Error fetching goals. " + error.message });
   }
 };
 
@@ -49,7 +49,7 @@ const getGoalById = async (req, res) => {
     }
     res.status(200).json(goal);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching goal" });
+    res.status(500).json({ error: "Error fetching goal. " + error.message });
   }
 };
 
@@ -59,7 +59,7 @@ const createGoal = async (req, res) => {
     const data = req.body || {};
     createNewGoal(req, res);
   } catch (error) {
-    res.status(500).json({ error: "Error creating goal" });
+    res.status(500).json({ error: "Error creating goal. " + error.message });
   }
 };
 
@@ -73,7 +73,7 @@ const createNewGoal = async (req, res) => {
     }
     res.status(201).json({ message: "Goal created successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Error creating goal" });
+    res.status(500).json({ error: "Error creating goal. " + error.message });
   }
 };
 
@@ -91,7 +91,7 @@ const updateGoal = async (req, res) => {
       res.status(404).json({ error: "Goal not found" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error updating goal" });
+    res.status(500).json({ error: "Error updating goal. " + error.message });
   }
 };
 
@@ -105,7 +105,7 @@ const deleteGoal = async (req, res) => {
       res.status(400).json({ error: "Goal ID is required" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error deleting goal" });
+    res.status(500).json({ error: "Error deleting goal. " + error.message });
   }
 };
 
@@ -119,7 +119,7 @@ const deleteGoalById = async (req, res) => {
       res.status(404).json({ error: "Goal not found" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error deleting goal" });
+    res.status(500).json({ error: "Error deleting goal. " + error.message });
   }
 };
 
@@ -136,7 +136,7 @@ const updateUserGoals = async (req, res) => {
         .json({ error: "Error updating goals due to bad request format." });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error deleting goal" });
+    res.status(500).json({ error: "Error deleting goal. " + error.message });
   }
 };
 

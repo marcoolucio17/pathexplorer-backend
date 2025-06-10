@@ -12,7 +12,7 @@ const getHabilidadesPorTipo = async (req, res) => {
     const { isTechnical } = req.query;
 
     if (typeof isTechnical === "undefined") {
-      return res.status(400).json({ error: "Falta el parámetro isTechnical" });
+      return res.status(400).json({ error: "Falta el parámetro isTechnical. " + error.message });
     }
 
     const booleanValue = isTechnical === "true";
@@ -20,7 +20,7 @@ const getHabilidadesPorTipo = async (req, res) => {
     const data = await getSkillsByType(booleanValue);
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener habilidades por tipo" });
+    res.status(500).json({ error: "Error al obtener habilidades por tipo. " + error.message });
   }
 };
 
@@ -29,7 +29,7 @@ const getTodasHabilidades = async (req, res) => {
     const habilidades = await getAllSkills();
     res.status(200).json(habilidades);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener todas las habilidades" });
+    res.status(500).json({ error: "Error al obtener todas las habilidades. " + error.message });
   }
 };
 
@@ -68,13 +68,13 @@ const getUserSkillsNames = async (req, res) => {
     if (error) {
       return res
         .status(500)
-        .json({ error: "Error al obtener las habilidades del usuario" });
+        .json({ error: "Error al obtener las habilidades del usuario. " + error.message });
     }
     return res.status(200).json({ data });
   } catch (error) {
     return res
       .status(500)
-      .json({ error: "Error al obtener las habilidades del usuario" });
+      .json({ error: "Error al obtener las habilidades del usuario. " + error.message });
   }
 };
 

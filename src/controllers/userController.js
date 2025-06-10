@@ -24,7 +24,7 @@ const getUserById = async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     console.error('Error al obtener usuario:', error.message);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor. ' + error.message });
   }
 };
 
@@ -36,7 +36,7 @@ const uploadUserCV = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error('Error en controller CV:', error);
-    res.status(500).json({ error: 'Error al subir el archivo CV' });
+    res.status(500).json({ error: 'Error al subir el archivo CV. ' + error.message  });
   }
 };
 
@@ -52,7 +52,7 @@ const uploadUserProfilePicture = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error('Error en controller Foto:', error);
-    res.status(500).json({ error: 'Error al subir la foto de perfil' });
+    res.status(500).json({ error: 'Error al subir la foto de perfil. ' + error.message  });
   }
 };
 
@@ -77,7 +77,7 @@ const getUserProfileSignedUrl = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener URL firmada de la foto:', error);
-    res.status(500).json({ error: 'Error al generar la URL de la foto de perfil' });
+    res.status(500).json({ error: 'Error al generar la URL de la foto de perfil. ' + error.message  });
   }
 };
 
@@ -101,7 +101,7 @@ const getUsuariosConProyectoYRol = async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error al obtener usuarios:', error.message);
-    res.status(500).json({ error: 'Error al obtener usuarios' });
+    res.status(500).json({ error: 'Error al obtener usuarios. ' + error.message  });
   }
 };
 
@@ -112,7 +112,7 @@ const getUsuariosPorProyecto = async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error al obtener usuarios por proyecto:', error.message);
-    res.status(500).json({ error: 'Error al obtener usuarios por proyecto' });
+    res.status(500).json({ error: 'Error al obtener usuarios por proyecto. ' + error.message  });
   }
 };
 
