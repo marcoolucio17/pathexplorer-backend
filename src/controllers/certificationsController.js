@@ -47,7 +47,7 @@ const createCertificate = async (req, res) => {
 
     res.status(201).json({ message: 'Certificación registrada correctamente', cert });
   } catch (error) {
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor. ' + error.message });
   }
 };
 
@@ -65,7 +65,7 @@ const updateCertificateController = async (req, res) => {
     res.json(updated);
   } catch (error) {
     console.error('Error en el controlador al actualizar certificación:', error.message);
-    res.status(500).json({ error: 'Error al actualizar certificación' });
+    res.status(500).json({ error: 'Error al actualizar certificación. ' + error.message });
   }
 };
 
@@ -88,7 +88,7 @@ const getCertificatesByEmployeeId = async (req, res) => {
     res.status(200).json(certificates);
   } catch (error) {
     console.error('Error al obtener certificaciones del empleado:', error.message);
-    res.status(500).json({ error: 'Error al obtener certificaciones del empleado' });
+    res.status(500).json({ error: 'Error al obtener certificaciones del empleado. ' + error.message });
   }
 };
 
@@ -109,7 +109,7 @@ const uploadCertificateImage = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al subir la imagen del certificado:', error);
-    res.status(500).json({ error: 'Error al subir la imagen del certificado' });
+    res.status(500).json({ error: 'Error al subir la imagen del certificado. ' + error.message });
   }
 };
 
@@ -122,7 +122,7 @@ const getCertificateImageSignedUrl = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener URL firmada del certificado:', error);
-    res.status(500).json({ error: 'Error al generar la URL del certificado' });
+    res.status(500).json({ error: 'Error al generar la URL del certificado. ' + error.message });
   }
 };
 

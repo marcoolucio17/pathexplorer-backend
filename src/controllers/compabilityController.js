@@ -11,7 +11,7 @@ const getCompatibilitysFunctions = async (req, res) => {
             res.status(400).json({ error: 'Missing parameters' });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching compatibility' });
+        res.status(500).json({ error: 'Error fetching compatibility. ' + error.message });
     }
 }
 
@@ -27,7 +27,7 @@ const getCompatibility = async (req, res) => {
             res.status(200).json({ error: 'Invalid compatibility result' });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching compatibility' });
+        res.status(500).json({ error: 'Error fetching compatibility' + error.message });
     }
 }
 

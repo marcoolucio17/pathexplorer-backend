@@ -15,7 +15,7 @@ const obtenerClientes = async (req, res) => {
     res.status(200).json(data);
   } catch (error) {
     console.error('Error al obtener clientes:', error.message);
-    res.status(500).json({ error: 'Error al obtener clientes' });
+    res.status(500).json({ error: 'Error al obtener clientes. ' + error.message });
   }
 };
 
@@ -32,7 +32,7 @@ const obtenerClientePorId = async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error al obtener cliente por ID:', error.message);
-    res.status(500).json({ error: 'Error al obtener cliente' });
+    res.status(500).json({ error: 'Error al obtener cliente. ' + error.message });
   }
 };
 
@@ -44,7 +44,7 @@ const crearCliente = async (req, res) => {
     res.status(201).json(nuevoCliente);
   } catch (error) {
     console.error('Error al crear cliente:', error.message);
-    res.status(500).json({ error: 'Error al crear cliente' });
+    res.status(500).json({ error: 'Error al crear cliente. ' + error.message });
   }
 };
 
@@ -56,7 +56,7 @@ const actualizarCliente = async (req, res) => {
     res.json(actualizado);
   } catch (error) {
     console.error('Error al actualizar cliente:', error.message);
-    res.status(500).json({ error: 'Error al actualizar cliente' });
+    res.status(500).json({ error: 'Error al actualizar cliente. ' + error.message });
   }
 };
 
@@ -71,7 +71,7 @@ const uploadClienteImage = async (req, res) => {
     res.status(200).json({ message: 'Imagen subida correctamente.', filename });
   } catch (error) {
     console.error('Error al subir la imagen del cliente:', error);
-    res.status(500).json({ error: 'Error al subir la imagen del cliente.' });
+    res.status(500).json({ error: 'Error al subir la imagen del cliente. ' + error.message });
   }
 };
 
@@ -83,7 +83,7 @@ const getClienteWithFotoUrl = async (req, res) => {
     res.status(200).json(cliente);
   } catch (error) {
     console.error('Error al obtener el cliente:', error);
-    res.status(500).json({ error: 'Error al obtener el cliente con URL de la imagen.' });
+    res.status(500).json({ error: 'Error al obtener el cliente con URL de la imagen. ' + error.message });
   }
 };  
 

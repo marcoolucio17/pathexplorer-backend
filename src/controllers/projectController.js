@@ -33,7 +33,7 @@ const getProjects = async (req, res) => {
       return res.status(400).json({ error: "Invalid query parameters" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error fetching projects" });
+    return res.status(500).json({ error: "Error fetching projects. " + error.message });
   }
 };
 
@@ -47,7 +47,7 @@ const getAllProjects = async (req, res) => {
       res.status(404).json({ error: "No projects found" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error fetching projects" });
+    res.status(500).json({ error: "Error fetching projects. " + error.message });
   }
 };
 
@@ -60,7 +60,7 @@ const getProjectsByName = async (req, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error fetching projects" });
+    return res.status(500).json({ error: "Error fetching projects. " + error.message });
   }
 };
 
@@ -74,7 +74,7 @@ const getProjectById = async (idproyecto, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error fetching project" });
+    return res.status(500).json({ error: "Error fetching project. " + error.message });
   }
 };
 
@@ -169,7 +169,7 @@ const getProjectsByFilter = async (req, res, projects) => {
     };
     return res.status(200).json(finalProjects);
   } catch (error) {
-    return res.status(500).json({ error: "Error fetching projects" });
+    return res.status(500).json({ error: "Error fetching projects. " + error.message });
   }
 };
 
@@ -205,7 +205,7 @@ const createProject = async (req, res) => {
       return res.status(400).json({ error: "No project information provided" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error creating project" });
+    return res.status(500).json({ error: "Error creating project. " + error.message });
   }
 };
 
@@ -230,7 +230,7 @@ const createFullProject = async (informacion, res) => {
     }
   } catch (error) {
     console.error("Error en createFullProject:", error.message);
-    return res.status(500).json({ error: "Error al crear el proyecto" });
+    return res.status(500).json({ error: "Error al crear el proyecto. " + error.message });
   }
 };
 
@@ -248,7 +248,7 @@ const updateProject = async (req, res) => {
       return res.status(400).json({ error: "No project information provided" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error updating project" });
+    return res.status(500).json({ error: "Error updating project. " + error.message });
   }
 };
 
@@ -261,7 +261,7 @@ const updatingProject = async (idproyecto, proyect, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error updating project" });
+    return res.status(500).json({ error: "Error updating project. " + error.message });
   }
 };
 
@@ -286,7 +286,7 @@ const uploadRFP = async (req, res) => {
       .json({ message: "Archivo RFP subido correctamente", path: storagePath });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al subir el archivo RFP" });
+    res.status(500).json({ error: "Error al subir el archivo RFP. " + error.message });
   }
 };
 
@@ -307,7 +307,7 @@ const getProyectoPorRol = async (req, res) => {
     const data = await obtenerProyectoPorRol(id, idrol);
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener el proyecto por rol" });
+    res.status(500).json({ error: "Error al obtener el proyecto por rol. " + error.message });
   }
 };
 
@@ -317,7 +317,7 @@ const getProyectoCompleto = async (req, res) => {
     const data = await obtenerProyectoCompleto(id);
     res.json(data);
   } catch (error) {
-    console.error("[ERROR en obtenerProyectoCompleto]", error); // 👈
+    console.error("[ERROR en obtenerProyectoCompleto]", error); 
     res.status(500).json({
       error: error.message || "Error al obtener el proyecto completo",
     });
@@ -333,7 +333,7 @@ const getProyectosPorCreador = async (req, res) => {
     console.error("Error en getProyectosPorCreador:", error.message);
     res
       .status(500)
-      .json({ error: "Error al obtener los proyectos del usuario" });
+      .json({ error: "Error al obtener los proyectos del usuario. " + error.message });
   }
 };
 

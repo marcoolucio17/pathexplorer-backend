@@ -89,7 +89,7 @@ const aceptarAplicacion = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al aceptar aplicación:', error.message);
-    res.status(500).json({ error: 'Error al aceptar aplicación' });
+    res.status(500).json({ error: 'Error al aceptar aplicación. ' + error.message });
   }
 };
 
@@ -106,7 +106,7 @@ const getAppsByStatus = async (req, res) => {
     res.status(200).json({ aplicaciones });
   } catch (error) {
     console.error('Error en getAppsByStatus:', error.message);
-    res.status(500).json({ error: 'Error al obtener las aplicaciones' });
+    res.status(500).json({ error: 'Error al obtener las aplicaciones. ' + error.message });
   }
 };
 
