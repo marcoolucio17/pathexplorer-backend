@@ -1,5 +1,6 @@
 const supabase = require('../config/supabaseClient');
 const { slugify } = require("../utils/filename");
+const { getClienteFotoUrl } = require("./clientesService.js")
 
 const getUserById = async (id) => {
 
@@ -46,7 +47,7 @@ const getUserById = async (id) => {
   // buscamos sus proyectos
   const { data: proyectos, error: proyectosError } = await supabase
     .from('utp')
-    .select('*, proyecto(pnombre)')
+    .select('*, proyecto(pnombre, cliente(idcliente))')
     .eq('idusuario', id);
 
   if (proyectosError) {
@@ -54,7 +55,6 @@ const getUserById = async (id) => {
   }
 
   // utilizando idaplicacion, encontramos el idrol en la tabla aplicaciones y buscamos dicho rol por cada proyecto que haya
-
   for (const proyecto of proyectos) {
     if (proyecto.idaplicacion) {
       const { data: aplicacion, error: aplicacionError } = await supabase
@@ -65,6 +65,18 @@ const getUserById = async (id) => {
 
       if (aplicacionError) {
         throw new Error(aplicacionError.message);
+      }
+
+      // conseguimos la foto del cliente
+      const idcliente = proyecto.proyecto?.cliente?.idcliente;
+      
+      // conseguimos la imagen (si no tiene que no truene)
+      let fotoURL;
+
+      try {
+        fotoURL = await getClienteFotoUrl(idcliente);
+      } catch {
+        fotoURL = "";
       }
 
       if (aplicacion && aplicacion.idrol) {
@@ -79,6 +91,7 @@ const getUserById = async (id) => {
           throw new Error(rolError.message);
         }
 
+        rol.fotoURL = fotoURL.fotodecliente_url;
         proyecto.rol = rol;
       } else {
         proyecto.rol = null;
